@@ -103,15 +103,17 @@ FRAMEWORK: ${framework}
 CTA: ${ctaText}
 
 REGRAS:
-- Conteúdo CONCISO (máximo 180 chars/slide) para formato 1080x1350
+- Texto INTELIGENTE: 180 chars se COM imagem, 400-500 chars se SEM imagem
 - Texto EDUCATIVO específico do tema
-- TODAS slides: needsImage: true
+- ALGUMAS slides: needsImage: true, OUTRAS: needsImage: false (variar para melhor experiência)
 - ImagePrompts: FOTOS REAIS relacionadas ao texto
 - NO design/gráfico, SIM fotos de pessoas/objetos/cenários
 - Linguagem brasileira natural
+- Para slides sem imagem: texto mais longo e detalhado (400-500 chars)
+- Para slides com imagem: texto conciso (máximo 180 chars)
 
 JSON:
-{"slides":[{"id":1,"text":"[máximo 180 chars]","isEdited":false,"originalText":"[mesmo]","needsImage":true,"imagePrompt":"Foto realista de [pessoa/objeto/cenário] especificamente relacionado ao tema"}],"caption":"[legenda]","hashtags":["#tag1","#tag2"]}`;
+{"slides":[{"id":1,"text":"[180 chars se needsImage:true, 400-500 chars se needsImage:false]","isEdited":false,"originalText":"[mesmo]","needsImage":true|false,"imagePrompt":"Foto realista de [pessoa/objeto/cenário] especificamente relacionado ao tema"}],"caption":"[legenda]","hashtags":["#tag1","#tag2"]}`;
 
   console.log('🎯 Enhanced prompt length:', prompt.length, 'chars');
 
@@ -232,14 +234,16 @@ JSON:
         }
       }
 
-      // Validate and trim text length for 1080x1350 format
+      // Validate and trim text length based on image presence
       result.slides = result.slides.map((slide: any, index: number) => {
-        if (slide.text && slide.text.length > 180) {
-          console.warn(`📏 Slide ${index + 1} text too long: ${slide.text.length} chars, trimming to 180`);
-          slide.text = slide.text.substring(0, 177) + '...';
-          slide.originalText = slide.originalText?.substring(0, 177) + '...';
+        const maxLength = slide.needsImage ? 180 : 500;
+        if (slide.text && slide.text.length > maxLength) {
+          console.warn(`📏 Slide ${index + 1} text too long: ${slide.text.length} chars, trimming to ${maxLength}`);
+          const trimLength = maxLength - 3;
+          slide.text = slide.text.substring(0, trimLength) + '...';
+          slide.originalText = slide.originalText?.substring(0, trimLength) + '...';
         }
-        console.log(`📝 Slide ${index + 1}: ${slide.text.length} chars`);
+        console.log(`📝 Slide ${index + 1}: ${slide.text.length} chars (${slide.needsImage ? 'with' : 'without'} image)`);
         return slide;
       });
 

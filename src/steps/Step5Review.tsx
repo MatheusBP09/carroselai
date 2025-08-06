@@ -217,9 +217,16 @@ const Step5Review = ({
                   </Button>
 
                   {editingSlide === slide.id ? <div className="space-y-3">
-                      <Textarea value={editingText} onChange={e => setEditingText(e.target.value)} className="min-h-[120px]" placeholder="Edite o texto do tweet..." maxLength={280} />
+                      <Textarea 
+                        value={editingText} 
+                        onChange={e => setEditingText(e.target.value)} 
+                        className="min-h-[120px]" 
+                        placeholder="Edite o texto do tweet..." 
+                        maxLength={slide.hasImage ? 180 : 500} 
+                      />
                       <div className="text-sm text-muted-foreground">
-                        {editingText.length}/280 caracteres
+                        {editingText.length}/{slide.hasImage ? 180 : 500} caracteres
+                        {slide.hasImage ? ' (com imagem)' : ' (sem imagem)'}
                       </div>
                       <div className="flex gap-2">
                         <Button size="sm" onClick={saveEdit}>

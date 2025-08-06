@@ -24,8 +24,10 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
   profileImageUrl,
   contentImageUrl
 }) => {
+  const hasImage = !!contentImageUrl;
+  
   return (
-    <Card className="w-[1080px] h-[1350px] bg-white text-black border-0 p-16 mx-auto font-twitter">
+    <Card className="w-[1080px] h-[1350px] bg-white text-black border-0 p-16 mx-auto font-twitter flex flex-col">
       {/* Twitter Post Header */}
       <div className="flex items-start space-x-4 mb-8">
         {/* Profile Image */}
@@ -90,8 +92,12 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
       </div>
 
       {/* Tweet Text */}
-      <div className="text-black text-3xl leading-relaxed mb-12 font-normal">
-        {text}
+      <div className={`text-black text-3xl leading-relaxed font-normal ${hasImage ? 'mb-12' : 'flex-1 flex items-center'}`}>
+        {hasImage ? (
+          <div>{text}</div>
+        ) : (
+          <div className="w-full text-center leading-normal">{text}</div>
+        )}
       </div>
 
       {/* Content Image */}
