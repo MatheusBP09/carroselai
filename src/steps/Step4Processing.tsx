@@ -48,28 +48,39 @@ const getImagePromptVariations = (slideIndex: number, totalSlides: number): stri
 const generateEnhancedImagePrompt = (text: string, slideIndex: number, totalSlides: number): string => {
   const cleanText = text.replace(/[🧵📊💡⚡🔥✨💰📈📉🎯🚀]/g, '').trim();
   
-  // Get position-based variations first
+  // Extract key concepts from the text for more relevant prompts
+  const lowerText = cleanText.toLowerCase();
+  
+  // Position-based variations
   const positionVariations = getImagePromptVariations(slideIndex, totalSlides);
   
-  // Content-based detection with enhanced prompts
-  if (cleanText.includes('estatística') || cleanText.includes('dados') || cleanText.includes('%')) {
-    return `${positionVariations[0]} com foco em dados estatísticos, cores vibrantes e tipografia moderna`;
+  // Content-specific analysis for better image relevance
+  let specificElements = '';
+  
+  if (lowerText.includes('dinheiro') || lowerText.includes('renda') || lowerText.includes('financeiro') || lowerText.includes('investir')) {
+    specificElements = 'elementos de crescimento financeiro, gráficos ascendentes, símbolos de prosperidade';
+  } else if (lowerText.includes('negócio') || lowerText.includes('empresa') || lowerText.includes('vendas') || lowerText.includes('cliente')) {
+    specificElements = 'elementos corporativos profissionais, ícones de crescimento empresarial, simbolos de sucesso nos negócios';
+  } else if (lowerText.includes('saúde') || lowerText.includes('exercício') || lowerText.includes('bem-estar') || lowerText.includes('energia')) {
+    specificElements = 'elementos de saúde e vitalidade, símbolos de bem-estar, ícones de energia e vida saudável';
+  } else if (lowerText.includes('tecnologia') || lowerText.includes('digital') || lowerText.includes('ia') || lowerText.includes('inovação')) {
+    specificElements = 'elementos tecnológicos modernos, circuitos digitais, ícones de inovação futurística';
+  } else if (lowerText.includes('educação') || lowerText.includes('aprender') || lowerText.includes('curso') || lowerText.includes('conhecimento')) {
+    specificElements = 'elementos educacionais, símbolos de aprendizado, ícones de conhecimento e crescimento intelectual';
+  } else if (lowerText.includes('processo') || lowerText.includes('passo') || lowerText.includes('etapa') || lowerText.includes('método')) {
+    specificElements = 'diagrama de processo visual, fluxo step-by-step, elementos conectados representando metodologia';
+  } else if (lowerText.includes('estatística') || lowerText.includes('dados') || lowerText.includes('%') || lowerText.includes('resultado')) {
+    specificElements = 'gráficos de dados modernos, visualização estatística, elementos de análise e resultados';
+  } else if (lowerText.includes('dica') || lowerText.includes('estratégia') || lowerText.includes('segredo') || lowerText.includes('truque')) {
+    specificElements = 'elementos de estratégia e insights, símbolos de descoberta, ícones de dicas valiosas';
+  } else {
+    // Use the actual text content to generate relevant visuals
+    const keyWords = cleanText.split(' ').slice(0, 5).join(' ');
+    specificElements = `elementos visuais modernos representando especificamente: ${keyWords}`;
   }
   
-  if (cleanText.includes('processo') || cleanText.includes('passo') || cleanText.includes('etapa')) {
-    return `${positionVariations[0]} representando fluxo de processo, elementos conectados e design profissional`;
-  }
-  
-  if (cleanText.includes('comparação') || cleanText.includes('vs') || cleanText.includes('diferença')) {
-    return `${positionVariations[0]} mostrando comparação visual, layout balanceado e cores contrastantes`;
-  }
-  
-  if (cleanText.includes('dica') || cleanText.includes('estratégia') || cleanText.includes('método')) {
-    return `${positionVariations[0]} representando conceito de estratégia, elementos inspiracionais e design moderno`;
-  }
-  
-  // Fallback with enhanced prompt based on position
-  return `${positionVariations[0]} relacionado ao conteúdo: ${cleanText.substring(0, 80)}, design 2024 com gradientes suaves`;
+  // Combine position-based layout with content-specific elements
+  return `${positionVariations[0]} com ${specificElements}, design profissional Instagram 2024, cores harmoniosas, tipografia limpa, relacionado diretamente ao conceito: "${cleanText.substring(0, 60)}"`;
 };
 import { StepProps } from '@/types/carousel';
 import { toast } from 'sonner';

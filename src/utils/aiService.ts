@@ -86,29 +86,39 @@ export const generateCarousel = async (params: GenerateCarouselParams): Promise<
     lifestyle: 'Aspiração, Identidade, Tendência'
   };
 
-  // Optimized prompt (~800 chars vs 2300)
+  // Enhanced prompt for better content quality (~1200 chars for detail)
   const audience = detectAudience(content);
   const framework = getFramework(copywritingFramework, slideCount);
   const ctaText = getCTA(callToAction, customCTA);
   const trigger = triggers[contentType as keyof typeof triggers] || triggers.educational;
-  const dimensions = contentFormat === 'stories' ? '1080x1920' : '1080x1350';
+  const dimensions = contentFormat === 'stories' ? '1024x1792' : '1024x1024';
 
-  const prompt = `Crie carrossel Instagram:
-DADOS: ${username} (@${instagramHandle})${isVerified ? ' ✓' : ''} | ${content}
-CONFIG: ${contentType} | ${contentFormat} | ${slideCount} slides | ${audience}
-FRAMEWORK: ${framework}
-CTA: ${ctaText}
+  const prompt = `Crie carrossel Instagram de ALTA QUALIDADE:
 
-REGRAS:
-- Sem emojis no texto, max 280 chars/slide
-- Gatilhos: ${trigger}
-- TODAS slides: needsImage: true + imagePrompt detalhado
-- Dimensões: ${dimensions}
-- Variedade visual: gráficos, ilustrações, conceitos
-- Design 2024: gradientes, tipografia bold, cores vibrantes
+PERFIL: ${username} (@${instagramHandle})${isVerified ? ' ✓' : ''}
+CONTEÚDO BASE: ${content}
+PÚBLICO: ${audience}
+TIPO: ${contentType} | FORMATO: ${contentFormat} | ${slideCount} slides
 
-JSON formato:
-{"slides":[{"id":1,"text":"...","isEdited":false,"originalText":"...","needsImage":true,"imagePrompt":"Design impactante..."}],"caption":"...","hashtags":["tag1"]}`;
+FRAMEWORK OBRIGATÓRIO: ${framework}
+CTA FINAL: ${ctaText}
+GATILHOS: ${trigger}
+
+REGRAS CRÍTICAS:
+- Conteúdo RELEVANTE e ESPECÍFICO ao tema "${content}"
+- Texto EDUCATIVO e VALIOSO para o público ${audience}
+- Máximo 250 caracteres por slide, linguagem natural brasileira
+- TODAS as slides: needsImage: true + imagePrompt ESPECÍFICO do conteúdo
+- ImagePrompts devem descrever EXATAMENTE o que está sendo falado no texto
+- Dimensões corretas: ${dimensions}
+- Design 2024: gradientes, tipografia moderna, cores que fazem sentido para o tema
+
+FORMATO JSON OBRIGATÓRIO:
+{"slides":[{"id":1,"text":"[conteúdo específico do tema]","isEdited":false,"originalText":"[mesmo texto]","needsImage":true,"imagePrompt":"Design específico relacionado ao conteúdo: [descrever elemento visual que representa o texto]"}],"caption":"[legenda envolvente]","hashtags":["#tag1","#tag2"]}
+
+IMPORTANTE: O imagePrompt deve SEMPRE descrever elementos visuais que representem ESPECIFICAMENTE o que está sendo dito no texto daquela slide.`;
+
+  console.log('🎯 Enhanced prompt length:', prompt.length, 'chars');
 
   // Progressive model fallback with timeout and detailed error handling
   let lastError: any;

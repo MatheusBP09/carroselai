@@ -68,52 +68,63 @@ export const generateContentImage = async (params: ImageGenerationParams): Promi
   }
 };
 
-// Get exact dimensions for each format to avoid cropping
+// Helper function to get correct API dimensions (OpenAI supported sizes only)
 const getFormatDimensions = (format: string): { width: number; height: number } => {
-  switch (format) {
-    case 'stories':
-    case 'reels':
-      return { width: 1080, height: 1920 };
-    case 'feed':
-    default:
-      return { width: 1080, height: 1350 };
-  }
+  const dimensions = {
+    'stories': { width: 1024, height: 1792 }, // Vertical format for stories
+    'reels': { width: 1024, height: 1792 },   // Vertical format for reels  
+    'feed': { width: 1024, height: 1024 },    // Square format for feed
+    'default': { width: 1024, height: 1024 }
+  };
+  
+  return dimensions[format as keyof typeof dimensions] || dimensions.default;
 };
 
+// Enhanced prompt creation with better content relevance
 const createImagePrompt = (text: string, style: string, format: string = 'feed', contentType: string = 'educational'): string => {
-  const styleEnhancements = {
-    professional: 'clean corporate design, professional color palette, high-quality business aesthetic',
-    modern: 'contemporary design, vibrant colors, sleek minimalist layout, trending 2024 Instagram style',
-    minimalist: 'simple clean design, white space, subtle colors, elegant typography, minimal elements',
-    creative: 'artistic composition, bold gradients, creative typography, unique visual elements, expressive design'
-  };
-
-  const formatOptimizations = {
-    feed: 'square composition, centered focal point, readable thumbnail text',
-    stories: 'vertical layout, top-heavy composition, large text for mobile viewing',
-    reels: 'vertical composition, dynamic elements, attention-grabbing design for video thumbnails'
-  };
-
-  const contentTypeStyles = {
-    educational: 'infographic style, data visualization, clear hierarchy, instructional design',
-    motivational: 'inspiring imagery, uplifting colors, empowering composition, success themes',
-    tutorial: 'step-by-step visual, process flow, clear instructions, practical design',
-    storytelling: 'narrative imagery, emotional composition, cinematic style, character-focused',
-    business: 'professional charts, corporate colors, data-driven visuals, success metrics',
-    lifestyle: 'lifestyle photography style, natural lighting, aspirational imagery, trendy aesthetics',
-    tips: 'practical visuals, numbered elements, quick-tip design, actionable content',
-    personal: 'authentic imagery, personal touch, relatable visuals, human connection'
-  };
-
-  const instagramTrends2024 = 'Instagram 2024 trends: bold typography, gradient overlays, 3D elements, neon accents, glass morphism effects, authentic photography, inclusive representation';
+  // Extract key concepts from the text for better image relevance
+  const cleanText = text.replace(/[🧵📊💡⚡🔥✨💰📈📉🎯🚀]/g, '').trim();
+  const lowerText = cleanText.toLowerCase();
   
-  const enhancement = styleEnhancements[style as keyof typeof styleEnhancements] || styleEnhancements.modern;
-  const formatOpt = formatOptimizations[format as keyof typeof formatOptimizations] || formatOptimizations.feed;
-  const contentStyle = contentTypeStyles[contentType as keyof typeof contentTypeStyles] || contentTypeStyles.educational;
+  // Analyze content to create relevant visual elements
+  let visualElements = '';
+  let backgroundStyle = '';
+  let colorScheme = '';
   
-  return `Create a stunning Instagram ${format} image with ${enhancement}. ${formatOpt}. Content style: ${contentStyle}. Focus: "${text}". 
+  // Content-specific visual elements
+  if (lowerText.includes('dinheiro') || lowerText.includes('renda') || lowerText.includes('financeiro')) {
+    visualElements = 'elementos visuais de crescimento financeiro, gráficos ascendentes, ícones de dinheiro';
+    colorScheme = 'tons de verde e dourado';
+  } else if (lowerText.includes('negócio') || lowerText.includes('empresa') || lowerText.includes('vendas')) {
+    visualElements = 'elementos corporativos, gráficos de performance, ícones de crescimento empresarial';
+    colorScheme = 'azul profissional e cinza elegante';
+  } else if (lowerText.includes('saúde') || lowerText.includes('exercício') || lowerText.includes('bem-estar')) {
+    visualElements = 'elementos de saúde e vitalidade, ícones de wellness, símbolos de energia';
+    colorScheme = 'verde natural e azul wellness';
+  } else if (lowerText.includes('tecnologia') || lowerText.includes('digital') || lowerText.includes('ia')) {
+    visualElements = 'elementos tecnológicos, circuitos, ícones digitais, formas geométricas modernas';
+    colorScheme = 'azul tech e roxo futurista';
+  } else if (lowerText.includes('educação') || lowerText.includes('aprender') || lowerText.includes('curso')) {
+    visualElements = 'elementos educacionais, livros estilizados, ícones de conhecimento, símbolos de aprendizado';
+    colorScheme = 'azul conhecimento e laranja energia';
+  } else {
+    // Generic but engaging elements based on actual text content
+    const keyWords = cleanText.split(' ').slice(0, 3).join(' ');
+    visualElements = `elementos visuais modernos representando especificamente: ${keyWords}`;
+    colorScheme = 'cores vibrantes e harmoniosas';
+  }
   
-  Design requirements: ${instagramTrends2024}. Perfect ${format === 'feed' ? '1080x1350' : '1080x1920'} dimensions. High contrast, mobile-optimized readability. No text overlay (text will be added separately). Ultra high resolution, professional quality.`;
+  // Format-specific background and composition
+  if (format === 'stories') {
+    backgroundStyle = 'fundo vertical elegante, composição para stories 9:16';
+  } else {
+    backgroundStyle = 'fundo quadrado moderno, composição equilibrada';
+  }
+  
+  // Enhanced prompt with specific content relevance
+  const prompt = `Design moderno para Instagram ${format}, ${backgroundStyle}, ${visualElements}, ${colorScheme}, tipografia bold e limpa, estilo ${style || 'profissional'}, alta qualidade, tendências design 2024, relacionado especificamente ao tema: "${cleanText.substring(0, 100)}", sem texto no design, foco visual no conceito apresentado`;
+  
+  return prompt;
 };
 
 /**
