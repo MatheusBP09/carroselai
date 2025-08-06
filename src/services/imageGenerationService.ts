@@ -1,8 +1,9 @@
+import { OPENAI_API_KEY } from '../constants/config';
+
 interface ImageGenerationParams {
   text: string;
   style?: 'photorealistic' | 'illustration' | 'minimal' | 'artistic';
   aspectRatio?: '16:9' | '1:1' | '4:3';
-  apiKey: string;
 }
 
 interface ImageGenerationResponse {
@@ -13,7 +14,7 @@ interface ImageGenerationResponse {
  * Generate content image using OpenAI DALL-E
  */
 export const generateContentImage = async (params: ImageGenerationParams): Promise<ImageGenerationResponse> => {
-  const { text, style = 'photorealistic', aspectRatio = '16:9', apiKey } = params;
+  const { text, style = 'photorealistic', aspectRatio = '16:9' } = params;
 
   try {
     // Create optimized prompt based on tweet text
@@ -23,7 +24,7 @@ export const generateContentImage = async (params: ImageGenerationParams): Promi
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${apiKey}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
         model: 'dall-e-3',

@@ -9,7 +9,6 @@ export interface CarouselData {
   slides?: Slide[];
   caption?: string;
   hashtags?: string[];
-  openaiApiKey?: string;
 }
 
 export interface Slide {
@@ -30,7 +29,7 @@ export interface GeneratedSlides {
   hashtags: string[];
 }
 
-export type Step = 0 | 1 | 2 | 3 | 4 | 5 | 6;
+export type Step = 1 | 2 | 3 | 4 | 5 | 6;
 
 export interface StepProps {
   data: CarouselData;

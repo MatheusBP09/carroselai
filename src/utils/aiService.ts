@@ -1,10 +1,11 @@
+import { OPENAI_API_KEY } from '../constants/config';
+
 interface GenerateCarouselParams {
   title?: string;
   username: string;
   content: string;
   instagramHandle: string;
   isVerified: boolean;
-  openaiApiKey: string;
   slideCount?: number;
 }
 
@@ -20,7 +21,7 @@ interface GenerateCarouselResponse {
 }
 
 export const generateCarousel = async (params: GenerateCarouselParams): Promise<GenerateCarouselResponse> => {
-  const { title, username, content, instagramHandle, isVerified, openaiApiKey, slideCount = 10 } = params;
+  const { title, username, content, instagramHandle, isVerified, slideCount = 10 } = params;
 
 const prompt = `
 Crie um carrossel para Instagram baseado nas seguintes informações:
@@ -84,7 +85,7 @@ Responda apenas com um JSON válido no seguinte formato:
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${openaiApiKey}`,
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
       },
       body: JSON.stringify({
         model: 'gpt-4.1-2025-04-14',

@@ -1,7 +1,6 @@
 import { useCarousel } from '../context/CarouselContext';
 import { Header } from './Layout/Header';
 import { ProgressIndicator } from './Layout/ProgressIndicator';
-import { Step0ApiKey } from '../steps/Step0ApiKey';
 import { Step1Identification } from '../steps/Step1Identification';
 import { Step2Content } from '../steps/Step2Content';
 import { Step3PhotoUpload } from '../steps/Step3PhotoUpload';
@@ -10,7 +9,6 @@ import Step5Review from '../steps/Step5Review';
 import Step6Download from '../steps/Step6Download';
 
 const stepLabels = [
-  'API Config',
   'Identificação',
   'Conteúdo',
   'Foto Perfil',
@@ -39,8 +37,6 @@ export const CarouselGenerator = () => {
     };
 
     switch (currentStep) {
-      case 0:
-        return <Step0ApiKey {...stepProps} />;
       case 1:
         return <Step1Identification {...stepProps} />;
       case 2:
@@ -54,7 +50,7 @@ export const CarouselGenerator = () => {
       case 6:
         return <Step6Download {...stepProps} />;
       default:
-        return <Step0ApiKey {...stepProps} />;
+        return <Step1Identification {...stepProps} />;
     }
   };
 
@@ -64,8 +60,8 @@ export const CarouselGenerator = () => {
       
       <main className="container mx-auto px-6 py-8">
         <ProgressIndicator
-          currentStep={currentStep + 1}
-          totalSteps={7}
+          currentStep={currentStep}
+          totalSteps={6}
           stepLabels={stepLabels}
           onStepClick={handleStepClick}
         />

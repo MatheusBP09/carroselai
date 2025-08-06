@@ -49,8 +49,7 @@ const Step5Review = ({
     try {
       const contentImage = await generateContentImage({
         text: slide.text,
-        style: 'photorealistic',
-        apiKey: data.openaiApiKey || ''
+        style: 'photorealistic'
       });
       setSlides(prev => prev.map(s => s.id === slideId ? {
         ...s,

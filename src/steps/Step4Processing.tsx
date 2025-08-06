@@ -73,7 +73,6 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
         content: data.content,
         instagramHandle: data.instagramHandle,
         isVerified: data.isVerified,
-        openaiApiKey: data.openaiApiKey || '',
         slideCount
       });
 
@@ -118,8 +117,7 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
               try {
                 const contentImage = await generateContentImage({
                   text: imagePrompt,
-                  style: 'photorealistic',
-                  apiKey: data.openaiApiKey || ''
+                  style: 'photorealistic'
                 });
                 
                 contentImageUrls = [contentImage.imageUrl];

@@ -23,12 +23,11 @@ const initialData: CarouselData = {
   profileImage: undefined,
   slides: undefined,
   caption: undefined,
-  hashtags: undefined,
-  openaiApiKey: ''
+  hashtags: undefined
 };
 
 export const CarouselProvider = ({ children }: { children: ReactNode }) => {
-  const [currentStep, setCurrentStep] = useState<Step>(0);
+  const [currentStep, setCurrentStep] = useState<Step>(1);
   const [data, setData] = useState<CarouselData>(initialData);
 
   const updateData = (newData: Partial<CarouselData>) => {
@@ -42,13 +41,13 @@ export const CarouselProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const prevStep = () => {
-    if (currentStep > 0) {
+    if (currentStep > 1) {
       setCurrentStep((prev) => (prev - 1) as Step);
     }
   };
 
   const resetCarousel = () => {
-    setCurrentStep(0);
+    setCurrentStep(1);
     setData(initialData);
   };
 
