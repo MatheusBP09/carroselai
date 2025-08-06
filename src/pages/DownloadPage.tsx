@@ -31,7 +31,7 @@ export default function DownloadPage() {
     );
   }
 
-  // Função para gerar preview da imagem
+  // Função melhorada para gerar preview da imagem
   const generatePreview = async (slideIndex: number) => {
     if (!data.slides || previewImages.has(slideIndex) || loadingPreviews.has(slideIndex)) return;
 
@@ -39,6 +39,8 @@ export default function DownloadPage() {
     
     try {
       const slide = data.slides[slideIndex];
+      
+      console.log(`🖼️ Generating preview for slide ${slideIndex + 1}`);
       
       const blob = await renderTwitterPostToImage({
         text: slide.text,
@@ -49,16 +51,143 @@ export default function DownloadPage() {
         contentImageUrl: slide.contentImageUrls?.[0]
       });
 
+      // Validate the blob before creating URL
+      if (blob.size < 1000) {
+        throw new Error('Generated preview is too small');
+      }
+
       const imageUrl = URL.createObjectURL(blob);
       setPreviewImages(prev => new Map(prev).set(slideIndex, imageUrl));
+      
+      console.log(`✅ Preview generated for slide ${slideIndex + 1}, size: ${blob.size} bytes`);
     } catch (error) {
-      console.error('Error generating preview:', error);
+      console.error(`❌ Error generating preview for slide ${slideIndex + 1}:`, error);
+      toast({
+        title: "Erro no preview",
+        description: `Não foi possível gerar preview do slide ${slideIndex + 1}`,
+        variant: "destructive",
+      });
     } finally {
       setLoadingPreviews(prev => {
         const newSet = new Set(prev);
         newSet.delete(slideIndex);
         return newSet;
       });
+    }
+  };
+
+  // Função para validar e corrigir blob PNG
+  const validateAndFixPngBlob = async (blob: Blob): Promise<Blob> => {
+    return new Promise((resolve, reject) => {
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
+      
+      if (!ctx) {
+        reject(new Error('Could not get canvas context'));
+        return;
+      }
+      
+      img.onload = () => {
+        try {
+          // Set canvas dimensions to exact Instagram size
+          canvas.width = 1080;
+          canvas.height = 1350;
+          
+          // Fill with white background first
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          
+          // Draw the image
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          
+          // Add PNG metadata
+          canvas.toBlob((validBlob) => {
+            if (validBlob && validBlob.size > 1000) {
+              console.log('✅ PNG validated and corrected, size:', validBlob.size);
+              resolve(validBlob);
+            } else {
+              reject(new Error('Invalid PNG blob generated'));
+            }
+          }, 'image/png', 1.0);
+          
+        } catch (error) {
+          reject(error);
+        }
+      };
+      
+      img.onerror = () => {
+        reject(new Error('Failed to load blob as image'));
+      };
+      
+      img.src = URL.createObjectURL(blob);
+    });
+  };
+
+  // Função robusta para download com múltiplos formatos
+  const downloadImageWithFallback = async (blob: Blob, filename: string) => {
+    const formats = [
+      { ext: 'png', type: 'image/png', quality: 1.0 },
+      { ext: 'jpg', type: 'image/jpeg', quality: 0.95 },
+      { ext: 'webp', type: 'image/webp', quality: 0.95 }
+    ];
+    
+    for (const format of formats) {
+      try {
+        let finalBlob = blob;
+        
+        // Re-encode if different format
+        if (format.type !== 'image/png') {
+          finalBlob = await new Promise<Blob>((resolve, reject) => {
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            if (!ctx) {
+              reject(new Error('Canvas context not available'));
+              return;
+            }
+            
+            img.onload = () => {
+              canvas.width = 1080;
+              canvas.height = 1350;
+              ctx.fillStyle = '#ffffff';
+              ctx.fillRect(0, 0, canvas.width, canvas.height);
+              ctx.drawImage(img, 0, 0);
+              
+              canvas.toBlob((newBlob) => {
+                if (newBlob) resolve(newBlob);
+                else reject(new Error('Format conversion failed'));
+              }, format.type, format.quality);
+            };
+            
+            img.onerror = () => reject(new Error('Image load failed'));
+            img.src = URL.createObjectURL(blob);
+          });
+        }
+        
+        // Test download
+        const url = URL.createObjectURL(finalBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename.replace(/\.(png|jpg|jpeg|webp)$/i, `.${format.ext}`);
+        link.style.display = 'none';
+        
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        
+        console.log(`✅ Download successful with format: ${format.ext}`);
+        return; // Success, exit loop
+        
+      } catch (error) {
+        console.warn(`❌ Download failed with ${format.ext}:`, error);
+        if (format === formats[formats.length - 1]) {
+          throw new Error('All download formats failed');
+        }
+      }
     }
   };
 
@@ -71,6 +200,8 @@ export default function DownloadPage() {
     try {
       const slide = data.slides[slideIndex];
       
+      console.log(`🚀 Starting download for slide ${slideIndex + 1}`);
+      
       const blob = await renderTwitterPostToImage({
         text: slide.text,
         username: data.username,
@@ -80,40 +211,16 @@ export default function DownloadPage() {
         contentImageUrl: slide.contentImageUrls?.[0]
       });
 
-      // Criar arquivo PNG válido
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
+      console.log('📦 Raw blob received, size:', blob.size);
       
-      await new Promise((resolve, reject) => {
-        img.onload = () => {
-          canvas.width = img.width;
-          canvas.height = img.height;
-          ctx?.drawImage(img, 0, 0);
-          
-          canvas.toBlob((finalBlob) => {
-            if (finalBlob) {
-              // Download direto com canvas blob
-              const url = URL.createObjectURL(finalBlob);
-              const link = document.createElement('a');
-              link.href = url;
-              link.download = `slide-${slideIndex + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}.png`;
-              link.style.display = 'none';
-              
-              document.body.appendChild(link);
-              link.click();
-              document.body.removeChild(link);
-              
-              setTimeout(() => URL.revokeObjectURL(url), 1000);
-              resolve(finalBlob);
-            } else {
-              reject(new Error('Failed to create final blob'));
-            }
-          }, 'image/png', 1.0);
-        };
-        img.onerror = reject;
-        img.src = URL.createObjectURL(blob);
-      });
+      // Validate and fix the PNG blob
+      const validatedBlob = await validateAndFixPngBlob(blob);
+      
+      console.log('✅ Blob validated, proceeding with download');
+      
+      // Download with fallback formats
+      const filename = `slide-${slideIndex + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}.png`;
+      await downloadImageWithFallback(validatedBlob, filename);
 
       toast({
         title: "Sucesso!",
@@ -141,65 +248,62 @@ export default function DownloadPage() {
     setDownloadingSlides(new Set([...Array(data.slides.length).keys()]));
     
     try {
+      let successCount = 0;
+      let errorCount = 0;
+      
       for (let i = 0; i < data.slides.length; i++) {
-        const slide = data.slides[i];
-        
-        const blob = await renderTwitterPostToImage({
-          text: slide.text,
-          username: data.username,
-          handle: data.instagramHandle,
-          isVerified: data.isVerified,
-          profileImageUrl: slide.profileImageUrl,
-          contentImageUrl: slide.contentImageUrls?.[0]
-        });
+        try {
+          const slide = data.slides[i];
+          
+          console.log(`🚀 Processing slide ${i + 1}/${data.slides.length}`);
+          
+          const blob = await renderTwitterPostToImage({
+            text: slide.text,
+            username: data.username,
+            handle: data.instagramHandle,
+            isVerified: data.isVerified,
+            profileImageUrl: slide.profileImageUrl,
+            contentImageUrl: slide.contentImageUrls?.[0]
+          });
 
-        // Criar arquivo PNG válido usando canvas
-        const canvas = document.createElement('canvas');
-        const ctx = canvas.getContext('2d');
-        const img = new Image();
+          // Validate and fix the PNG blob
+          const validatedBlob = await validateAndFixPngBlob(blob);
+          
+          // Download with fallback formats
+          const filename = `slide-${i + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}.png`;
+          await downloadImageWithFallback(validatedBlob, filename);
+          
+          successCount++;
+          console.log(`✅ Slide ${i + 1} downloaded successfully`);
+          
+        } catch (error) {
+          errorCount++;
+          console.error(`❌ Failed to download slide ${i + 1}:`, error);
+        }
         
-        await new Promise((resolve, reject) => {
-          img.onload = () => {
-            canvas.width = img.width;
-            canvas.height = img.height;
-            ctx?.drawImage(img, 0, 0);
-            
-            canvas.toBlob((finalBlob) => {
-              if (finalBlob) {
-                const url = URL.createObjectURL(finalBlob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.download = `slide-${i + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}.png`;
-                link.style.display = 'none';
-                
-                document.body.appendChild(link);
-                link.click();
-                document.body.removeChild(link);
-                
-                setTimeout(() => URL.revokeObjectURL(url), 1000);
-                resolve(finalBlob);
-              } else {
-                reject(new Error('Failed to create final blob'));
-              }
-            }, 'image/png', 1.0);
-          };
-          img.onerror = reject;
-          img.src = URL.createObjectURL(blob);
-        });
-        
-        // Delay entre downloads
-        await new Promise(resolve => setTimeout(resolve, 800));
+        // Delay entre downloads para evitar problemas
+        await new Promise(resolve => setTimeout(resolve, 1000));
       }
 
-      toast({
-        title: "Sucesso!",
-        description: `Todos os ${data.slides.length} slides foram baixados`,
-      });
+      if (successCount === data.slides.length) {
+        toast({
+          title: "Sucesso!",
+          description: `Todos os ${data.slides.length} slides foram baixados`,
+        });
+      } else if (successCount > 0) {
+        toast({
+          title: "Download parcial",
+          description: `${successCount}/${data.slides.length} slides baixados com sucesso`,
+          variant: "destructive",
+        });
+      } else {
+        throw new Error('All slides failed to download');
+      }
     } catch (error) {
-      console.error('Error downloading all slides:', error);
+      console.error('Error downloading slides:', error);
       toast({
         title: "Falha no download",
-        description: "Falha ao baixar alguns slides. Tente novamente.",
+        description: "Falha ao baixar slides. Tente novamente.",
         variant: "destructive",
       });
     } finally {
