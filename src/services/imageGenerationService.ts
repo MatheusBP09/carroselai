@@ -80,49 +80,56 @@ const getFormatDimensions = (format: string): { width: number; height: number } 
   return dimensions[format as keyof typeof dimensions] || dimensions.default;
 };
 
-// Enhanced prompt creation with better content relevance
+// Enhanced prompt creation focused on realistic photography
 const createImagePrompt = (text: string, style: string, format: string = 'feed', contentType: string = 'educational'): string => {
   // Extract key concepts from the text for better image relevance
   const cleanText = text.replace(/[🧵📊💡⚡🔥✨💰📈📉🎯🚀]/g, '').trim();
   const lowerText = cleanText.toLowerCase();
   
-  // Analyze content to create relevant visual elements
-  let visualElements = '';
-  let backgroundStyle = '';
-  let colorScheme = '';
+  // Analyze content to create realistic photo subjects
+  let photoSubject = '';
+  let photoContext = '';
+  let photographyStyle = '';
   
-  // Content-specific visual elements
-  if (lowerText.includes('dinheiro') || lowerText.includes('renda') || lowerText.includes('financeiro')) {
-    visualElements = 'elementos visuais de crescimento financeiro, gráficos ascendentes, ícones de dinheiro';
-    colorScheme = 'tons de verde e dourado';
-  } else if (lowerText.includes('negócio') || lowerText.includes('empresa') || lowerText.includes('vendas')) {
-    visualElements = 'elementos corporativos, gráficos de performance, ícones de crescimento empresarial';
-    colorScheme = 'azul profissional e cinza elegante';
-  } else if (lowerText.includes('saúde') || lowerText.includes('exercício') || lowerText.includes('bem-estar')) {
-    visualElements = 'elementos de saúde e vitalidade, ícones de wellness, símbolos de energia';
-    colorScheme = 'verde natural e azul wellness';
-  } else if (lowerText.includes('tecnologia') || lowerText.includes('digital') || lowerText.includes('ia')) {
-    visualElements = 'elementos tecnológicos, circuitos, ícones digitais, formas geométricas modernas';
-    colorScheme = 'azul tech e roxo futurista';
-  } else if (lowerText.includes('educação') || lowerText.includes('aprender') || lowerText.includes('curso')) {
-    visualElements = 'elementos educacionais, livros estilizados, ícones de conhecimento, símbolos de aprendizado';
-    colorScheme = 'azul conhecimento e laranja energia';
+  // Content-specific realistic photography elements
+  if (lowerText.includes('dinheiro') || lowerText.includes('renda') || lowerText.includes('financeiro') || lowerText.includes('investir')) {
+    photoSubject = 'pessoa profissional analisando gráficos financeiros em escritório moderno';
+    photoContext = 'ambiente corporativo com computadores, documentos financeiros, atmosfera de sucesso';
+    photographyStyle = 'fotografia corporativa profissional, iluminação natural';
+  } else if (lowerText.includes('negócio') || lowerText.includes('empresa') || lowerText.includes('vendas') || lowerText.includes('empreend')) {
+    photoSubject = 'empreendedor ou executivo em ambiente de negócios';
+    photoContext = 'escritório moderno, reunião de negócios, apresentação profissional';
+    photographyStyle = 'fotografia corporate, luz profissional, ambiente business';
+  } else if (lowerText.includes('saúde') || lowerText.includes('exercício') || lowerText.includes('bem-estar') || lowerText.includes('energia')) {
+    photoSubject = 'pessoa praticando atividade saudável ou em ambiente wellness';
+    photoContext = 'academia, parque, consultório médico, ambiente de bem-estar';
+    photographyStyle = 'fotografia lifestyle saudável, luz natural, atmosfera positiva';
+  } else if (lowerText.includes('tecnologia') || lowerText.includes('digital') || lowerText.includes('ia') || lowerText.includes('inovação')) {
+    photoSubject = 'profissional trabalhando com tecnologia, programador ou analista';
+    photoContext = 'escritório tech, telas de computador, ambiente inovador e moderno';
+    photographyStyle = 'fotografia tech moderna, iluminação LED, ambiente futurista';
+  } else if (lowerText.includes('educação') || lowerText.includes('aprender') || lowerText.includes('curso') || lowerText.includes('estud')) {
+    photoSubject = 'estudante ou professor em ambiente educacional';
+    photoContext = 'biblioteca, sala de aula, workspace de estudos, livros e materiais';
+    photographyStyle = 'fotografia educacional, luz suave, ambiente acadêmico';
+  } else if (lowerText.includes('casa') || lowerText.includes('família') || lowerText.includes('vida') || lowerText.includes('pessoal')) {
+    photoSubject = 'pessoa em ambiente doméstico confortável e organizado';
+    photoContext = 'casa moderna, ambiente familiar acolhedor, decoração contemporânea';
+    photographyStyle = 'fotografia lifestyle, luz natural aconchegante';
+  } else if (lowerText.includes('trabalho') || lowerText.includes('carreira') || lowerText.includes('profiss')) {
+    photoSubject = 'profissional competente em seu ambiente de trabalho';
+    photoContext = 'escritório, co-working, ambiente profissional organizado';
+    photographyStyle = 'fotografia profissional, iluminação corporativa';
   } else {
-    // Generic but engaging elements based on actual text content
-    const keyWords = cleanText.split(' ').slice(0, 3).join(' ');
-    visualElements = `elementos visuais modernos representando especificamente: ${keyWords}`;
-    colorScheme = 'cores vibrantes e harmoniosas';
+    // Generic realistic photo based on actual text content
+    const keyWords = cleanText.split(' ').slice(0, 4).join(' ');
+    photoSubject = `pessoa real em situação relacionada a: ${keyWords}`;
+    photoContext = 'ambiente moderno e profissional adequado ao contexto';
+    photographyStyle = 'fotografia realista de alta qualidade, iluminação natural';
   }
   
-  // Format-specific background and composition
-  if (format === 'stories') {
-    backgroundStyle = 'fundo vertical elegante, composição para stories 9:16';
-  } else {
-    backgroundStyle = 'fundo quadrado moderno, composição equilibrada';
-  }
-  
-  // Enhanced prompt with specific content relevance
-  const prompt = `Design moderno para Instagram ${format}, ${backgroundStyle}, ${visualElements}, ${colorScheme}, tipografia bold e limpa, estilo ${style || 'profissional'}, alta qualidade, tendências design 2024, relacionado especificamente ao tema: "${cleanText.substring(0, 100)}", sem texto no design, foco visual no conceito apresentado`;
+  // Enhanced prompt focused on realistic photography
+  const prompt = `Fotografia profissional realista, alta resolução, ${photoSubject}, ${photoContext}, ${photographyStyle}, cores naturais e harmoniosas, composição bem balanceada, luz natural ou profissional, estilo fotojornalístico moderno, relacionado especificamente ao tema: "${cleanText.substring(0, 80)}", sem texto na imagem, foco na autenticidade e realismo`;
   
   return prompt;
 };

@@ -51,36 +51,40 @@ const generateEnhancedImagePrompt = (text: string, slideIndex: number, totalSlid
   // Extract key concepts from the text for more relevant prompts
   const lowerText = cleanText.toLowerCase();
   
-  // Position-based variations
-  const positionVariations = getImagePromptVariations(slideIndex, totalSlides);
-  
-  // Content-specific analysis for better image relevance
-  let specificElements = '';
+  // Content-specific realistic photography prompts
+  let photoSubject = '';
+  let photoContext = '';
   
   if (lowerText.includes('dinheiro') || lowerText.includes('renda') || lowerText.includes('financeiro') || lowerText.includes('investir')) {
-    specificElements = 'elementos de crescimento financeiro, gráficos ascendentes, símbolos de prosperidade';
+    photoSubject = 'pessoa profissional analisando dados financeiros';
+    photoContext = 'escritório moderno, computador com gráficos, ambiente corporativo';
   } else if (lowerText.includes('negócio') || lowerText.includes('empresa') || lowerText.includes('vendas') || lowerText.includes('cliente')) {
-    specificElements = 'elementos corporativos profissionais, ícones de crescimento empresarial, simbolos de sucesso nos negócios';
+    photoSubject = 'empreendedor ou executivo em reunião de negócios';
+    photoContext = 'ambiente corporativo profissional, sala de reuniões moderna';
   } else if (lowerText.includes('saúde') || lowerText.includes('exercício') || lowerText.includes('bem-estar') || lowerText.includes('energia')) {
-    specificElements = 'elementos de saúde e vitalidade, símbolos de bem-estar, ícones de energia e vida saudável';
+    photoSubject = 'pessoa praticando atividade saudável';
+    photoContext = 'academia, parque ou ambiente wellness, iluminação natural';
   } else if (lowerText.includes('tecnologia') || lowerText.includes('digital') || lowerText.includes('ia') || lowerText.includes('inovação')) {
-    specificElements = 'elementos tecnológicos modernos, circuitos digitais, ícones de inovação futurística';
+    photoSubject = 'profissional tech trabalhando com computadores';
+    photoContext = 'escritório tech moderno, múltiplas telas, ambiente inovador';
   } else if (lowerText.includes('educação') || lowerText.includes('aprender') || lowerText.includes('curso') || lowerText.includes('conhecimento')) {
-    specificElements = 'elementos educacionais, símbolos de aprendizado, ícones de conhecimento e crescimento intelectual';
+    photoSubject = 'estudante ou professor em ambiente educacional';
+    photoContext = 'biblioteca, sala de aula ou workspace de estudos organizado';
   } else if (lowerText.includes('processo') || lowerText.includes('passo') || lowerText.includes('etapa') || lowerText.includes('método')) {
-    specificElements = 'diagrama de processo visual, fluxo step-by-step, elementos conectados representando metodologia';
-  } else if (lowerText.includes('estatística') || lowerText.includes('dados') || lowerText.includes('%') || lowerText.includes('resultado')) {
-    specificElements = 'gráficos de dados modernos, visualização estatística, elementos de análise e resultados';
-  } else if (lowerText.includes('dica') || lowerText.includes('estratégia') || lowerText.includes('segredo') || lowerText.includes('truque')) {
-    specificElements = 'elementos de estratégia e insights, símbolos de descoberta, ícones de dicas valiosas';
+    photoSubject = 'pessoa organizando workflow ou planejamento';
+    photoContext = 'mesa organizada com materiais de planejamento, ambiente produtivo';
+  } else if (lowerText.includes('casa') || lowerText.includes('família') || lowerText.includes('vida') || lowerText.includes('pessoal')) {
+    photoSubject = 'pessoa em ambiente doméstico confortável';
+    photoContext = 'casa moderna e organizada, decoração contemporânea';
   } else {
-    // Use the actual text content to generate relevant visuals
-    const keyWords = cleanText.split(' ').slice(0, 5).join(' ');
-    specificElements = `elementos visuais modernos representando especificamente: ${keyWords}`;
+    // Use the actual text content to generate relevant realistic photo
+    const keyWords = cleanText.split(' ').slice(0, 4).join(' ');
+    photoSubject = `pessoa real em situação relacionada a: ${keyWords}`;
+    photoContext = 'ambiente moderno e adequado ao contexto do tema';
   }
   
-  // Combine position-based layout with content-specific elements
-  return `${positionVariations[0]} com ${specificElements}, design profissional Instagram 2024, cores harmoniosas, tipografia limpa, relacionado diretamente ao conceito: "${cleanText.substring(0, 60)}"`;
+  // Generate realistic photography prompt
+  return `Fotografia profissional realista de ${photoSubject}, ${photoContext}, iluminação natural ou profissional, alta qualidade, cores naturais, composição bem balanceada, relacionado especificamente ao tema: "${cleanText.substring(0, 80)}", sem texto na imagem`;
 };
 import { StepProps } from '@/types/carousel';
 import { toast } from 'sonner';

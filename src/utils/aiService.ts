@@ -35,10 +35,10 @@ interface ModelConfig {
 export const generateCarousel = async (params: GenerateCarouselParams): Promise<GenerateCarouselResponse> => {
   const { title, username, content, instagramHandle, isVerified, slideCount = 10, contentType, contentFormat, callToAction, customCTA, copywritingFramework, targetAudience } = params;
 
-  // Model cascade with fallback
+  // Model cascade with fallback - prioritize newer, more efficient models
   const modelConfigs: ModelConfig[] = [
-    { model: 'gpt-4o', timeout: 30000, maxTokens: 2000 },
-    { model: 'gpt-4.1-2025-04-14', timeout: 25000, maxTokens: 1800 },
+    { model: 'gpt-4.1-2025-04-14', timeout: 30000, maxTokens: 2000 },
+    { model: 'gpt-4o', timeout: 25000, maxTokens: 1800 },
     { model: 'gpt-4o-mini', timeout: 20000, maxTokens: 1500 }
   ];
 
@@ -105,18 +105,19 @@ CTA FINAL: ${ctaText}
 GATILHOS: ${trigger}
 
 REGRAS CRÍTICAS:
-- Conteúdo RELEVANTE e ESPECÍFICO ao tema "${content}"
-- Texto EDUCATIVO e VALIOSO para o público ${audience}
-- Máximo 250 caracteres por slide, linguagem natural brasileira
-- TODAS as slides: needsImage: true + imagePrompt ESPECÍFICO do conteúdo
-- ImagePrompts devem descrever EXATAMENTE o que está sendo falado no texto
+- Conteúdo DENSO e ESPECÍFICO ao tema "${content}"
+- Texto EDUCATIVO com MÁXIMO 400 caracteres por slide para conteúdo rico
+- Use TODOS os caracteres disponíveis para informação valiosa e específica
+- TODAS as slides: needsImage: true + imagePrompt para FOTO REALISTA
+- ImagePrompts devem descrever FOTOS REAIS relacionadas ao conteúdo específico
+- EVITAR designs gráficos, usar apenas fotos realistas de pessoas, objetos, cenários
 - Dimensões corretas: ${dimensions}
-- Design 2024: gradientes, tipografia moderna, cores que fazem sentido para o tema
+- Linguagem natural brasileira, informação densa e prática
 
 FORMATO JSON OBRIGATÓRIO:
-{"slides":[{"id":1,"text":"[conteúdo específico do tema]","isEdited":false,"originalText":"[mesmo texto]","needsImage":true,"imagePrompt":"Design específico relacionado ao conteúdo: [descrever elemento visual que representa o texto]"}],"caption":"[legenda envolvente]","hashtags":["#tag1","#tag2"]}
+{"slides":[{"id":1,"text":"[conteúdo específico e denso do tema - use até 400 caracteres]","isEdited":false,"originalText":"[mesmo texto]","needsImage":true,"imagePrompt":"Fotografia profissional realista de [pessoa/objeto/cenário] relacionado especificamente ao conteúdo: [descrever foto real]"}],"caption":"[legenda envolvente]","hashtags":["#tag1","#tag2"]}
 
-IMPORTANTE: O imagePrompt deve SEMPRE descrever elementos visuais que representem ESPECIFICAMENTE o que está sendo dito no texto daquela slide.`;
+IMPORTANTE: O imagePrompt deve SEMPRE descrever FOTOGRAFIAS REAIS (pessoas, objetos, cenários) que representem ESPECIFICAMENTE o tema do texto. NÃO use "design", "gráfico" ou "ilustração".`;
 
   console.log('🎯 Enhanced prompt length:', prompt.length, 'chars');
 
