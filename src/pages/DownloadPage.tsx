@@ -45,25 +45,35 @@ export default function DownloadPage() {
         contentImageUrl: slide.contentImageUrls?.[0]
       });
 
-      // Create download link
-      const url = URL.createObjectURL(blob);
+      // Ensure proper PNG blob with correct MIME type
+      const pngBlob = new Blob([blob], { type: 'image/png' });
+
+      // Create download link with proper MIME type
+      const url = URL.createObjectURL(pngBlob);
       const link = document.createElement('a');
       link.href = url;
       link.download = `slide-${slideIndex + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}.png`;
+      link.type = 'image/png';
+      
+      // Add link to DOM, trigger download, then cleanup
       document.body.appendChild(link);
       link.click();
-      document.body.removeChild(link);
-      URL.revokeObjectURL(url);
+      
+      // Cleanup after a short delay
+      setTimeout(() => {
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+      }, 100);
 
       toast({
-        title: "Success!",
-        description: `Slide ${slideIndex + 1} downloaded successfully`,
+        title: "Sucesso!",
+        description: `Slide ${slideIndex + 1} baixado com sucesso`,
       });
     } catch (error) {
       console.error('Error downloading slide:', error);
       toast({
-        title: "Download failed",
-        description: `Failed to download slide ${slideIndex + 1}. Please try again.`,
+        title: "Falha no download",
+        description: `Falha ao baixar slide ${slideIndex + 1}. Tente novamente.`,
         variant: "destructive",
       });
     } finally {
@@ -72,6 +82,64 @@ export default function DownloadPage() {
         newSet.delete(slideIndex);
         return newSet;
       });
+    }
+  };
+
+  const handleDownloadAll = async () => {
+    if (!data.slides) return;
+    
+    setDownloadingSlides(new Set([...Array(data.slides.length).keys()]));
+    
+    try {
+      for (let i = 0; i < data.slides.length; i++) {
+        const slide = data.slides[i];
+        
+        const blob = await renderTwitterPostToImage({
+          text: slide.text,
+          username: data.username,
+          handle: data.instagramHandle,
+          isVerified: data.isVerified,
+          profileImageUrl: slide.profileImageUrl,
+          contentImageUrl: slide.contentImageUrls?.[0]
+        });
+
+        // Ensure proper PNG blob with correct MIME type
+        const pngBlob = new Blob([blob], { type: 'image/png' });
+        
+        // Create download link
+        const url = URL.createObjectURL(pngBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `slide-${i + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}.png`;
+        link.type = 'image/png';
+        
+        // Add link to DOM, trigger download, then cleanup
+        document.body.appendChild(link);
+        link.click();
+        
+        // Cleanup and delay between downloads
+        setTimeout(() => {
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 100);
+        
+        // Small delay between downloads to prevent browser blocking
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      toast({
+        title: "Sucesso!",
+        description: `Todos os ${data.slides.length} slides foram baixados`,
+      });
+    } catch (error) {
+      console.error('Error downloading all slides:', error);
+      toast({
+        title: "Falha no download",
+        description: "Falha ao baixar alguns slides. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloadingSlides(new Set());
     }
   };
 
@@ -107,10 +175,10 @@ export default function DownloadPage() {
               className="flex items-center space-x-2"
             >
               <ArrowLeft className="w-4 h-4" />
-              <span>Back to Home</span>
+              <span>Voltar ao Início</span>
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Download Your Carousel</h1>
+              <h1 className="text-3xl font-bold">Baixar Seu Carrossel</h1>
               <p className="text-muted-foreground">@{data.instagramHandle} • {data.slides.length} slides</p>
             </div>
           </div>
@@ -121,7 +189,7 @@ export default function DownloadPage() {
           <Card className="p-6 mb-8">
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <h2 className="text-lg font-semibold mb-3">Caption & Hashtags</h2>
+                <h2 className="text-lg font-semibold mb-3">Legenda & Hashtags</h2>
                 {data.caption && (
                   <p className="text-foreground mb-4 whitespace-pre-wrap">
                     {data.caption}
@@ -145,18 +213,41 @@ export default function DownloadPage() {
                 {copiedCaption ? (
                   <>
                     <Check className="w-4 h-4" />
-                    <span>Copied!</span>
+                    <span>Copiado!</span>
                   </>
                 ) : (
                   <>
                     <Copy className="w-4 h-4" />
-                    <span>Copy All</span>
+                    <span>Copiar Tudo</span>
                   </>
                 )}
               </Button>
             </div>
           </Card>
         )}
+
+        {/* Download All Button */}
+        <Card className="p-6 mb-8">
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-lg font-semibold mb-2">Download Automático</h2>
+              <p className="text-muted-foreground">Baixe todos os slides de uma vez</p>
+            </div>
+            <Button 
+              onClick={handleDownloadAll}
+              disabled={downloadingSlides.size > 0}
+              className="flex items-center space-x-2 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70"
+            >
+              <Download className="w-4 h-4" />
+              <span>
+                {downloadingSlides.size > 0 
+                  ? `Baixando... (${downloadingSlides.size}/${data.slides.length})`
+                  : `Baixar Todos (${data.slides.length} slides)`
+                }
+              </span>
+            </Button>
+          </div>
+        </Card>
 
         {/* Slides Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -187,7 +278,7 @@ export default function DownloadPage() {
                 >
                   <Download className="w-4 h-4" />
                   <span>
-                    {downloadingSlides.has(index) ? 'Generating...' : 'Download PNG'}
+                    {downloadingSlides.has(index) ? 'Gerando...' : 'Baixar PNG'}
                   </span>
                 </Button>
               </div>
@@ -197,12 +288,13 @@ export default function DownloadPage() {
 
         {/* Instructions */}
         <Card className="p-6 mt-8">
-          <h3 className="font-semibold mb-3">How to use these images:</h3>
+          <h3 className="font-semibold mb-3">Como usar essas imagens:</h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
-            <li>• Each image is optimized for Instagram at 1080×1350 pixels</li>
-            <li>• Upload them as a carousel post on Instagram</li>
-            <li>• Copy the caption and hashtags using the button above</li>
-            <li>• Post during peak engagement hours for best results</li>
+            <li>• Cada imagem está otimizada para Instagram em 1080×1350 pixels</li>
+            <li>• Faça upload como um post carrossel no Instagram</li>
+            <li>• Copie a legenda e hashtags usando o botão acima</li>
+            <li>• Publique nos horários de maior engajamento para melhores resultados</li>
+            <li>• Se houver problema para abrir os arquivos PNG, tente associá-los a um visualizador de imagens</li>
           </ul>
         </Card>
       </div>

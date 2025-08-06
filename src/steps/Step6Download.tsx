@@ -11,6 +11,7 @@ import { StepProps } from '../types/carousel';
 import { useCarousel } from '../context/CarouselContext';
 import { toast } from '@/hooks/use-toast';
 import { downloadCarouselAsZip, testSlideRendering, ZipDownloadProgress } from '@/services/zipDownloadService';
+import { renderTwitterPostToImage } from '@/services/renderToImageService';
 
 export const Step6Download = ({ data, onBack }: StepProps) => {
   const { resetCarousel } = useCarousel();
@@ -18,6 +19,7 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
   const [downloading, setDownloading] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<ZipDownloadProgress | null>(null);
   const [isTestingSlide, setIsTestingSlide] = useState<number | null>(null);
+  const [downloadingSlides, setDownloadingSlides] = useState<Set<number>>(new Set());
 
   const handleGoToDownloadPage = () => {
     navigate('/download', { state: { data } });
@@ -71,6 +73,64 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
         description: "Legenda e hashtags copiadas para a área de transferência.",
       });
     });
+  };
+
+  const handleDownloadAll = async () => {
+    if (!data.slides) return;
+    
+    setDownloadingSlides(new Set([...Array(data.slides.length).keys()]));
+    
+    try {
+      for (let i = 0; i < data.slides.length; i++) {
+        const slide = data.slides[i];
+        
+        const blob = await renderTwitterPostToImage({
+          text: slide.text,
+          username: data.username || data.instagramHandle.replace('@', ''),
+          handle: data.instagramHandle.replace('@', ''),
+          isVerified: data.isVerified,
+          profileImageUrl: slide.profileImageUrl,
+          contentImageUrl: slide.contentImageUrls?.[0]
+        });
+
+        // Ensure proper PNG blob with correct MIME type
+        const pngBlob = new Blob([blob], { type: 'image/png' });
+        
+        // Create download link
+        const url = URL.createObjectURL(pngBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `slide-${i + 1}-${(data.username || data.instagramHandle).replace(/\s+/g, '-').toLowerCase()}.png`;
+        link.type = 'image/png';
+        
+        // Add link to DOM, trigger download, then cleanup
+        document.body.appendChild(link);
+        link.click();
+        
+        // Cleanup and delay between downloads
+        setTimeout(() => {
+          document.body.removeChild(link);
+          URL.revokeObjectURL(url);
+        }, 100);
+        
+        // Small delay between downloads to prevent browser blocking
+        await new Promise(resolve => setTimeout(resolve, 500));
+      }
+
+      toast({
+        title: "Sucesso!",
+        description: `Todos os ${data.slides.length} slides foram baixados`,
+      });
+    } catch (error) {
+      console.error('Error downloading all slides:', error);
+      toast({
+        title: "Falha no download",
+        description: "Falha ao baixar alguns slides. Tente novamente.",
+        variant: "destructive",
+      });
+    } finally {
+      setDownloadingSlides(new Set());
+    }
   };
 
   const handleNewCarousel = () => {
@@ -162,15 +222,29 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
 
           {/* Ações */}
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <EnhancedButton
                 variant="instagram"
+                size="xl"
+                onClick={handleDownloadAll}
+                disabled={downloadingSlides.size > 0}
+                className="w-full"
+              >
+                <Download className="w-5 h-5 mr-2" />
+                {downloadingSlides.size > 0 
+                  ? `Baixando... (${downloadingSlides.size}/${data.slides?.length || 0})`
+                  : `Baixar Todos (${data.slides?.length || 0} slides)`
+                }
+              </EnhancedButton>
+
+              <EnhancedButton
+                variant="outline"
                 size="xl"
                 onClick={handleGoToDownloadPage}
                 className="w-full"
               >
                 <Download className="w-5 h-5 mr-2" />
-                Baixar Imagens ({data.slides?.length || 0} slides)
+                Downloads Individuais
               </EnhancedButton>
               
               <EnhancedButton
