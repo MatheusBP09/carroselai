@@ -17,18 +17,18 @@ Inspirado no Instagram com gradientes modernos e profissionais
     --popover: 207 15% 28%;
     --popover-foreground: 0 0% 98%;
 
-    /* TUTORS terracota preciso */
-    --primary: 12 35% 70%;
-    --primary-foreground: 207 15% 15%;
+    /* TUTORS terracota forte */
+    --primary: 15 65% 55%;
+    --primary-foreground: 0 0% 100%;
     
-    /* Brand colors - terracota suave */
-    --instagram-start: 12 35% 70%;
-    --instagram-middle: 15 40% 72%;
-    --instagram-end: 18 45% 75%;
+    /* Brand colors - terracota vibrante */
+    --instagram-start: 15 65% 55%;
+    --instagram-middle: 18 70% 58%;
+    --instagram-end: 20 75% 60%;
     
-    /* Accent terracota */
-    --accent-blue: 12 35% 70%;
-    --accent-blue-foreground: 207 15% 15%;
+    /* Accent terracota forte */
+    --accent-blue: 15 65% 55%;
+    --accent-blue-foreground: 0 0% 100%;
 
     --secondary: 207 15% 32%;
     --secondary-foreground: 0 0% 98%;
@@ -44,7 +44,7 @@ Inspirado no Instagram com gradientes modernos e profissionais
 
     --border: 207 15% 35%;
     --input: 207 15% 32%;
-    --ring: 12 35% 70%;
+    --ring: 15 65% 55%;
 
     --radius: 0.75rem;
     
@@ -70,12 +70,12 @@ Inspirado no Instagram com gradientes modernos e profissionais
 
     --sidebar-background: 207 15% 25%;
     --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 12 35% 70%;
-    --sidebar-primary-foreground: 207 15% 15%;
+    --sidebar-primary: 15 65% 55%;
+    --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 207 15% 32%;
     --sidebar-accent-foreground: 0 0% 98%;
     --sidebar-border: 207 15% 35%;
-    --sidebar-ring: 12 35% 70%;
+    --sidebar-ring: 15 65% 55%;
   }
 
   .dark {
