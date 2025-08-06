@@ -74,7 +74,7 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
             </span>
             {isVerified && (
               <svg 
-                className="w-5 h-5 text-accent-blue flex-shrink-0" 
+                className="w-5 h-5 text-twitter-blue flex-shrink-0" 
                 fill="currentColor" 
                 viewBox="0 0 24 24"
               >

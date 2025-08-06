@@ -74,6 +74,10 @@ export default {
 					DEFAULT: 'hsl(var(--accent-blue))',
 					foreground: 'hsl(var(--accent-blue-foreground))'
 				},
+				'twitter-blue': {
+					DEFAULT: 'hsl(var(--twitter-blue))',
+					foreground: 'hsl(var(--twitter-blue-foreground))'
+				},
 				sidebar: {
 					DEFAULT: 'hsl(var(--sidebar-background))',
 					foreground: 'hsl(var(--sidebar-foreground))',

@@ -26,6 +26,10 @@ Inspirado no Instagram com gradientes modernos e profissionais
     --instagram-middle: 18 70% 58%;
     --instagram-end: 20 75% 60%;
     
+    /* Twitter blue for verified badge */
+    --twitter-blue: 203 89% 53%;
+    --twitter-blue-foreground: 0 0% 100%;
+    
     /* Accent terracota forte */
     --accent-blue: 15 65% 55%;
     --accent-blue-foreground: 0 0% 100%;

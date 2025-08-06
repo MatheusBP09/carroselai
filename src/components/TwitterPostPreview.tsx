@@ -51,7 +51,7 @@ export const TwitterPostPreview: React.FC<TwitterPostPreviewProps> = ({
             </span>
             {isVerified && (
               <svg 
-                className="w-3 h-3 text-accent-blue flex-shrink-0" 
+                className="w-3 h-3 text-twitter-blue flex-shrink-0" 
                 fill="currentColor" 
                 viewBox="0 0 24 24"
               >
