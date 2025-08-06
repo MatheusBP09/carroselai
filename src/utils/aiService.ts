@@ -35,11 +35,11 @@ interface ModelConfig {
 export const generateCarousel = async (params: GenerateCarouselParams): Promise<GenerateCarouselResponse> => {
   const { title, username, content, instagramHandle, isVerified, slideCount = 10, contentType, contentFormat, callToAction, customCTA, copywritingFramework, targetAudience } = params;
 
-  // Model cascade with fallback - prioritize newer, more efficient models
+  // Model cascade with fallback - increased timeouts for better success
   const modelConfigs: ModelConfig[] = [
-    { model: 'gpt-4.1-2025-04-14', timeout: 30000, maxTokens: 2000 },
-    { model: 'gpt-4o', timeout: 25000, maxTokens: 1800 },
-    { model: 'gpt-4o-mini', timeout: 20000, maxTokens: 1500 }
+    { model: 'gpt-4.1-2025-04-14', timeout: 45000, maxTokens: 2000 },
+    { model: 'gpt-4o', timeout: 40000, maxTokens: 1800 },
+    { model: 'gpt-4o-mini', timeout: 35000, maxTokens: 1500 }
   ];
 
   // Helper functions with optimized logic
@@ -93,31 +93,25 @@ export const generateCarousel = async (params: GenerateCarouselParams): Promise<
   const trigger = triggers[contentType as keyof typeof triggers] || triggers.educational;
   const dimensions = contentFormat === 'stories' ? '1024x1792' : '1024x1024';
 
-  const prompt = `Crie carrossel Instagram de ALTA QUALIDADE:
+  const prompt = `Crie carrossel Instagram OTIMIZADO:
 
 PERFIL: ${username} (@${instagramHandle})${isVerified ? ' ✓' : ''}
-CONTEÚDO BASE: ${content}
+TEMA: ${content}
 PÚBLICO: ${audience}
-TIPO: ${contentType} | FORMATO: ${contentFormat} | ${slideCount} slides
+SLIDES: ${slideCount} | FORMATO: ${contentFormat}
+FRAMEWORK: ${framework}
+CTA: ${ctaText}
 
-FRAMEWORK OBRIGATÓRIO: ${framework}
-CTA FINAL: ${ctaText}
-GATILHOS: ${trigger}
+REGRAS:
+- Conteúdo DENSO (até 400 chars/slide)
+- Texto EDUCATIVO específico do tema
+- TODAS slides: needsImage: true
+- ImagePrompts: FOTOS REAIS relacionadas ao texto
+- NO design/gráfico, SIM fotos de pessoas/objetos/cenários
+- Linguagem brasileira natural
 
-REGRAS CRÍTICAS:
-- Conteúdo DENSO e ESPECÍFICO ao tema "${content}"
-- Texto EDUCATIVO com MÁXIMO 400 caracteres por slide para conteúdo rico
-- Use TODOS os caracteres disponíveis para informação valiosa e específica
-- TODAS as slides: needsImage: true + imagePrompt para FOTO REALISTA
-- ImagePrompts devem descrever FOTOS REAIS relacionadas ao conteúdo específico
-- EVITAR designs gráficos, usar apenas fotos realistas de pessoas, objetos, cenários
-- Dimensões corretas: ${dimensions}
-- Linguagem natural brasileira, informação densa e prática
-
-FORMATO JSON OBRIGATÓRIO:
-{"slides":[{"id":1,"text":"[conteúdo específico e denso do tema - use até 400 caracteres]","isEdited":false,"originalText":"[mesmo texto]","needsImage":true,"imagePrompt":"Fotografia profissional realista de [pessoa/objeto/cenário] relacionado especificamente ao conteúdo: [descrever foto real]"}],"caption":"[legenda envolvente]","hashtags":["#tag1","#tag2"]}
-
-IMPORTANTE: O imagePrompt deve SEMPRE descrever FOTOGRAFIAS REAIS (pessoas, objetos, cenários) que representem ESPECIFICAMENTE o tema do texto. NÃO use "design", "gráfico" ou "ilustração".`;
+JSON:
+{"slides":[{"id":1,"text":"[até 400 chars]","isEdited":false,"originalText":"[mesmo]","needsImage":true,"imagePrompt":"Fotografia profissional de [pessoa/objeto] relacionado ao tema"}],"caption":"[legenda]","hashtags":["#tag1","#tag2"]}`;
 
   console.log('🎯 Enhanced prompt length:', prompt.length, 'chars');
 
@@ -195,20 +189,21 @@ IMPORTANTE: O imagePrompt deve SEMPRE descrever FOTOGRAFIAS REAIS (pessoas, obje
       try {
         result = JSON.parse(cleanContent);
       } catch (parseError: any) {
-        // If parsing fails, try additional cleanup
-        console.warn(`⚠️ First JSON parse failed, attempting cleanup: ${parseError.message}`);
+        console.warn(`⚠️ JSON parse failed, trying aggressive cleanup: ${parseError.message}`);
         
-        // Try to extract JSON from text that might have extra text
-        const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          try {
-            result = JSON.parse(jsonMatch[0]);
-            console.log('✅ Successfully parsed JSON after extraction');
-          } catch (secondError: any) {
-            throw new Error(`JSON parsing failed after cleanup: ${secondError.message}. Original content: ${content.substring(0, 200)}...`);
-          }
-        } else {
-          throw new Error(`No valid JSON found in response. Content: ${content.substring(0, 200)}...`);
+        // More aggressive cleanup for malformed JSON
+        let fixedContent = cleanContent;
+        
+        // Fix common JSON issues
+        fixedContent = fixedContent.replace(/,(\s*[}\]])/g, '$1'); // Remove trailing commas
+        fixedContent = fixedContent.replace(/(['"])\s*\n\s*(['"])/g, '$1$2'); // Fix broken strings
+        fixedContent = fixedContent.replace(/\n/g, ' '); // Remove newlines in strings
+        
+        try {
+          result = JSON.parse(fixedContent);
+          console.log('✅ Successfully parsed JSON after aggressive cleanup');
+        } catch (secondError: any) {
+          throw new Error(`JSON parsing failed: ${secondError.message}. Content preview: ${content.substring(0, 200)}...`);
         }
       }
       
