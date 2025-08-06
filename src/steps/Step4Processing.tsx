@@ -3,11 +3,12 @@ import { Card } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Button } from '@/components/ui/button';
-import { Bot, CheckCircle, AlertCircle, Image, Bug } from 'lucide-react';
+import { Bot, CheckCircle, AlertCircle, Image, Bug, Zap, Shield } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useCarousel } from '@/context/CarouselContext';
 import { generateCarousel } from '@/utils/aiService';
-import { generateContentImage, convertProfileImageToUrl } from '@/services/imageGenerationService';
+import { convertProfileImageToUrl } from '@/services/imageGenerationService';
+import { enhancedImageService } from '@/services/enhancedImageService';
 
 // Helper functions for enhanced image generation (100% coverage)
 const getImagePromptVariations = (slideIndex: number, totalSlides: number): string[] => {
@@ -79,6 +80,7 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
   const [status, setStatus] = useState<ProcessingStatus>('processing');
   const [error, setError] = useState<string>('');
   const [currentStep, setCurrentStep] = useState('');
+  const [imageStats, setImageStats] = useState({ generated: 0, fallbacks: 0, total: 0 });
   const { updateData } = useCarousel();
 
   useEffect(() => {
@@ -124,82 +126,64 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
         }
       }
 
-      // Passo 3: Gerar imagens para TODAS as slides (100% coverage)
-      setCurrentStep('Gerando imagens para todas as slides...');
-      const slidesWithImages = [];
+      // Passo 3: Gerar imagens com sistema inteligente
+      setCurrentStep('Preparando geração inteligente de imagens...');
       const totalSlides = result.slides.length;
-      let generatedImagesCount = 0;
+      setImageStats({ generated: 0, fallbacks: 0, total: totalSlides });
       
-      for (let i = 0; i < totalSlides; i++) {
-        const slide = result.slides[i];
-        setProgress(30 + (i / totalSlides) * 60);
-        setCurrentStep(`Gerando imagem para slide ${i + 1} de ${totalSlides}...`);
-        
-        let contentImageUrls: string[] = [];
-        
-        // ALWAYS generate images for 100% coverage
-        const needsImage = true;
-        const imagePrompt = (slide as any).imagePrompt || generateEnhancedImagePrompt(slide.text, i, totalSlides);
-        
-        // Generate image for every slide
-        try {
-          // Generate content image with enhanced retry logic
-          let retryCount = 0;
-          const maxRetries = 3; // Increased retries for 100% success rate
+      // Prepare batch requests for enhanced image service
+      const imageRequests = result.slides.map((slide, i) => ({
+        params: {
+          text: (slide as any).imagePrompt || generateEnhancedImagePrompt(slide.text, i, totalSlides),
+          style: 'modern' as const,
+          contentFormat: data.contentFormat,
+          contentType: data.contentType
+        },
+        slideIndex: i,
+        username: data.username
+      }));
+
+      setCurrentStep('Gerando imagens com sistema adaptativo...');
+      
+      // Use enhanced batch generation with smart rate limiting
+      const imageResults = await enhancedImageService.generateBatch(
+        imageRequests,
+        totalSlides,
+        (progressPercent, currentIndex) => {
+          setProgress(30 + (progressPercent / 100) * 60);
+          setCurrentStep(`Processando imagem ${currentIndex} de ${totalSlides} (Sistema Inteligente)`);
           
-          while (retryCount <= maxRetries) {
-            try {
-              const contentImage = await generateContentImage({
-                text: imagePrompt,
-                style: 'modern',
-                contentFormat: data.contentFormat,
-                contentType: data.contentType
-              });
-              
-              contentImageUrls = [contentImage.imageUrl];
-              generatedImagesCount++;
-              console.log(`✅ Imagem ${i + 1}/${totalSlides} gerada com sucesso! Prompt: "${imagePrompt.substring(0, 50)}..."`);
-              break;
-            } catch (retryError) {
-              retryCount++;
-              console.warn(`⚠️ Tentativa ${retryCount}/${maxRetries + 1} falhou para slide ${i + 1}:`, retryError);
-              
-              if (retryCount > maxRetries) {
-                // Final fallback with simple prompt
-                try {
-                  const fallbackImage = await generateContentImage({
-                    text: `Design minimalista moderno para slide ${i + 1}, cores vibrantes e tipografia bold`,
-                    style: 'modern',
-                    contentFormat: data.contentFormat,
-                    contentType: data.contentType
-                  });
-                  contentImageUrls = [fallbackImage.imageUrl];
-                  generatedImagesCount++;
-                  console.log(`✅ Imagem ${i + 1} gerada com prompt de fallback`);
-                  break;
-                } catch (fallbackError) {
-                  throw fallbackError;
-                }
-              }
-              
-              // Progressive wait time
-              await new Promise(resolve => setTimeout(resolve, retryCount * 1000));
-            }
-          }
-        } catch (imageError) {
-          console.error(`❌ Erro crítico ao gerar imagem ${i + 1} após todas as tentativas:`, imageError);
-          toast.error(`Falha na geração da imagem ${i + 1}. Tentando novamente...`);
-          // Continue without image as last resort
+          // Update stats
+          const generatedCount = imageResults.filter(r => r?.generated).length;
+          const fallbackCount = imageResults.filter(r => r?.fallbackUsed).length;
+          setImageStats({ 
+            generated: generatedCount, 
+            fallbacks: fallbackCount, 
+            total: totalSlides 
+          });
         }
-        
-        slidesWithImages.push({
+      );
+
+      // Process results and create slides with images
+      const slidesWithImages = result.slides.map((slide, i) => {
+        const imageResult = imageResults[i];
+        return {
           ...slide,
-          needsImage,
-          imagePrompt,
-          contentImageUrls,
-          profileImageUrl
-        });
-      }
+          needsImage: true,
+          imagePrompt: imageRequests[i].params.text,
+          contentImageUrls: imageResult ? [imageResult.imageUrl] : [],
+          profileImageUrl,
+          imageGenerated: imageResult?.generated || false,
+          fallbackUsed: imageResult?.fallbackUsed || false
+        };
+      });
+
+      // Final stats
+      const finalGenerated = imageResults.filter(r => r.generated).length;
+      const finalFallbacks = imageResults.filter(r => r.fallbackUsed).length;
+      setImageStats({ generated: finalGenerated, fallbacks: finalFallbacks, total: totalSlides });
+      
+      console.log(`📊 Estatísticas finais: ${finalGenerated} geradas, ${finalFallbacks} fallbacks de ${totalSlides} total`);
 
       setProgress(95);
       setCurrentStep('Finalizando...');
@@ -293,7 +277,7 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
             <Alert className="bg-green-50 border-green-200">
               <CheckCircle className="h-4 w-4 text-green-600" />
               <AlertDescription className="text-green-800">
-                Seu carrossel foi gerado com sucesso! Redirecionando para revisão...
+                Carrossel gerado! {imageStats.generated} imagens AI + {imageStats.fallbacks} fallbacks. Redirecionando...
               </AlertDescription>
             </Alert>
           )}
@@ -312,8 +296,8 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
       {status === 'processing' && (
         <Card className="p-6">
           <h3 className="font-semibold mb-4 flex items-center gap-2">
-            <Image className="w-5 h-5" />
-            Processo de geração
+            <Zap className="w-5 h-5 text-blue-500" />
+            Sistema Inteligente de Geração
           </h3>
           <div className="space-y-3 text-sm">
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
@@ -323,13 +307,16 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
               </span>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
-              <span>📝 Criando {data.slideCount || 10} tweets otimizados</span>
+              <span>📝 Criando {data.slideCount || 10} slides otimizadas</span>
               <span className={progress >= 30 ? 'text-green-600' : 'text-muted-foreground'}>
                 {progress >= 30 ? '✓' : '⏳'}
               </span>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
-              <span>🎨 Gerando imagens para todas as {data.slideCount || 10} slides</span>
+              <div className="flex items-center gap-2">
+                <Shield className="w-4 h-4 text-blue-500" />
+                <span>🎨 Sistema adaptativo de imagens ({imageStats.generated + imageStats.fallbacks}/{imageStats.total})</span>
+              </div>
               <span className={progress >= 90 ? 'text-green-600' : 'text-muted-foreground'}>
                 {progress >= 90 ? '✓' : '⏳'}
               </span>
@@ -340,6 +327,25 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
                 {progress >= 100 ? '✓' : '⏳'}
               </span>
             </div>
+            
+            {imageStats.total > 0 && (
+              <div className="mt-4 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                <div className="text-xs text-blue-800 space-y-1">
+                  <div className="flex justify-between">
+                    <span>Imagens AI geradas:</span>
+                    <span className="font-semibold">{imageStats.generated}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Fallbacks inteligentes:</span>
+                    <span className="font-semibold">{imageStats.fallbacks}</span>
+                  </div>
+                  <div className="flex justify-between border-t border-blue-300 pt-1">
+                    <span>Total processado:</span>
+                    <span className="font-semibold">{imageStats.generated + imageStats.fallbacks}/{imageStats.total}</span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </Card>
       )}

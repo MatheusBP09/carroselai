@@ -1,6 +1,6 @@
 import { OPENAI_API_KEY } from '../constants/config';
 
-interface ImageGenerationParams {
+export interface ImageGenerationParams {
   text: string;
   style?: 'professional' | 'modern' | 'minimalist' | 'creative';
   aspectRatio?: '1:1' | '16:9' | '9:16';
