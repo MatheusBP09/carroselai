@@ -169,7 +169,37 @@ JSON formato:
       }
 
       // Progressive validation with auto-correction
-      const result = JSON.parse(content);
+      // Fix JSON Parse Error: Sanitize response to remove markdown wrappers
+      let cleanContent = content.trim();
+      
+      // Remove markdown code blocks (```json ... ```)
+      if (cleanContent.startsWith('```')) {
+        cleanContent = cleanContent.replace(/^```(?:json)?[\r\n]/, '').replace(/```[\r\n]*$/, '').trim();
+      }
+      
+      // Remove any additional markdown formatting
+      cleanContent = cleanContent.replace(/^[\r\n\s]*/, '').replace(/[\r\n\s]*$/, '');
+      
+      let result;
+      try {
+        result = JSON.parse(cleanContent);
+      } catch (parseError: any) {
+        // If parsing fails, try additional cleanup
+        console.warn(`⚠️ First JSON parse failed, attempting cleanup: ${parseError.message}`);
+        
+        // Try to extract JSON from text that might have extra text
+        const jsonMatch = cleanContent.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          try {
+            result = JSON.parse(jsonMatch[0]);
+            console.log('✅ Successfully parsed JSON after extraction');
+          } catch (secondError: any) {
+            throw new Error(`JSON parsing failed after cleanup: ${secondError.message}. Original content: ${content.substring(0, 200)}...`);
+          }
+        } else {
+          throw new Error(`No valid JSON found in response. Content: ${content.substring(0, 200)}...`);
+        }
+      }
       
       if (!result.slides || !Array.isArray(result.slides)) {
         throw new Error('Invalid format: slides missing');
@@ -207,9 +237,18 @@ JSON formato:
       console.warn(`❌ ${config.model} failed:`, error.message);
       lastError = error;
       
-      // Don't retry on parse errors or auth issues
-      if (error.message.includes('JSON') || error.message.includes('401')) {
-        if (i < modelConfigs.length - 1) continue;
+      // Enhanced retry logic for different error types
+      if (error.message.includes('JSON') || error.message.includes('parsing')) {
+        // For parse errors, retry with next model as it might return cleaner JSON
+        if (i < modelConfigs.length - 1) {
+          console.log(`🔄 JSON parse error with ${config.model}, trying next model...`);
+          continue;
+        }
+        break;
+      }
+      
+      if (error.message.includes('401')) {
+        // Don't retry auth errors
         break;
       }
       

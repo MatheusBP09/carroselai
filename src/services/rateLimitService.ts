@@ -13,10 +13,10 @@ interface RateLimitConfig {
 class RateLimitService {
   private requests: Map<string, RequestTracker> = new Map();
   private config: RateLimitConfig = {
-    maxRequests: 10, // Increased for better throughput
-    windowMs: 60000, // 1 minute window
-    backoffMultiplier: 1.5,
-    maxBackoffMs: 8000 // Reduced max backoff
+    maxRequests: 15, // Optimized for faster throughput
+    windowMs: 45000, // Reduced window for quicker reset
+    backoffMultiplier: 1.3, // More aggressive recovery
+    maxBackoffMs: 6000 // Faster maximum backoff
   };
 
   async throttleRequest(key: string = 'default'): Promise<void> {
@@ -50,7 +50,7 @@ class RateLimitService {
   }
 
   getDelayBetweenRequests(): number {
-    return 1000; // 1 second between requests
+    return 800; // Optimized to 800ms between requests for faster generation
   }
 
   // Enhanced quota detection

@@ -115,11 +115,26 @@ class MonitoringService {
     return '🔴 Poor';
   }
 
-  // Log debugging information
+  // Enhanced debugging information with real-time monitoring
   logDebug(message: string, data?: any) {
     if (process.env.NODE_ENV === 'development') {
       console.log(`🐛 DEBUG: ${message}`, data || '');
     }
+  }
+
+  // Real-time performance monitoring
+  logRealTimeStats() {
+    const stats = this.getStats();
+    console.log(`📊 Real-time Stats: ${stats.totalGenerations} total, ${stats.avgSuccessRate}% success rate, ${stats.performance}`);
+    return stats;
+  }
+
+  // Monitor API health
+  getApiHealthStatus(): string {
+    const recentErrors = Object.values(this.errorMetrics).reduce((sum, count) => sum + count, 0);
+    if (recentErrors === 0) return '🟢 Healthy';
+    if (recentErrors < 5) return '🟡 Warning';
+    return '🔴 Critical';
   }
 
   // Export metrics for analysis

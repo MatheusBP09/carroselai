@@ -18,10 +18,10 @@ interface RetryConfig {
 
 class EnhancedImageService {
   private retryConfig: RetryConfig = {
-    maxRetries: 2, // Reduced retries for faster fallback
-    baseDelay: 800,
-    maxDelay: 5000, // Faster recovery
-    backoffMultiplier: 1.8
+    maxRetries: 3, // Increased retries for better success rate
+    baseDelay: 600, // Faster initial retry
+    maxDelay: 4000, // Optimized max delay
+    backoffMultiplier: 1.6 // Balanced backoff
   };
 
   private stats = {
