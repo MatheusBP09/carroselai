@@ -114,7 +114,7 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
             </Label>
             <Input
               id="username"
-              placeholder="Ex: Lucas Freitas"
+              placeholder="Ex: Yan Simões"
               value={formData.username}
               onChange={(e) => setFormData(prev => ({ ...prev, username: e.target.value }))}
               className={`transition-all duration-300 ${errors.username ? 'border-destructive focus:border-destructive' : 'focus:border-primary'}`}
