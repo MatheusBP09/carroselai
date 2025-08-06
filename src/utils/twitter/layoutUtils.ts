@@ -21,7 +21,7 @@ export const createTweetContainer = (): Rect => {
     left: LAYOUT.margin,
     top: 250,
     width: CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2),
-    height: 850,
+    height: CANVAS_DIMENSIONS.height - 330, // Adjust height for 1080x1350 format
     fill: TWITTER_COLORS.cardBackground,
     rx: 0,
     ry: 0,

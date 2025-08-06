@@ -91,7 +91,7 @@ export const generateCarousel = async (params: GenerateCarouselParams): Promise<
   const framework = getFramework(copywritingFramework, slideCount);
   const ctaText = getCTA(callToAction, customCTA);
   const trigger = triggers[contentType as keyof typeof triggers] || triggers.educational;
-  const dimensions = contentFormat === 'stories' ? '1024x1792' : '1024x1024';
+  const dimensions = contentFormat === 'stories' ? '1024x1792' : '1024x1344';
 
   const prompt = `Crie carrossel Instagram OTIMIZADO:
 
