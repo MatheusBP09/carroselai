@@ -2,24 +2,27 @@ import { OPENAI_API_KEY } from '../constants/config';
 
 interface ImageGenerationParams {
   text: string;
-  style?: 'photorealistic' | 'illustration' | 'minimal' | 'artistic';
-  aspectRatio?: '16:9' | '1:1' | '4:3';
+  style?: 'professional' | 'modern' | 'minimalist' | 'creative';
+  aspectRatio?: '1:1' | '16:9' | '9:16';
+  contentFormat?: 'feed' | 'stories' | 'reels';
+  contentType?: string;
+  width?: number;
+  height?: number;
 }
 
 interface ImageGenerationResponse {
   imageUrl: string;
 }
 
-/**
- * Generate content image using OpenAI DALL-E
- */
 export const generateContentImage = async (params: ImageGenerationParams): Promise<ImageGenerationResponse> => {
-  const { text, style = 'photorealistic', aspectRatio = '16:9' } = params;
+  const { text, style = 'modern', aspectRatio = '1:1', contentFormat = 'feed', contentType = 'educational', width, height } = params;
+
+  // Get exact dimensions based on format
+  const dimensions = width && height ? { width, height } : getFormatDimensions(contentFormat);
+  
+  const optimizedPrompt = createImagePrompt(text, style, contentFormat, contentType);
 
   try {
-    // Create optimized prompt based on tweet text
-    const prompt = createImagePrompt(text, style);
-
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -28,11 +31,11 @@ export const generateContentImage = async (params: ImageGenerationParams): Promi
       },
       body: JSON.stringify({
         model: 'dall-e-3',
-        prompt,
+        prompt: optimizedPrompt,
         n: 1,
-        size: '1024x1024', // Will be resized to fit in Twitter post
+        size: `${dimensions.width}x${dimensions.height}` as any,
         quality: 'hd',
-        style: style === 'photorealistic' ? 'natural' : 'vivid',
+        response_format: 'url'
       }),
     });
 
@@ -65,27 +68,52 @@ export const generateContentImage = async (params: ImageGenerationParams): Promi
   }
 };
 
-/**
- * Create optimized prompt for image generation based on tweet content
- */
-const createImagePrompt = (text: string, style: string): string => {
-  // Extract key concepts and themes from the tweet text
-  const basePrompt = `Create a high-quality ${style} image that visually represents: "${text}"`;
-  
-  // Add style-specific enhancements
+// Get exact dimensions for each format to avoid cropping
+const getFormatDimensions = (format: string): { width: number; height: number } => {
+  switch (format) {
+    case 'stories':
+    case 'reels':
+      return { width: 1080, height: 1920 };
+    case 'feed':
+    default:
+      return { width: 1080, height: 1080 };
+  }
+};
+
+const createImagePrompt = (text: string, style: string, format: string = 'feed', contentType: string = 'educational'): string => {
   const styleEnhancements = {
-    photorealistic: 'Professional photography, sharp focus, excellent lighting, high detail',
-    illustration: 'Modern digital illustration, clean lines, vibrant colors, professional design',
-    minimal: 'Minimalist design, clean composition, simple but impactful, professional',
-    artistic: 'Artistic interpretation, creative composition, visually striking, unique perspective'
+    professional: 'clean corporate design, professional color palette, high-quality business aesthetic',
+    modern: 'contemporary design, vibrant colors, sleek minimalist layout, trending 2024 Instagram style',
+    minimalist: 'simple clean design, white space, subtle colors, elegant typography, minimal elements',
+    creative: 'artistic composition, bold gradients, creative typography, unique visual elements, expressive design'
   };
 
-  const enhancement = styleEnhancements[style as keyof typeof styleEnhancements] || styleEnhancements.photorealistic;
+  const formatOptimizations = {
+    feed: 'square composition, centered focal point, readable thumbnail text',
+    stories: 'vertical layout, top-heavy composition, large text for mobile viewing',
+    reels: 'vertical composition, dynamic elements, attention-grabbing design for video thumbnails'
+  };
 
-  // Optimize for social media
-  const socialMediaOptimization = 'Optimized for social media, visually engaging, clear subject matter, good contrast';
+  const contentTypeStyles = {
+    educational: 'infographic style, data visualization, clear hierarchy, instructional design',
+    motivational: 'inspiring imagery, uplifting colors, empowering composition, success themes',
+    tutorial: 'step-by-step visual, process flow, clear instructions, practical design',
+    storytelling: 'narrative imagery, emotional composition, cinematic style, character-focused',
+    business: 'professional charts, corporate colors, data-driven visuals, success metrics',
+    lifestyle: 'lifestyle photography style, natural lighting, aspirational imagery, trendy aesthetics',
+    tips: 'practical visuals, numbered elements, quick-tip design, actionable content',
+    personal: 'authentic imagery, personal touch, relatable visuals, human connection'
+  };
 
-  return `${basePrompt}. ${enhancement}. ${socialMediaOptimization}. Avoid text overlays or watermarks.`;
+  const instagramTrends2024 = 'Instagram 2024 trends: bold typography, gradient overlays, 3D elements, neon accents, glass morphism effects, authentic photography, inclusive representation';
+  
+  const enhancement = styleEnhancements[style as keyof typeof styleEnhancements] || styleEnhancements.modern;
+  const formatOpt = formatOptimizations[format as keyof typeof formatOptimizations] || formatOptimizations.feed;
+  const contentStyle = contentTypeStyles[contentType as keyof typeof contentTypeStyles] || contentTypeStyles.educational;
+  
+  return `Create a stunning Instagram ${format} image with ${enhancement}. ${formatOpt}. Content style: ${contentStyle}. Focus: "${text}". 
+  
+  Design requirements: ${instagramTrends2024}. Perfect ${format === 'feed' ? '1080x1080' : '1080x1920'} dimensions. High contrast, mobile-optimized readability. No text overlay (text will be added separately). Ultra high resolution, professional quality.`;
 };
 
 /**

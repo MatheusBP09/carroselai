@@ -73,7 +73,13 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
         content: data.content,
         instagramHandle: data.instagramHandle,
         isVerified: data.isVerified,
-        slideCount
+        slideCount,
+        contentType: data.contentType,
+        contentFormat: data.contentFormat,
+        callToAction: data.callToAction,
+        customCTA: data.customCTA,
+        copywritingFramework: data.copywritingFramework,
+        targetAudience: data.targetAudience
       });
 
       setProgress(30);
@@ -117,7 +123,9 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
               try {
                 const contentImage = await generateContentImage({
                   text: imagePrompt,
-                  style: 'photorealistic'
+                  style: 'modern',
+                  contentFormat: data.contentFormat,
+                  contentType: data.contentType
                 });
                 
                 contentImageUrls = [contentImage.imageUrl];

@@ -49,7 +49,7 @@ const Step5Review = ({
     try {
       const contentImage = await generateContentImage({
         text: slide.text,
-        style: 'photorealistic'
+        style: 'modern'
       });
       setSlides(prev => prev.map(s => s.id === slideId ? {
         ...s,

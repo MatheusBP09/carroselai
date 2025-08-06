@@ -1,16 +1,22 @@
 import { useState, useRef } from 'react';
-import { ArrowRight, ArrowLeft, Upload, FileText, Trash2, Sliders } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Upload, FileText, Trash2, Sliders, Target, Megaphone, PenTool, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
-import { StepProps } from '../types/carousel';
+import { StepProps, ContentType, ContentFormat, CallToAction, CopywritingFramework } from '../types/carousel';
 import { toast } from 'sonner';
 
 export const Step2Content = ({ data, onNext, onBack }: StepProps) => {
   const [content, setContent] = useState(data.content || '');
   const [slideCount, setSlideCount] = useState(data.slideCount || 10);
+  const [contentType, setContentType] = useState<ContentType>(data.contentType || 'educational');
+  const [contentFormat, setContentFormat] = useState<ContentFormat>(data.contentFormat || 'feed');
+  const [callToAction, setCallToAction] = useState<CallToAction>(data.callToAction || 'follow');
+  const [customCTA, setCustomCTA] = useState(data.customCTA || '');
+  const [copywritingFramework, setCopywritingFramework] = useState<CopywritingFramework>(data.copywritingFramework || 'aida');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -47,7 +53,15 @@ export const Step2Content = ({ data, onNext, onBack }: StepProps) => {
       toast.warning(`Conteúdo parece curto para ${slideCount} slides. Continuando mesmo assim...`);
     }
     
-    onNext({ content, slideCount });
+    onNext({ 
+      content, 
+      slideCount, 
+      contentType, 
+      contentFormat, 
+      callToAction, 
+      customCTA: callToAction === 'custom' ? customCTA : undefined,
+      copywritingFramework 
+    });
   };
 
   const clearContent = () => {
@@ -61,6 +75,43 @@ export const Step2Content = ({ data, onNext, onBack }: StepProps) => {
   const characterCount = content.length;
   const isNearLimit = characterCount > 9500;
 
+  const contentTypeOptions = [
+    { value: 'educational', label: 'Educacional', icon: '📚', description: 'Ensine algo novo' },
+    { value: 'motivational', label: 'Motivacional', icon: '💪', description: 'Inspire e motive' },
+    { value: 'tutorial', label: 'Tutorial', icon: '🎯', description: 'Passo a passo' },
+    { value: 'storytelling', label: 'Storytelling', icon: '📖', description: 'Conte uma história' },
+    { value: 'business', label: 'Negócios', icon: '💼', description: 'Insights profissionais' },
+    { value: 'lifestyle', label: 'Lifestyle', icon: '✨', description: 'Estilo de vida' },
+    { value: 'tips', label: 'Dicas', icon: '💡', description: 'Dicas práticas' },
+    { value: 'personal', label: 'Pessoal', icon: '👤', description: 'Experiência pessoal' }
+  ];
+
+  const formatOptions = [
+    { value: 'feed', label: 'Feed (1080x1080)', description: 'Posts quadrados para feed' },
+    { value: 'stories', label: 'Stories (1080x1920)', description: 'Formato vertical para stories' },
+    { value: 'reels', label: 'Reels (1080x1920)', description: 'Formato vertical para reels' }
+  ];
+
+  const frameworkOptions = [
+    { value: 'aida', label: 'AIDA', description: 'Atenção → Interesse → Desejo → Ação' },
+    { value: 'pas', label: 'PAS', description: 'Problema → Agitação → Solução' },
+    { value: 'before_after_bridge', label: 'Before-After-Bridge', description: 'Estado atual → Futuro → Ponte' },
+    { value: 'problem_solution', label: 'Problema-Solução', description: 'Identifica problema e oferece solução' },
+    { value: 'storytelling', label: 'Storytelling', description: 'Narrativa envolvente' },
+    { value: 'listicle', label: 'Lista', description: 'Lista estruturada de pontos' }
+  ];
+
+  const ctaOptions = [
+    { value: 'follow', label: 'Seguir perfil' },
+    { value: 'link_bio', label: 'Link na bio' },
+    { value: 'comment', label: 'Comentar' },
+    { value: 'share', label: 'Compartilhar' },
+    { value: 'save', label: 'Salvar post' },
+    { value: 'dm', label: 'Enviar DM' },
+    { value: 'tag_friends', label: 'Marcar amigos' },
+    { value: 'custom', label: 'Personalizado' }
+  ];
+
   return (
     <div className="w-full max-w-4xl mx-auto">
       <Card className="shadow-card border-0 bg-gradient-card">
@@ -69,14 +120,128 @@ export const Step2Content = ({ data, onNext, onBack }: StepProps) => {
             <FileText className="w-8 h-8 text-white" />
           </div>
           <CardTitle className="text-2xl font-bold text-foreground">
-            Passo 2: Insira seu Conteúdo
+            Passo 2: Configure seu Conteúdo
           </CardTitle>
           <p className="text-muted-foreground">
-            Cole o texto que será transformado em carrossel de {slideCount} slide{slideCount > 1 ? 's' : ''}
+            Personalize o tipo, formato e estratégia do seu carrossel
           </p>
         </CardHeader>
         
         <CardContent className="space-y-6">
+          {/* Content Configuration Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Content Type */}
+            <div className="space-y-2">
+              <Label htmlFor="contentType" className="text-sm font-medium flex items-center gap-2">
+                <Target className="w-4 h-4" />
+                Tipo de Conteúdo
+              </Label>
+              <Select value={contentType} onValueChange={(value: ContentType) => setContentType(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {contentTypeOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div className="flex items-center gap-2">
+                        <span>{option.icon}</span>
+                        <div>
+                          <div className="font-medium">{option.label}</div>
+                          <div className="text-xs text-muted-foreground">{option.description}</div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Content Format */}
+            <div className="space-y-2">
+              <Label htmlFor="contentFormat" className="text-sm font-medium flex items-center gap-2">
+                <Megaphone className="w-4 h-4" />
+                Formato
+              </Label>
+              <Select value={contentFormat} onValueChange={(value: ContentFormat) => setContentFormat(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {formatOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div>
+                        <div className="font-medium">{option.label}</div>
+                        <div className="text-xs text-muted-foreground">{option.description}</div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Copywriting Framework */}
+            <div className="space-y-2">
+              <Label htmlFor="framework" className="text-sm font-medium flex items-center gap-2">
+                <PenTool className="w-4 h-4" />
+                Framework de Copywriting
+              </Label>
+              <Select value={copywritingFramework} onValueChange={(value: CopywritingFramework) => setCopywritingFramework(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {frameworkOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div>
+                        <div className="font-medium">{option.label}</div>
+                        <div className="text-xs text-muted-foreground">{option.description}</div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Call to Action */}
+            <div className="space-y-2">
+              <Label htmlFor="cta" className="text-sm font-medium flex items-center gap-2">
+                <Zap className="w-4 h-4" />
+                Call to Action
+              </Label>
+              <Select value={callToAction} onValueChange={(value: CallToAction) => setCallToAction(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {ctaOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      {option.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+
+          {/* Custom CTA Input */}
+          {callToAction === 'custom' && (
+            <div className="space-y-2">
+              <Label htmlFor="customCTA" className="text-sm font-medium">
+                CTA Personalizado
+              </Label>
+              <Input
+                id="customCTA"
+                placeholder="Ex: Baixe meu e-book gratuito"
+                value={customCTA}
+                onChange={(e) => setCustomCTA(e.target.value)}
+                maxLength={100}
+              />
+              <p className="text-xs text-muted-foreground">
+                Máximo 100 caracteres
+              </p>
+            </div>
+          )}
+
           {/* Slide Count Selector */}
           <div className="space-y-2">
             <Label htmlFor="slideCount" className="text-sm font-medium flex items-center gap-2">
@@ -98,101 +263,108 @@ export const Step2Content = ({ data, onNext, onBack }: StepProps) => {
               </SelectContent>
             </Select>
             <p className="text-xs text-muted-foreground">
-              {slideCount === 1 
-                ? 'Um post único e completo será criado'
-                : slideCount <= 3
-                ? 'Ideal para conteúdo conciso'
-                : slideCount <= 7
-                ? 'Bom para desenvolvimento de ideias'
-                : 'Máximo engajamento com thread completa'
-              }
+              Recomendado: 6-10 slides para máximo engagement
             </p>
           </div>
 
-          <div className="space-y-2">
-            <div className="flex justify-between items-center">
+          {/* Content Input */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
               <Label htmlFor="content" className="text-sm font-medium">
-                Conteúdo do Carrossel *
+                Conteúdo Principal
               </Label>
-              {content && (
+              <div className="flex items-center gap-2">
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept=".txt,.pdf,.docx"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                />
                 <EnhancedButton
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  onClick={clearContent}
-                  className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="gap-2"
                 >
-                  <Trash2 className="w-4 h-4" />
-                  Limpar Tudo
+                  <Upload className="w-4 h-4" />
+                  Upload Arquivo
                 </EnhancedButton>
-              )}
+                {content && (
+                  <EnhancedButton
+                    variant="ghost"
+                    size="sm"
+                    onClick={clearContent}
+                    className="gap-2 text-destructive hover:text-destructive"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                    Limpar
+                  </EnhancedButton>
+                )}
+              </div>
             </div>
-            
-            <Textarea
-              id="content"
-              placeholder="Cole aqui seu artigo, newsletter, transcrição ou qualquer texto longo..."
-              value={content}
-              onChange={(e) => setContent(e.target.value)}
-              className="min-h-[400px] font-mono text-sm leading-relaxed resize-none transition-all duration-300 focus:border-primary"
-              maxLength={10000}
-            />
-            
-            <div className="flex justify-between items-center">
-              <span className={`text-sm ${isNearLimit ? 'text-warning' : 'text-muted-foreground'}`}>
-                {characterCount}/10.000 caracteres
-              </span>
-              {characterCount < 100 && (
-                <span className="text-sm text-destructive">
-                  Mínimo 100 caracteres
+
+            <div className="relative">
+              <Textarea
+                id="content"
+                placeholder="Cole aqui o texto que será transformado em carrossel de slides. Ex: artigo, post de blog, conteúdo educativo, etc."
+                value={content}
+                onChange={(e) => setContent(e.target.value)}
+                className={`min-h-[200px] resize-none transition-all duration-300 ${
+                  content && !isContentValid ? 'border-destructive focus:border-destructive' : 
+                  isContentValid ? 'border-success focus:border-success' : ''
+                }`}
+                maxLength={10000}
+              />
+              
+              <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                <span className={`text-xs transition-colors ${
+                  isNearLimit ? 'text-destructive' : 
+                  characterCount > 5000 ? 'text-warning' : 'text-muted-foreground'
+                }`}>
+                  {characterCount.toLocaleString()}/10.000
                 </span>
-              )}
+              </div>
+            </div>
+
+            {characterCount > 0 && characterCount < 100 && (
+              <p className="text-sm text-destructive">
+                Mínimo 100 caracteres necessários ({100 - characterCount} restantes)
+              </p>
+            )}
+
+            {isContentValid && (
+              <p className="text-sm text-success">
+                ✓ Conteúdo válido para {slideCount} slides
+              </p>
+            )}
+
+            <div className="bg-muted/50 rounded-lg p-4 space-y-2">
+              <h4 className="font-medium text-sm">Dica de Upload:</h4>
+              <p className="text-xs text-muted-foreground">
+                Aceita arquivos .txt, .pdf, .docx até 5MB. Ideal: artigos, posts de blog ou qualquer texto longo.
+              </p>
             </div>
           </div>
 
-          {/* Upload Area */}
-          <div className="border-2 border-dashed border-muted rounded-lg p-8 text-center hover:border-primary/50 transition-colors duration-300">
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept=".txt,.pdf,.docx"
-              onChange={handleFileUpload}
-              className="hidden"
-            />
-            <Upload className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-            <p className="text-muted-foreground mb-2">
-              Ou arraste um arquivo aqui
-            </p>
-            <p className="text-xs text-muted-foreground mb-4">
-              Aceito: TXT, PDF, DOCX • Máximo 5MB
-            </p>
+          {/* Navigation */}
+          <div className="flex justify-between pt-6">
             <EnhancedButton
               variant="outline"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              Escolher Arquivo
-            </EnhancedButton>
-          </div>
-
-          {/* Action Buttons */}
-          <div className="flex gap-4 pt-4">
-            <EnhancedButton
-              variant="outline"
-              size="lg"
               onClick={onBack}
-              className="flex-1"
+              className="gap-2"
             >
-              <ArrowLeft className="w-5 h-5" />
+              <ArrowLeft className="w-4 h-4" />
               Voltar
             </EnhancedButton>
             
             <EnhancedButton
-              variant="instagram"
-              size="lg"
               onClick={handleNext}
               disabled={!isContentValid}
-              className="flex-2"
+              className="gap-2"
             >
-              Próximo Passo
-              <ArrowRight className="w-5 h-5" />
+              Próximo
+              <ArrowRight className="w-4 h-4" />
             </EnhancedButton>
           </div>
         </CardContent>

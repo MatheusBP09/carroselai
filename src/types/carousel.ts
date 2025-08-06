@@ -1,3 +1,8 @@
+export type ContentType = 'educational' | 'motivational' | 'tutorial' | 'storytelling' | 'business' | 'lifestyle' | 'tips' | 'personal';
+export type ContentFormat = 'feed' | 'stories' | 'reels';
+export type CallToAction = 'follow' | 'link_bio' | 'comment' | 'share' | 'save' | 'dm' | 'tag_friends' | 'custom';
+export type CopywritingFramework = 'aida' | 'pas' | 'before_after_bridge' | 'problem_solution' | 'storytelling' | 'listicle';
+
 export interface CarouselData {
   title?: string;
   username: string; // Display name (e.g., "Lucas Freitas")
@@ -5,6 +10,12 @@ export interface CarouselData {
   isVerified: boolean;
   content: string;
   slideCount: number; // Number of slides to generate (1-10)
+  contentType: ContentType;
+  contentFormat: ContentFormat;
+  callToAction: CallToAction;
+  customCTA?: string;
+  copywritingFramework: CopywritingFramework;
+  targetAudience?: string; // Auto-detected or user-specified
   profileImage?: File;
   slides?: Slide[];
   caption?: string;
