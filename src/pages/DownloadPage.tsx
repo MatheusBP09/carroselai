@@ -1,12 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Copy, Download, ArrowLeft, Check } from 'lucide-react';
+import { Copy, Download, ArrowLeft, Check, Eye } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { CarouselData } from '@/types/carousel';
 import { renderTwitterPostToImage } from '@/services/renderToImageService';
+import { TwitterPost } from '@/components/TwitterPost';
 
 export default function DownloadPage() {
   const location = useLocation();
@@ -14,6 +15,8 @@ export default function DownloadPage() {
   const { toast } = useToast();
   const [copiedCaption, setCopiedCaption] = useState(false);
   const [downloadingSlides, setDownloadingSlides] = useState<Set<number>>(new Set());
+  const [previewImages, setPreviewImages] = useState<Map<number, string>>(new Map());
+  const [loadingPreviews, setLoadingPreviews] = useState<Set<number>>(new Set());
 
   const data = location.state?.data as CarouselData;
 
@@ -28,6 +31,38 @@ export default function DownloadPage() {
     );
   }
 
+  // Função para gerar preview da imagem
+  const generatePreview = async (slideIndex: number) => {
+    if (!data.slides || previewImages.has(slideIndex) || loadingPreviews.has(slideIndex)) return;
+
+    setLoadingPreviews(prev => new Set(prev).add(slideIndex));
+    
+    try {
+      const slide = data.slides[slideIndex];
+      
+      const blob = await renderTwitterPostToImage({
+        text: slide.text,
+        username: data.username,
+        handle: data.instagramHandle,
+        isVerified: data.isVerified,
+        profileImageUrl: slide.profileImageUrl,
+        contentImageUrl: slide.contentImageUrls?.[0]
+      });
+
+      const imageUrl = URL.createObjectURL(blob);
+      setPreviewImages(prev => new Map(prev).set(slideIndex, imageUrl));
+    } catch (error) {
+      console.error('Error generating preview:', error);
+    } finally {
+      setLoadingPreviews(prev => {
+        const newSet = new Set(prev);
+        newSet.delete(slideIndex);
+        return newSet;
+      });
+    }
+  };
+
+  // Função melhorada para download de slide individual
   const handleDownloadSlide = async (slideIndex: number) => {
     if (!data.slides) return;
 
@@ -45,25 +80,40 @@ export default function DownloadPage() {
         contentImageUrl: slide.contentImageUrls?.[0]
       });
 
-      // Ensure proper PNG blob with correct MIME type
-      const pngBlob = new Blob([blob], { type: 'image/png' });
-
-      // Create download link with proper MIME type
-      const url = URL.createObjectURL(pngBlob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = `slide-${slideIndex + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}.png`;
-      link.type = 'image/png';
+      // Criar arquivo PNG válido
+      const canvas = document.createElement('canvas');
+      const ctx = canvas.getContext('2d');
+      const img = new Image();
       
-      // Add link to DOM, trigger download, then cleanup
-      document.body.appendChild(link);
-      link.click();
-      
-      // Cleanup after a short delay
-      setTimeout(() => {
-        document.body.removeChild(link);
-        URL.revokeObjectURL(url);
-      }, 100);
+      await new Promise((resolve, reject) => {
+        img.onload = () => {
+          canvas.width = img.width;
+          canvas.height = img.height;
+          ctx?.drawImage(img, 0, 0);
+          
+          canvas.toBlob((finalBlob) => {
+            if (finalBlob) {
+              // Download direto com canvas blob
+              const url = URL.createObjectURL(finalBlob);
+              const link = document.createElement('a');
+              link.href = url;
+              link.download = `slide-${slideIndex + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}.png`;
+              link.style.display = 'none';
+              
+              document.body.appendChild(link);
+              link.click();
+              document.body.removeChild(link);
+              
+              setTimeout(() => URL.revokeObjectURL(url), 1000);
+              resolve(finalBlob);
+            } else {
+              reject(new Error('Failed to create final blob'));
+            }
+          }, 'image/png', 1.0);
+        };
+        img.onerror = reject;
+        img.src = URL.createObjectURL(blob);
+      });
 
       toast({
         title: "Sucesso!",
@@ -103,28 +153,42 @@ export default function DownloadPage() {
           contentImageUrl: slide.contentImageUrls?.[0]
         });
 
-        // Ensure proper PNG blob with correct MIME type
-        const pngBlob = new Blob([blob], { type: 'image/png' });
+        // Criar arquivo PNG válido usando canvas
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        const img = new Image();
         
-        // Create download link
-        const url = URL.createObjectURL(pngBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `slide-${i + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}.png`;
-        link.type = 'image/png';
+        await new Promise((resolve, reject) => {
+          img.onload = () => {
+            canvas.width = img.width;
+            canvas.height = img.height;
+            ctx?.drawImage(img, 0, 0);
+            
+            canvas.toBlob((finalBlob) => {
+              if (finalBlob) {
+                const url = URL.createObjectURL(finalBlob);
+                const link = document.createElement('a');
+                link.href = url;
+                link.download = `slide-${i + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}.png`;
+                link.style.display = 'none';
+                
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                setTimeout(() => URL.revokeObjectURL(url), 1000);
+                resolve(finalBlob);
+              } else {
+                reject(new Error('Failed to create final blob'));
+              }
+            }, 'image/png', 1.0);
+          };
+          img.onerror = reject;
+          img.src = URL.createObjectURL(blob);
+        });
         
-        // Add link to DOM, trigger download, then cleanup
-        document.body.appendChild(link);
-        link.click();
-        
-        // Cleanup and delay between downloads
-        setTimeout(() => {
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        }, 100);
-        
-        // Small delay between downloads to prevent browser blocking
-        await new Promise(resolve => setTimeout(resolve, 500));
+        // Delay entre downloads
+        await new Promise(resolve => setTimeout(resolve, 800));
       }
 
       toast({
@@ -259,17 +323,44 @@ export default function DownloadPage() {
                   <Badge variant="outline">1080×1350</Badge>
                 </div>
                 
-                <div className="bg-muted p-4 rounded-lg">
-                  <p className="text-sm text-foreground line-clamp-4">
-                    {slide.text}
-                  </p>
+                {/* Preview da Imagem */}
+                <div className="bg-muted rounded-lg overflow-hidden">
+                  {previewImages.has(index) ? (
+                    <div className="aspect-[4/5] relative">
+                      <img 
+                        src={previewImages.get(index)} 
+                        alt={`Preview do Slide ${index + 1}`}
+                        className="w-full h-full object-cover rounded-lg"
+                      />
+                      <div className="absolute top-2 right-2 bg-green-500 text-white px-2 py-1 rounded text-xs">
+                        ✓ Pronto
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="aspect-[4/5] bg-muted p-4 flex flex-col justify-between">
+                      <p className="text-sm text-foreground line-clamp-6">
+                        {slide.text}
+                      </p>
+                      
+                      {slide.contentImageUrls && slide.contentImageUrls.length > 0 && (
+                        <div className="text-xs text-muted-foreground mt-2">
+                          📸 Inclui imagem gerada
+                        </div>
+                      )}
+                      
+                      <Button 
+                        onClick={() => generatePreview(index)}
+                        disabled={loadingPreviews.has(index)}
+                        variant="outline"
+                        size="sm"
+                        className="mt-3 self-center"
+                      >
+                        <Eye className="w-3 h-3 mr-1" />
+                        {loadingPreviews.has(index) ? 'Gerando Preview...' : 'Ver Preview'}
+                      </Button>
+                    </div>
+                  )}
                 </div>
-
-                {slide.contentImageUrls && slide.contentImageUrls.length > 0 && (
-                  <div className="text-xs text-muted-foreground">
-                    📸 Includes generated image
-                  </div>
-                )}
 
                 <Button 
                   onClick={() => handleDownloadSlide(index)}
@@ -278,7 +369,7 @@ export default function DownloadPage() {
                 >
                   <Download className="w-4 h-4" />
                   <span>
-                    {downloadingSlides.has(index) ? 'Gerando...' : 'Baixar PNG'}
+                    {downloadingSlides.has(index) ? 'Baixando...' : 'Baixar PNG'}
                   </span>
                 </Button>
               </div>
@@ -290,11 +381,12 @@ export default function DownloadPage() {
         <Card className="p-6 mt-8">
           <h3 className="font-semibold mb-3">Como usar essas imagens:</h3>
           <ul className="space-y-2 text-sm text-muted-foreground">
+            <li>• Clique em "Ver Preview" para visualizar cada slide antes de baixar</li>
             <li>• Cada imagem está otimizada para Instagram em 1080×1350 pixels</li>
             <li>• Faça upload como um post carrossel no Instagram</li>
             <li>• Copie a legenda e hashtags usando o botão acima</li>
             <li>• Publique nos horários de maior engajamento para melhores resultados</li>
-            <li>• Se houver problema para abrir os arquivos PNG, tente associá-los a um visualizador de imagens</li>
+            <li>• Os arquivos PNG são otimizados para abrir em qualquer visualizador de imagem</li>
           </ul>
         </Card>
       </div>
