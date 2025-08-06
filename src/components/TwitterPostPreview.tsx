@@ -8,6 +8,9 @@ interface TwitterPostPreviewProps {
   text: string;
   profileImageUrl?: string;
   contentImageUrl?: string;
+  hasImage?: boolean;
+  imagePosition?: 'center' | 'top' | 'bottom';
+  imageScale?: number;
 }
 
 export const TwitterPostPreview: React.FC<TwitterPostPreviewProps> = ({
@@ -16,8 +19,12 @@ export const TwitterPostPreview: React.FC<TwitterPostPreviewProps> = ({
   isVerified,
   text,
   profileImageUrl,
-  contentImageUrl
+  contentImageUrl,
+  hasImage = true,
+  imagePosition = 'center',
+  imageScale = 1
 }) => {
+  const shouldShowImage = hasImage && contentImageUrl;
   return (
     <Card className="w-full max-w-md bg-background text-foreground border p-4 mx-auto">
       {/* Twitter Post Header */}
@@ -62,17 +69,27 @@ export const TwitterPostPreview: React.FC<TwitterPostPreviewProps> = ({
       </div>
 
       {/* Tweet Text */}
-      <div className="text-foreground text-sm leading-relaxed mb-3 line-clamp-4">
+      <div className={`text-foreground text-sm leading-relaxed ${shouldShowImage ? 'mb-3' : 'mb-0'} line-clamp-4 ${!shouldShowImage ? 'text-center' : ''}`}>
         {text}
       </div>
 
       {/* Content Image */}
-      {contentImageUrl && (
-        <div className="rounded-lg overflow-hidden bg-muted">
+      {shouldShowImage && (
+        <div className={`rounded-lg overflow-hidden bg-muted ${
+          imagePosition === 'center' ? 'flex items-center justify-center' :
+          imagePosition === 'top' ? 'flex items-start justify-center' :
+          'flex items-end justify-center'
+        }`}>
           <img 
             src={contentImageUrl} 
             alt="Tweet content" 
             className="w-full h-32 object-cover"
+            style={{
+              transform: `scale(${imageScale})`,
+              transformOrigin: imagePosition === 'top' ? 'top center' : 
+                               imagePosition === 'bottom' ? 'bottom center' : 
+                               'center center'
+            }}
           />
         </div>
       )}

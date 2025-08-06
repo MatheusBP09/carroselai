@@ -9,6 +9,7 @@ import { Edit3, RotateCcw, Plus, X, Image as ImageIcon } from 'lucide-react';
 import { StepProps, Slide } from '@/types/carousel';
 import { generateContentImage } from '@/services/imageGenerationService';
 import { TwitterPostPreview } from '@/components/TwitterPostPreview';
+import { ImageControls } from '@/components/ImageControls';
 import { toast } from 'sonner';
 const Step5Review = ({
   data,
@@ -23,7 +24,16 @@ const Step5Review = ({
   const [newHashtag, setNewHashtag] = useState('');
   const [regeneratingImage, setRegeneratingImage] = useState<number | null>(null);
   useEffect(() => {
-    if (data.slides) setSlides(data.slides);
+    if (data.slides) {
+      // Initialize new image control properties if they don't exist
+      const slidesWithDefaults = data.slides.map(slide => ({
+        ...slide,
+        hasImage: slide.hasImage ?? true,
+        imagePosition: slide.imagePosition ?? 'center',
+        imageScale: slide.imageScale ?? 1
+      }));
+      setSlides(slidesWithDefaults);
+    }
     if (data.caption) setCaption(data.caption);
     if (data.hashtags) setHashtags(data.hashtags);
   }, [data]);
@@ -78,6 +88,52 @@ const Step5Review = ({
       regenerateSlideImage(editingSlide);
     }
   };
+  // Image control handlers
+  const handleRemoveImage = (slideId: number) => {
+    setSlides(prev => prev.map(slide => 
+      slide.id === slideId ? { ...slide, hasImage: false } : slide
+    ));
+  };
+
+  const handleUploadImage = async (slideId: number, file: File) => {
+    try {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const imageUrl = e.target?.result as string;
+        setSlides(prev => prev.map(slide => 
+          slide.id === slideId ? {
+            ...slide,
+            customImageUrl: imageUrl,
+            hasImage: true
+          } : slide
+        ));
+      };
+      reader.readAsDataURL(file);
+      toast.success('Imagem carregada com sucesso!');
+    } catch (error) {
+      console.error('Erro ao carregar imagem:', error);
+      toast.error('Erro ao carregar imagem');
+    }
+  };
+
+  const handlePositionChange = (slideId: number, position: 'center' | 'top' | 'bottom') => {
+    setSlides(prev => prev.map(slide => 
+      slide.id === slideId ? { ...slide, imagePosition: position } : slide
+    ));
+  };
+
+  const handleScaleChange = (slideId: number, scale: number) => {
+    setSlides(prev => prev.map(slide => 
+      slide.id === slideId ? { ...slide, imageScale: scale } : slide
+    ));
+  };
+
+  const handleResetToGenerated = (slideId: number) => {
+    setSlides(prev => prev.map(slide => 
+      slide.id === slideId ? { ...slide, customImageUrl: undefined } : slide
+    ));
+  };
+
   const addHashtag = () => {
     if (newHashtag.trim() && !hashtags.includes(newHashtag.trim())) {
       const hashtagToAdd = newHashtag.trim().startsWith('#') ? newHashtag.trim() : `#${newHashtag.trim()}`;
@@ -129,8 +185,32 @@ const Step5Review = ({
 
                   {/* Preview do post */}
                   <div className="mb-3">
-                    <TwitterPostPreview username={data.username || data.instagramHandle.replace('@', '')} handle={data.instagramHandle.replace('@', '')} isVerified={data.isVerified} text={slide.text} profileImageUrl={slide.profileImageUrl} contentImageUrl={slide.contentImageUrls?.[0]} />
+                    <TwitterPostPreview 
+                      username={data.username || data.instagramHandle.replace('@', '')} 
+                      handle={data.instagramHandle.replace('@', '')} 
+                      isVerified={data.isVerified} 
+                      text={slide.text} 
+                      profileImageUrl={slide.profileImageUrl} 
+                      contentImageUrl={slide.customImageUrl || slide.contentImageUrls?.[0]}
+                      hasImage={slide.hasImage}
+                      imagePosition={slide.imagePosition}
+                      imageScale={slide.imageScale}
+                    />
                   </div>
+
+                  {/* Image Controls */}
+                  <ImageControls
+                    hasImage={slide.hasImage ?? true}
+                    customImageUrl={slide.customImageUrl}
+                    imagePosition={slide.imagePosition ?? 'center'}
+                    imageScale={slide.imageScale ?? 1}
+                    onRemoveImage={() => handleRemoveImage(slide.id)}
+                    onUploadImage={(file) => handleUploadImage(slide.id, file)}
+                    onPositionChange={(position) => handlePositionChange(slide.id, position)}
+                    onScaleChange={(scale) => handleScaleChange(slide.id, scale)}
+                    onResetToGenerated={() => handleResetToGenerated(slide.id)}
+                    hasGeneratedImage={!!slide.contentImageUrls?.[0]}
+                  />
                   <Button variant="outline" size="sm" onClick={() => regenerateSlideImage(slide.id)} disabled={regeneratingImage === slide.id} className="w-full mt-2 py-0 my-[10px]">
                     <ImageIcon className="w-4 h-4 mr-2" />
                     {regeneratingImage === slide.id ? 'Regenerando...' : 'Regenerar Imagem'}
