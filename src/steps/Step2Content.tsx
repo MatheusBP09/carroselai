@@ -87,7 +87,7 @@ export const Step2Content = ({ data, onNext, onBack }: StepProps) => {
   ];
 
   const formatOptions = [
-    { value: 'feed', label: 'Feed (1080x1080)', description: 'Posts quadrados para feed' },
+    { value: 'feed', label: 'Feed (1080x1350)', description: 'Posts verticais para feed' },
     { value: 'stories', label: 'Stories (1080x1920)', description: 'Formato vertical para stories' },
     { value: 'reels', label: 'Reels (1080x1920)', description: 'Formato vertical para reels' }
   ];

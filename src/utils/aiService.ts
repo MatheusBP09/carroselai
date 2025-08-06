@@ -143,7 +143,7 @@ DIRETRIZES OBRIGATÓRIAS:
 - ${getFrameworkStructure(copywritingFramework, slideCount)}
 
 🖼️ IMAGENS (CRÍTICO):
-- Dimensões EXATAS: ${contentFormat === 'stories' ? '1080x1920' : contentFormat === 'reels' ? '1080x1920' : '1080x1080'}
+- Dimensões EXATAS: ${contentFormat === 'stories' ? '1080x1920' : contentFormat === 'reels' ? '1080x1920' : '1080x1350'}
 - Marcar 3-5 slides com needsImage: true
 - Priorizar slides com: dados, comparações, processos, conceitos visuais
 - Prompts seguindo tendências Instagram 2024: minimalismo, cores vibrantes, tipografia bold

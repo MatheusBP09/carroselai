@@ -76,7 +76,7 @@ const getFormatDimensions = (format: string): { width: number; height: number } 
       return { width: 1080, height: 1920 };
     case 'feed':
     default:
-      return { width: 1080, height: 1080 };
+      return { width: 1080, height: 1350 };
   }
 };
 
@@ -113,7 +113,7 @@ const createImagePrompt = (text: string, style: string, format: string = 'feed',
   
   return `Create a stunning Instagram ${format} image with ${enhancement}. ${formatOpt}. Content style: ${contentStyle}. Focus: "${text}". 
   
-  Design requirements: ${instagramTrends2024}. Perfect ${format === 'feed' ? '1080x1080' : '1080x1920'} dimensions. High contrast, mobile-optimized readability. No text overlay (text will be added separately). Ultra high resolution, professional quality.`;
+  Design requirements: ${instagramTrends2024}. Perfect ${format === 'feed' ? '1080x1350' : '1080x1920'} dimensions. High contrast, mobile-optimized readability. No text overlay (text will be added separately). Ultra high resolution, professional quality.`;
 };
 
 /**
