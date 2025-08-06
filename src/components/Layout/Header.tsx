@@ -29,7 +29,7 @@ export const Header = ({ onReset }: HeaderProps) => {
               <h1 className="text-2xl font-bold bg-gradient-to-r from-instagram-start to-instagram-end bg-clip-text text-transparent">
                 Gerador de Carrossel
               </h1>
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm text-gray-600 font-medium">
                 Transforme textos longos em carrosséis visuais para Instagram
               </p>
             </div>
