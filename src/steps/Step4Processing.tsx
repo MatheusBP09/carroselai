@@ -51,40 +51,69 @@ const generateEnhancedImagePrompt = (text: string, slideIndex: number, totalSlid
   // Extract key concepts from the text for more relevant prompts
   const lowerText = cleanText.toLowerCase();
   
-  // Content-specific realistic photography prompts
+  // Expanded keyword detection for better content categorization
+  const keywords = {
+    financeiro: ['dinheiro', 'renda', 'financeiro', 'investir', 'lucro', 'ganhar', 'economia', 'patrimônio', 'poupança', 'orçamento'],
+    negocio: ['negócio', 'empresa', 'vendas', 'cliente', 'marketing', 'empreender', 'startup', 'produto', 'serviço', 'mercado'],
+    saude: ['saúde', 'exercício', 'bem-estar', 'energia', 'fitness', 'treino', 'alimentação', 'dieta', 'nutrição', 'vida'],
+    tecnologia: ['tecnologia', 'digital', 'ia', 'inovação', 'software', 'app', 'programação', 'internet', 'código', 'dados'],
+    educacao: ['educação', 'aprender', 'curso', 'conhecimento', 'estudar', 'ensino', 'formação', 'desenvolvimento', 'skill', 'capacitação'],
+    produtividade: ['processo', 'passo', 'etapa', 'método', 'organização', 'planejamento', 'produtividade', 'gestão', 'tempo', 'eficiência'],
+    lifestyle: ['casa', 'família', 'vida', 'pessoal', 'relacionamento', 'hobbies', 'lazer', 'qualidade', 'felicidade', 'rotina'],
+    crescimento: ['crescimento', 'desenvolvimento', 'melhoria', 'evolução', 'progresso', 'meta', 'objetivo', 'sucesso', 'conquista', 'resultado']
+  };
+  
+  // Enhanced keyword matching
+  let category = 'geral';
   let photoSubject = '';
   let photoContext = '';
   
-  if (lowerText.includes('dinheiro') || lowerText.includes('renda') || lowerText.includes('financeiro') || lowerText.includes('investir')) {
-    photoSubject = 'pessoa profissional analisando dados financeiros';
-    photoContext = 'escritório moderno, computador com gráficos, ambiente corporativo';
-  } else if (lowerText.includes('negócio') || lowerText.includes('empresa') || lowerText.includes('vendas') || lowerText.includes('cliente')) {
-    photoSubject = 'empreendedor ou executivo em reunião de negócios';
-    photoContext = 'ambiente corporativo profissional, sala de reuniões moderna';
-  } else if (lowerText.includes('saúde') || lowerText.includes('exercício') || lowerText.includes('bem-estar') || lowerText.includes('energia')) {
-    photoSubject = 'pessoa praticando atividade saudável';
-    photoContext = 'academia, parque ou ambiente wellness, iluminação natural';
-  } else if (lowerText.includes('tecnologia') || lowerText.includes('digital') || lowerText.includes('ia') || lowerText.includes('inovação')) {
-    photoSubject = 'profissional tech trabalhando com computadores';
-    photoContext = 'escritório tech moderno, múltiplas telas, ambiente inovador';
-  } else if (lowerText.includes('educação') || lowerText.includes('aprender') || lowerText.includes('curso') || lowerText.includes('conhecimento')) {
-    photoSubject = 'estudante ou professor em ambiente educacional';
-    photoContext = 'biblioteca, sala de aula ou workspace de estudos organizado';
-  } else if (lowerText.includes('processo') || lowerText.includes('passo') || lowerText.includes('etapa') || lowerText.includes('método')) {
-    photoSubject = 'pessoa organizando workflow ou planejamento';
-    photoContext = 'mesa organizada com materiais de planejamento, ambiente produtivo';
-  } else if (lowerText.includes('casa') || lowerText.includes('família') || lowerText.includes('vida') || lowerText.includes('pessoal')) {
-    photoSubject = 'pessoa em ambiente doméstico confortável';
-    photoContext = 'casa moderna e organizada, decoração contemporânea';
-  } else {
-    // Use the actual text content to generate relevant realistic photo
-    const keyWords = cleanText.split(' ').slice(0, 4).join(' ');
-    photoSubject = `pessoa real em situação relacionada a: ${keyWords}`;
-    photoContext = 'ambiente moderno e adequado ao contexto do tema';
+  for (const [cat, words] of Object.entries(keywords)) {
+    if (words.some(word => lowerText.includes(word))) {
+      category = cat;
+      break;
+    }
   }
   
-  // Generate realistic photography prompt
-  return `Fotografia profissional realista de ${photoSubject}, ${photoContext}, iluminação natural ou profissional, alta qualidade, cores naturais, composição bem balanceada, relacionado especificamente ao tema: "${cleanText.substring(0, 80)}", sem texto na imagem`;
+  // Generate more specific and relevant image prompts based on category
+  switch (category) {
+    case 'financeiro':
+      photoSubject = 'profissional analisando gráficos financeiros em tablet';
+      photoContext = 'ambiente de trabalho moderno, iluminação profissional';
+      break;
+    case 'negocio':
+      photoSubject = 'empresário apresentando ideias em reunião';
+      photoContext = 'escritório corporativo contemporâneo, luz natural';
+      break;
+    case 'saude':
+      photoSubject = 'pessoa ativa praticando exercícios ou se alimentando bem';
+      photoContext = 'ambiente saudável, academia ou cozinha moderna, luz natural';
+      break;
+    case 'tecnologia':
+      photoSubject = 'desenvolvedor trabalhando com múltiplas telas';
+      photoContext = 'setup tech moderno, iluminação LED, ambiente inovador';
+      break;
+    case 'educacao':
+      photoSubject = 'estudante ou professor com materiais de estudo';
+      photoContext = 'biblioteca moderna ou workspace educacional organizado';
+      break;
+    case 'produtividade':
+      photoSubject = 'pessoa organizando tarefas e planejamentos';
+      photoContext = 'escritório limpo e organizado, materiais de produtividade';
+      break;
+    case 'lifestyle':
+      photoSubject = 'pessoa em momento de bem-estar no dia a dia';
+      photoContext = 'ambiente doméstico aconchegante e moderno';
+      break;
+    default:
+      // Enhanced semantic analysis for generic content
+      const mainWords = cleanText.split(' ').slice(0, 3).join(' ');
+      photoSubject = `cena realista que representa: ${mainWords}`;
+      photoContext = 'ambiente contemporâneo e bem iluminado';
+  }
+  
+  // Simplified and more consistent prompt structure
+  return `Fotografia realista: ${photoSubject}, ${photoContext}, foto profissional, cores naturais, sem texto na imagem`;
 };
 import { StepProps } from '@/types/carousel';
 import { toast } from 'sonner';
@@ -377,7 +406,7 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
               </span>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-muted">
-              <span>📝 Prompt otimizado (~800 chars, 10x mais rápido)</span>
+              <span>📝 Texto otimizado (máx 180 chars) + prompts inteligentes</span>
               <span className={progress >= 30 ? 'text-green-600' : 'text-muted-foreground'}>
                 {progress >= 30 ? '✓' : '⏳'}
               </span>

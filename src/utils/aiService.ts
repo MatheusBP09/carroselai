@@ -103,7 +103,7 @@ FRAMEWORK: ${framework}
 CTA: ${ctaText}
 
 REGRAS:
-- Conteúdo DENSO (até 400 chars/slide)
+- Conteúdo CONCISO (máximo 180 chars/slide) para formato 1080x1350
 - Texto EDUCATIVO específico do tema
 - TODAS slides: needsImage: true
 - ImagePrompts: FOTOS REAIS relacionadas ao texto
@@ -111,7 +111,7 @@ REGRAS:
 - Linguagem brasileira natural
 
 JSON:
-{"slides":[{"id":1,"text":"[até 400 chars]","isEdited":false,"originalText":"[mesmo]","needsImage":true,"imagePrompt":"Fotografia profissional de [pessoa/objeto] relacionado ao tema"}],"caption":"[legenda]","hashtags":["#tag1","#tag2"]}`;
+{"slides":[{"id":1,"text":"[máximo 180 chars]","isEdited":false,"originalText":"[mesmo]","needsImage":true,"imagePrompt":"Foto realista de [pessoa/objeto/cenário] especificamente relacionado ao tema"}],"caption":"[legenda]","hashtags":["#tag1","#tag2"]}`;
 
   console.log('🎯 Enhanced prompt length:', prompt.length, 'chars');
 
@@ -231,6 +231,17 @@ JSON:
           }
         }
       }
+
+      // Validate and trim text length for 1080x1350 format
+      result.slides = result.slides.map((slide: any, index: number) => {
+        if (slide.text && slide.text.length > 180) {
+          console.warn(`📏 Slide ${index + 1} text too long: ${slide.text.length} chars, trimming to 180`);
+          slide.text = slide.text.substring(0, 177) + '...';
+          slide.originalText = slide.originalText?.substring(0, 177) + '...';
+        }
+        console.log(`📝 Slide ${index + 1}: ${slide.text.length} chars`);
+        return slide;
+      });
 
       // Validate essential fields
       if (!result.caption) result.caption = 'Legenda automática para o carrossel';

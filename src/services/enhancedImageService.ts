@@ -144,12 +144,13 @@ class EnhancedImageService {
           .replace(/tipografia\s+\w+/gi, 'tipografia moderna');
         break;
       case 2:
-        // Third attempt - basic version
-        optimizedText = `Design moderno para slide de Instagram, ${params.contentFormat || 'feed'} format, cores vibrantes`;
+        // Third attempt - extract main subject only
+        const mainSubject = optimizedText.split(',')[0] || 'pessoa em ambiente profissional';
+        optimizedText = `Foto realista: ${mainSubject}, ambiente moderno, iluminação natural`;
         break;
       default:
-        // Final attempt - minimal prompt
-        optimizedText = `Modern Instagram design, ${params.contentFormat || 'feed'} format`;
+        // Final attempt - minimal reliable prompt
+        optimizedText = `Foto profissional de pessoa, ambiente moderno, iluminação natural`;
     }
     
     return {
