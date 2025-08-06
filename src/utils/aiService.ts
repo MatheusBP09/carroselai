@@ -142,12 +142,13 @@ DIRETRIZES OBRIGATÓRIAS:
 - Linguagem natural e conversacional
 - ${getFrameworkStructure(copywritingFramework, slideCount)}
 
-🖼️ IMAGENS (CRÍTICO):
+🖼️ IMAGENS (OBRIGATÓRIO - 100% DAS SLIDES):
 - Dimensões EXATAS: ${contentFormat === 'stories' ? '1080x1920' : contentFormat === 'reels' ? '1080x1920' : '1080x1350'}
-- Marcar 3-5 slides com needsImage: true
-- Priorizar slides com: dados, comparações, processos, conceitos visuais
-- Prompts seguindo tendências Instagram 2024: minimalismo, cores vibrantes, tipografia bold
-- Considerar formato ${contentFormat} na composição visual
+- TODAS as slides devem ter needsImage: true e imagePrompt descritivo
+- Garantir variedade visual: alternar entre gráficos, ilustrações, conceitos, textos estilizados
+- Prompts específicos por tipo: dados→gráficos, processos→diagramas, conceitos→ilustrações minimalistas
+- Seguir tendências 2024: gradientes suaves, tipografia bold, cores vibrantes, design limpo
+- Considerar posição da slide para diversidade: inicial→impactante, meio→informativa, final→call-to-action
 
 🎯 OTIMIZAÇÃO POR FORMATO:
 ${contentFormat === 'feed' ? 
@@ -178,7 +179,8 @@ Responda apenas com um JSON válido no seguinte formato:
       "text": "🧵 THREAD: Como dominar [tópico]\n\nVou te ensinar os 9 passos que mudaram minha vida profissional:\n\n👇",
       "isEdited": false,
       "originalText": "🧵 THREAD: Como dominar [tópico]\n\nVou te ensinar os 9 passos que mudaram minha vida profissional:\n\n👇",
-      "needsImage": false
+      "needsImage": true,
+      "imagePrompt": "Design impactante de capa com tipografia bold e gradiente vibrante, estilo moderno e profissional"
     },
     {
       "id": 2,
@@ -186,7 +188,7 @@ Responda apenas com um JSON válido no seguinte formato:
       "isEdited": false,
       "originalText": "📊 Estatísticas mostram que 73% das empresas...",
       "needsImage": true,
-      "imagePrompt": "Gráfico moderno mostrando estatísticas de empresas, design minimalista"
+      "imagePrompt": "Gráfico moderno mostrando estatísticas de empresas, design minimalista com cores vibrantes"
     }
   ],
   "caption": "Legenda atrativa para o carrossel...",
