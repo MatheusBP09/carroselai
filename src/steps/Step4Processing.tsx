@@ -10,17 +10,23 @@ import { generateCarousel } from '@/utils/aiService';
 import { generateContentImage, convertProfileImageToUrl } from '@/services/imageGenerationService';
 
 // Helper functions for image generation fallback
-const shouldGenerateImageForSlide = (text: string): boolean => {
+const shouldGenerateImageForSlide = (text: string, slideIndex: number, totalSlides: number): boolean => {
   const imageKeywords = [
     'estatística', 'dados', 'número', 'gráfico', 'comparação', 'vs', 'processo',
     'passo', 'etapa', 'tutorial', 'como', 'exemplo', 'resultado', 'antes',
     'depois', 'diferença', 'tabela', 'lista', 'ranking', 'top', 'melhores',
-    'piores', 'crescimento', 'diminuição', 'aumento', 'redução', '%', 'porcentagem'
+    'piores', 'crescimento', 'diminuição', 'aumento', 'redução', '%', 'porcentagem',
+    'dica', 'tip', 'estratégia', 'método', 'técnica', 'conceito', 'ideia'
   ];
   
-  return imageKeywords.some(keyword => 
+  const hasImageKeywords = imageKeywords.some(keyword => 
     text.toLowerCase().includes(keyword)
   );
+  
+  // Force images for first slide and every 2-3 slides to ensure visual appeal
+  const isKeySlide = slideIndex === 0 || slideIndex % 2 === 0 || slideIndex % 3 === 0;
+  
+  return hasImageKeywords || isKeySlide;
 };
 
 const generateFallbackImagePrompt = (text: string): string => {
@@ -99,6 +105,8 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
       setCurrentStep('Gerando imagens de conteúdo...');
       const slidesWithImages = [];
       const totalSlides = result.slides.length;
+      let generatedImagesCount = 0;
+      const minImagesRequired = Math.max(3, Math.ceil(totalSlides * 0.4)); // Ensure at least 40% of slides have images, minimum 3
       
       for (let i = 0; i < totalSlides; i++) {
         const slide = result.slides[i];
@@ -107,8 +115,14 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
         
         let contentImageUrls: string[] = [];
         
-        // Check if slide needs image (from AI response or fallback logic)
-        const needsImage = (slide as any).needsImage || shouldGenerateImageForSlide(slide.text);
+        // Enhanced logic: check AI response first, then fallback logic, then force if needed
+        let needsImage = (slide as any).needsImage || shouldGenerateImageForSlide(slide.text, i, totalSlides);
+        
+        // Force image generation if we haven't reached minimum and this is one of the last slides
+        if (!needsImage && generatedImagesCount < minImagesRequired && i >= totalSlides - (minImagesRequired - generatedImagesCount)) {
+          needsImage = true;
+        }
+        
         const imagePrompt = (slide as any).imagePrompt || generateFallbackImagePrompt(slide.text);
         
         if (needsImage && imagePrompt) {
@@ -129,7 +143,8 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
                 });
                 
                 contentImageUrls = [contentImage.imageUrl];
-                console.log(`✅ Imagem gerada com sucesso para slide ${i + 1}`);
+                generatedImagesCount++;
+                console.log(`✅ Imagem gerada com sucesso para slide ${i + 1} (total: ${generatedImagesCount})`);
                 break;
               } catch (retryError) {
                 retryCount++;

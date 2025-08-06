@@ -69,7 +69,7 @@ export const TwitterPostPreview: React.FC<TwitterPostPreviewProps> = ({
       </div>
 
       {/* Tweet Text */}
-      <div className={`text-foreground text-sm leading-relaxed ${shouldShowImage ? 'mb-3' : 'mb-0'} line-clamp-4 ${!shouldShowImage ? 'text-center' : ''}`}>
+      <div className={`text-foreground text-sm leading-relaxed ${shouldShowImage ? 'mb-3' : 'mb-0'} line-clamp-4`}>
         {text}
       </div>
 
