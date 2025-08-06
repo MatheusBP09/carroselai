@@ -73,8 +73,8 @@ const getFormatDimensions = (format: string): { width: number; height: number } 
   const dimensions = {
     'stories': { width: 1024, height: 1792 }, // Vertical format for stories
     'reels': { width: 1024, height: 1792 },   // Vertical format for reels  
-    'feed': { width: 1024, height: 1344 },    // Instagram carousel format (4:5 ratio)
-    'default': { width: 1024, height: 1344 }
+    'feed': { width: 1024, height: 1024 },    // Square format (DALL-E supported)
+    'default': { width: 1024, height: 1024 }  // Square format (DALL-E supported)
   };
   
   return dimensions[format as keyof typeof dimensions] || dimensions.default;
