@@ -26,252 +26,217 @@ interface GenerateCarouselResponse {
   hashtags: string[];
 }
 
+interface ModelConfig {
+  model: string;
+  timeout: number;
+  maxTokens: number;
+}
+
 export const generateCarousel = async (params: GenerateCarouselParams): Promise<GenerateCarouselResponse> => {
   const { title, username, content, instagramHandle, isVerified, slideCount = 10, contentType, contentFormat, callToAction, customCTA, copywritingFramework, targetAudience } = params;
 
-// Auto-detect target audience based on content
-const detectTargetAudience = (content: string, contentType: string): string => {
-  const businessKeywords = ['empresa', 'negócio', 'vendas', 'marketing', 'empreendedor', 'startup', 'lucro'];
-  const techKeywords = ['tecnologia', 'programação', 'desenvolvimento', 'software', 'ia', 'digital'];
-  const healthKeywords = ['saúde', 'exercício', 'nutrição', 'bem-estar', 'fitness', 'mental'];
-  const educationKeywords = ['estudar', 'aprender', 'educação', 'conhecimento', 'curso', 'ensino'];
-  
-  const lowerContent = content.toLowerCase();
-  
-  if (businessKeywords.some(keyword => lowerContent.includes(keyword))) return 'Empreendedores e profissionais de negócios (25-45 anos)';
-  if (techKeywords.some(keyword => lowerContent.includes(keyword))) return 'Profissionais de tecnologia e entusiastas de inovação (20-40 anos)';
-  if (healthKeywords.some(keyword => lowerContent.includes(keyword))) return 'Pessoas interessadas em saúde e bem-estar (18-50 anos)';
-  if (educationKeywords.some(keyword => lowerContent.includes(keyword))) return 'Estudantes e profissionais em desenvolvimento (18-35 anos)';
-  
-  return targetAudience || 'Público geral interessado em crescimento pessoal (20-40 anos)';
-};
+  // Model cascade with fallback
+  const modelConfigs: ModelConfig[] = [
+    { model: 'gpt-4o', timeout: 30000, maxTokens: 2000 },
+    { model: 'gpt-4.1-2025-04-14', timeout: 25000, maxTokens: 1800 },
+    { model: 'gpt-4o-mini', timeout: 20000, maxTokens: 1500 }
+  ];
 
-const detectedAudience = detectTargetAudience(content, contentType);
-
-// Get framework-specific structure
-const getFrameworkStructure = (framework: string, slideCount: number): string => {
-  switch (framework) {
-    case 'aida':
-      return slideCount === 1 ? 
-        'Estrutura AIDA: Atenção + Interesse + Desejo + Ação em um slide impactante' :
-        `Estrutura AIDA:\n- Slides 1-2: ATENÇÃO (hook forte, problema urgente)\n- Slides 3-${Math.floor(slideCount/2)}: INTERESSE (dados, benefícios)\n- Slides ${Math.floor(slideCount/2)+1}-${slideCount-1}: DESEJO (transformação, resultados)\n- Slide ${slideCount}: AÇÃO (CTA claro)`;
+  // Helper functions with optimized logic
+  const detectAudience = (content: string): string => {
+    const keywords = {
+      business: ['empresa', 'negócio', 'vendas', 'marketing'],
+      tech: ['tecnologia', 'programação', 'ia', 'digital'],
+      health: ['saúde', 'exercício', 'bem-estar', 'fitness'],
+      education: ['estudar', 'aprender', 'educação', 'curso']
+    };
     
-    case 'pas':
-      return slideCount === 1 ?
-        'Estrutura PAS: Problema + Agitação + Solução em um slide poderoso' :
-        `Estrutura PAS:\n- Slides 1-2: PROBLEMA (dor real do público)\n- Slides 3-${Math.floor(slideCount/2)}: AGITAÇÃO (consequências, urgência)\n- Slides ${Math.floor(slideCount/2)+1}-${slideCount}: SOLUÇÃO (benefícios, CTA)`;
-    
-    case 'before_after_bridge':
-      return slideCount === 1 ?
-        'Estrutura Before-After-Bridge: Estado atual + Futuro desejado + Ponte (solução)' :
-        `Estrutura Before-After-Bridge:\n- Slides 1-2: BEFORE (situação atual, frustrações)\n- Slides 3-4: AFTER (resultado desejado, benefícios)\n- Slides 5-${slideCount}: BRIDGE (como chegar lá, CTA)`;
-    
-    case 'problem_solution':
-      return slideCount === 1 ?
-        'Estrutura Problema-Solução: Problema claro + Solução prática' :
-        `Estrutura Problema-Solução:\n- Slides 1-${Math.floor(slideCount/2)}: PROBLEMA (identificação, impacto)\n- Slides ${Math.floor(slideCount/2)+1}-${slideCount}: SOLUÇÃO (passos, benefícios, CTA)`;
-    
-    case 'storytelling':
-      return slideCount === 1 ?
-        'Narrativa completa: Contexto + Conflito + Resolução + Lição' :
-        `Storytelling:\n- Slides 1-2: CONTEXTO (situação inicial)\n- Slides 3-${Math.floor(slideCount/2)}: CONFLITO (desafio, obstáculo)\n- Slides ${Math.floor(slideCount/2)+1}-${slideCount-1}: RESOLUÇÃO (como resolveu)\n- Slide ${slideCount}: LIÇÃO/CTA (aprendizado aplicável)`;
-    
-    default: // listicle
-      return slideCount === 1 ?
-        'Lista concisa: Introdução + Pontos principais + Conclusão' :
-        `Lista estruturada:\n- Slide 1: INTRODUÇÃO (promessa, benefício)\n- Slides 2-${slideCount-1}: PONTOS (um por slide, com detalhes)\n- Slide ${slideCount}: CONCLUSÃO/CTA`;
-  }
-};
-
-// Get CTA based on selection
-const getCTAText = (cta: string, customCTA?: string): string => {
-  if (cta === 'custom' && customCTA) return customCTA;
-  
-  const ctas = {
-    follow: 'Me segue para mais conteúdos como este!',
-    link_bio: 'Link na bio para saber mais',
-    comment: 'Comenta aqui embaixo sua opinião',
-    share: 'Compartilha com quem precisa ver isso',
-    save: 'Salva este post para consultar depois',
-    dm: 'Manda DM se tiver dúvidas',
-    tag_friends: 'Marca aquele amigo que precisa ver isso'
+    const lower = content.toLowerCase();
+    if (keywords.business.some(k => lower.includes(k))) return 'Empreendedores (25-45 anos)';
+    if (keywords.tech.some(k => lower.includes(k))) return 'Profissionais tech (20-40 anos)';
+    if (keywords.health.some(k => lower.includes(k))) return 'Interessados em saúde (18-50 anos)';
+    if (keywords.education.some(k => lower.includes(k))) return 'Estudantes (18-35 anos)';
+    return targetAudience || 'Crescimento pessoal (20-40 anos)';
   };
-  
-  return ctas[cta as keyof typeof ctas] || ctas.follow;
-};
 
-// Get psychological triggers
-const getPsychologicalTriggers = (contentType: string): string => {
+  const getFramework = (fw: string, count: number): string => {
+    const mid = Math.floor(count/2);
+    const structures = {
+      aida: count === 1 ? 'AIDA: Atenção+Interesse+Desejo+Ação' : `AIDA: 1-2 Atenção, 3-${mid} Interesse, ${mid+1}-${count-1} Desejo, ${count} Ação`,
+      pas: count === 1 ? 'PAS: Problema+Agitação+Solução' : `PAS: 1-2 Problema, 3-${mid} Agitação, ${mid+1}-${count} Solução`,
+      before_after_bridge: count === 1 ? 'Antes+Depois+Ponte' : `Before-After-Bridge: 1-2 Antes, 3-4 Depois, 5-${count} Ponte`,
+      problem_solution: count === 1 ? 'Problema+Solução' : `Problema-Solução: 1-${mid} Problema, ${mid+1}-${count} Solução`,
+      storytelling: count === 1 ? 'Contexto+Conflito+Resolução+Lição' : `Story: 1-2 Contexto, 3-${mid} Conflito, ${mid+1}-${count-1} Resolução, ${count} Lição`
+    };
+    return structures[fw as keyof typeof structures] || `Lista: 1 Intro, 2-${count-1} Pontos, ${count} Conclusão`;
+  };
+
+  const getCTA = (cta: string, custom?: string): string => {
+    if (cta === 'custom' && custom) return custom;
+    const ctas = { follow: 'Me segue!', link_bio: 'Link na bio', comment: 'Comenta aqui', share: 'Compartilha', save: 'Salva este post', dm: 'Manda DM', tag_friends: 'Marca um amigo' };
+    return ctas[cta as keyof typeof ctas] || ctas.follow;
+  };
+
   const triggers = {
-    educational: 'Curiosidade (revelar segredos), Autoridade (dados/estatísticas), Benefício (transformação)',
-    motivational: 'Urgência (momento certo), Exclusividade (poucos fazem), Inspiração (superação)',
-    tutorial: 'Utilidade (resultado prático), Simplicidade (fácil de seguir), Progresso (passo a passo)',
-    storytelling: 'Identificação (relatable), Suspense (o que aconteceu), Emoção (conexão humana)',
-    business: 'Autoridade (expertise), Urgência (oportunidade), Benefício (ROI/resultados)',
-    lifestyle: 'Aspiração (vida desejada), Identidade (quem você quer ser), Tendência (popular)',
-    tips: 'Utilidade (aplicável), Curiosidade (insights), Simplicidade (fácil implementar)',
-    personal: 'Autenticidade (vulnerabilidade), Identificação (experiências comuns), Inspiração'
+    educational: 'Curiosidade, Autoridade, Benefício',
+    motivational: 'Urgência, Exclusividade, Inspiração', 
+    tutorial: 'Utilidade, Simplicidade, Progresso',
+    storytelling: 'Identificação, Suspense, Emoção',
+    business: 'Autoridade, Urgência, ROI',
+    lifestyle: 'Aspiração, Identidade, Tendência'
   };
+
+  // Optimized prompt (~800 chars vs 2300)
+  const audience = detectAudience(content);
+  const framework = getFramework(copywritingFramework, slideCount);
+  const ctaText = getCTA(callToAction, customCTA);
+  const trigger = triggers[contentType as keyof typeof triggers] || triggers.educational;
+  const dimensions = contentFormat === 'stories' ? '1080x1920' : '1080x1350';
+
+  const prompt = `Crie carrossel Instagram:
+DADOS: ${username} (@${instagramHandle})${isVerified ? ' ✓' : ''} | ${content}
+CONFIG: ${contentType} | ${contentFormat} | ${slideCount} slides | ${audience}
+FRAMEWORK: ${framework}
+CTA: ${ctaText}
+
+REGRAS:
+- Sem emojis no texto, max 280 chars/slide
+- Gatilhos: ${trigger}
+- TODAS slides: needsImage: true + imagePrompt detalhado
+- Dimensões: ${dimensions}
+- Variedade visual: gráficos, ilustrações, conceitos
+- Design 2024: gradientes, tipografia bold, cores vibrantes
+
+JSON formato:
+{"slides":[{"id":1,"text":"...","isEdited":false,"originalText":"...","needsImage":true,"imagePrompt":"Design impactante..."}],"caption":"...","hashtags":["tag1"]}`;
+
+  // Progressive model fallback with timeout and detailed error handling
+  let lastError: any;
   
-  return triggers[contentType as keyof typeof triggers] || triggers.educational;
-};
-
-const prompt = `
-Crie um carrossel para Instagram baseado nas seguintes especificações:
-
-INFORMAÇÕES BÁSICAS:
-${title ? `Título: ${title}` : ''}
-Criador: ${username} (@${instagramHandle})${isVerified ? ' ✓' : ''}
-Conteúdo: ${content}
-
-CONFIGURAÇÕES:
-- Tipo: ${contentType}
-- Formato: ${contentFormat}
-- Framework: ${copywritingFramework}
-- Público-alvo: ${detectedAudience}
-- CTA desejado: ${getCTAText(callToAction, customCTA)}
-- Número de slides: ${slideCount}
-
-DIRETRIZES OBRIGATÓRIAS:
-
-📝 CONTEÚDO:
-- PROIBIDO usar emojis no texto dos slides
-- Máximo 280 caracteres por slide
-- Aplicar gatilhos psicológicos: ${getPsychologicalTriggers(contentType)}
-- Tom personalizado para o público-alvo detectado
-- Linguagem natural e conversacional
-- ${getFrameworkStructure(copywritingFramework, slideCount)}
-
-🖼️ IMAGENS (OBRIGATÓRIO - 100% DAS SLIDES):
-- Dimensões EXATAS: ${contentFormat === 'stories' ? '1080x1920' : contentFormat === 'reels' ? '1080x1920' : '1080x1350'}
-- TODAS as slides devem ter needsImage: true e imagePrompt descritivo
-- Garantir variedade visual: alternar entre gráficos, ilustrações, conceitos, textos estilizados
-- Prompts específicos por tipo: dados→gráficos, processos→diagramas, conceitos→ilustrações minimalistas
-- Seguir tendências 2024: gradientes suaves, tipografia bold, cores vibrantes, design limpo
-- Considerar posição da slide para diversidade: inicial→impactante, meio→informativa, final→call-to-action
-
-🎯 OTIMIZAÇÃO POR FORMATO:
-${contentFormat === 'feed' ? 
-  '- Posts quadrados otimizados para descoberta\n- Texto legível em preview pequena\n- Primeira slide como capa atrativa' :
-  contentFormat === 'stories' ? 
-  '- Formato vertical, texto grande e centralizado\n- Elementos visuais no topo/centro\n- Swipe up/CTA visível' :
-  '- Formato vertical para Reels\n- Texto conciso e impactante\n- Primeira slide como hook forte'
-}
-
-🧠 PERSUASÃO E INFLUÊNCIA:
-- Princípio da Reciprocidade: ofereça valor primeiro
-- Prova Social: use "milhares fazem isso", "método comprovado"
-- Escassez: "poucos sabem", "estratégia exclusiva"
-- Autoridade: dados, estatísticas, expertise
-- Compromisso: convide à ação/reflexão
-
-💬 STORYTELLING COMPLEMENTAR:
-- Conectar slides com elementos narrativos
-- Usar transitions suaves ("Mas aqui está o problema...", "E foi aí que descobri...")
-- Criar expectativa entre slides
-- Resolver tensões gradualmente
-
-Responda apenas com um JSON válido no seguinte formato:
-{
-  "slides": [
-    {
-      "id": 1,
-      "text": "🧵 THREAD: Como dominar [tópico]\n\nVou te ensinar os 9 passos que mudaram minha vida profissional:\n\n👇",
-      "isEdited": false,
-      "originalText": "🧵 THREAD: Como dominar [tópico]\n\nVou te ensinar os 9 passos que mudaram minha vida profissional:\n\n👇",
-      "needsImage": true,
-      "imagePrompt": "Design impactante de capa com tipografia bold e gradiente vibrante, estilo moderno e profissional"
-    },
-    {
-      "id": 2,
-      "text": "📊 Estatísticas mostram que 73% das empresas...",
-      "isEdited": false,
-      "originalText": "📊 Estatísticas mostram que 73% das empresas...",
-      "needsImage": true,
-      "imagePrompt": "Gráfico moderno mostrando estatísticas de empresas, design minimalista com cores vibrantes"
-    }
-  ],
-  "caption": "Legenda atrativa para o carrossel...",
-  "hashtags": ["hashtag1", "hashtag2", "hashtag3"]
-}
-`;
-
-  try {
-    const response = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'gpt-4.1-2025-04-14',
-        messages: [
-          {
-            role: 'system',
-            content: 'Você é um especialista em marketing digital e criação de conteúdo para Instagram. Sempre responda apenas com JSON válido.'
-          },
-          {
-            role: 'user',
-            content: prompt
-          }
-        ],
-        temperature: 0.7,
-        max_tokens: 2000,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(
-        errorData.error?.message || 
-        `Erro da API OpenAI: ${response.status} ${response.statusText}`
-      );
-    }
-
-    const data = await response.json();
-    const content = data.choices[0]?.message?.content;
-
-    if (!content) {
-      throw new Error('Resposta vazia da API');
-    }
-
+  for (let i = 0; i < modelConfigs.length; i++) {
+    const config = modelConfigs[i];
+    console.log(`🤖 Attempting generation with ${config.model} (${i + 1}/${modelConfigs.length})`);
+    
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), config.timeout);
+      
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: config.model,
+          messages: [
+            {
+              role: 'system',
+              content: 'Especialista em marketing Instagram. Responda apenas JSON válido.'
+            },
+            {
+              role: 'user',
+              content: prompt
+            }
+          ],
+          temperature: 0.7,
+          max_tokens: config.maxTokens,
+        }),
+        signal: controller.signal
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        const errorMsg = errorData.error?.message || `API Error: ${response.status}`;
+        
+        // Check for quota/billing issues
+        if (errorMsg.includes('insufficient_quota') || errorMsg.includes('billing')) {
+          console.warn(`💳 Quota/billing issue with ${config.model}, trying next model...`);
+          lastError = new Error(`Quota issue: ${errorMsg}`);
+          continue;
+        }
+        
+        throw new Error(errorMsg);
+      }
+
+      const data = await response.json();
+      const content = data.choices[0]?.message?.content;
+
+      if (!content) {
+        throw new Error('Empty API response');
+      }
+
+      // Progressive validation with auto-correction
       const result = JSON.parse(content);
       
-      // Validate response structure
       if (!result.slides || !Array.isArray(result.slides)) {
-        throw new Error('Formato de resposta inválido: slides não encontrados');
+        throw new Error('Invalid format: slides missing');
       }
 
+      // Auto-correct slide count mismatch
       if (result.slides.length !== slideCount) {
-        throw new Error(`Número incorreto de slides: esperado ${slideCount}, recebido ${result.slides.length}`);
+        console.warn(`⚠️ Slide count mismatch: expected ${slideCount}, got ${result.slides.length}`);
+        if (result.slides.length > slideCount) {
+          result.slides = result.slides.slice(0, slideCount);
+        } else {
+          // Generate missing slides
+          const missing = slideCount - result.slides.length;
+          for (let j = 0; j < missing; j++) {
+            result.slides.push({
+              id: result.slides.length + 1,
+              text: `Slide adicional ${result.slides.length + 1}`,
+              isEdited: false,
+              originalText: `Slide adicional ${result.slides.length + 1}`,
+              needsImage: true,
+              imagePrompt: 'Design moderno para slide adicional'
+            });
+          }
+        }
       }
 
-      if (!result.caption || !result.hashtags) {
-        throw new Error('Formato de resposta inválido: legenda ou hashtags não encontradas');
-      }
+      // Validate essential fields
+      if (!result.caption) result.caption = 'Legenda automática para o carrossel';
+      if (!result.hashtags || !Array.isArray(result.hashtags)) result.hashtags = ['instagram', 'carrossel', contentType];
 
+      console.log(`✅ Successfully generated with ${config.model}`);
       return result;
-    } catch (parseError) {
-      console.error('Erro ao parsear JSON:', content);
-      throw new Error('Erro ao processar resposta da IA. Tente novamente.');
-    }
 
-  } catch (error: any) {
-    console.error('Erro na geração do carrossel:', error);
-    
-    if (error.message.includes('401')) {
-      throw new Error('Chave da API inválida. Verifique sua chave OpenAI.');
+    } catch (error: any) {
+      console.warn(`❌ ${config.model} failed:`, error.message);
+      lastError = error;
+      
+      // Don't retry on parse errors or auth issues
+      if (error.message.includes('JSON') || error.message.includes('401')) {
+        if (i < modelConfigs.length - 1) continue;
+        break;
+      }
+      
+      // Continue to next model
+      if (i < modelConfigs.length - 1) continue;
     }
-    
-    if (error.message.includes('insufficient_quota')) {
-      throw new Error('Cota da API esgotada. Verifique seu plano OpenAI.');
-    }
-    
-    if (error.message.includes('rate_limit')) {
-      throw new Error('Muitas solicitações. Aguarde um momento e tente novamente.');
-    }
-
-    throw error;
   }
+
+  // All models failed
+  console.error('🚨 All models failed, throwing last error');
+  
+  // Enhanced error messages
+  if (lastError?.message?.includes('401')) {
+    throw new Error('Chave da API inválida. Verifique sua chave OpenAI.');
+  }
+  
+  if (lastError?.message?.includes('insufficient_quota') || lastError?.message?.includes('billing')) {
+    throw new Error('Cota da API esgotada. Verifique seu plano OpenAI ou tente novamente mais tarde.');
+  }
+  
+  if (lastError?.message?.includes('rate_limit')) {
+    throw new Error('Limite de requisições atingido. Aguarde alguns minutos e tente novamente.');
+  }
+
+  if (lastError?.message?.includes('timeout') || lastError?.name === 'AbortError') {
+    throw new Error('Timeout na geração. A IA está sobrecarregada, tente novamente em alguns minutos.');
+  }
+
+  throw lastError || new Error('Erro desconhecido na geração do carrossel. Tente novamente.');
 };

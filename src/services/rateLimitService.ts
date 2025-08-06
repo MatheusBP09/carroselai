@@ -13,10 +13,10 @@ interface RateLimitConfig {
 class RateLimitService {
   private requests: Map<string, RequestTracker> = new Map();
   private config: RateLimitConfig = {
-    maxRequests: 3, // Conservative limit for DALL-E
+    maxRequests: 10, // Increased for better throughput
     windowMs: 60000, // 1 minute window
     backoffMultiplier: 1.5,
-    maxBackoffMs: 10000 // Max 10 seconds
+    maxBackoffMs: 8000 // Reduced max backoff
   };
 
   async throttleRequest(key: string = 'default'): Promise<void> {
@@ -50,7 +50,17 @@ class RateLimitService {
   }
 
   getDelayBetweenRequests(): number {
-    return 2000; // 2 seconds between requests
+    return 1000; // 1 second between requests
+  }
+
+  // Enhanced quota detection
+  isQuotaError(error: any): boolean {
+    const msg = error?.message?.toLowerCase() || '';
+    return msg.includes('quota') || 
+           msg.includes('billing') || 
+           msg.includes('insufficient_quota') ||
+           msg.includes('rate_limit_exceeded') ||
+           msg.includes('requests per');
   }
 
   async withDelay(fn: () => Promise<any>, delay?: number): Promise<any> {

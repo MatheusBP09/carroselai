@@ -18,10 +18,18 @@ interface RetryConfig {
 
 class EnhancedImageService {
   private retryConfig: RetryConfig = {
-    maxRetries: 3,
-    baseDelay: 1000,
-    maxDelay: 8000,
-    backoffMultiplier: 2
+    maxRetries: 2, // Reduced retries for faster fallback
+    baseDelay: 800,
+    maxDelay: 5000, // Faster recovery
+    backoffMultiplier: 1.8
+  };
+
+  private stats = {
+    totalRequests: 0,
+    successfulGenerations: 0,
+    fallbacksUsed: 0,
+    quotaErrors: 0,
+    contentPolicyErrors: 0
   };
 
   async generateWithFallback(
@@ -30,19 +38,23 @@ class EnhancedImageService {
     totalSlides: number,
     username?: string
   ): Promise<EnhancedImageResult> {
+    this.stats.totalRequests++;
     let retries = 0;
     
-    // Apply rate limiting
+    // Enhanced rate limiting with quota detection
     await rateLimitService.throttleRequest('image-generation');
     
     while (retries <= this.retryConfig.maxRetries) {
       try {
-        console.log(`🎨 Attempting image generation for slide ${slideIndex + 1}/${totalSlides} (attempt ${retries + 1})`);
+        console.log(`🎨 [${slideIndex + 1}/${totalSlides}] Attempt ${retries + 1}/${this.retryConfig.maxRetries + 1}`);
         
-        // Progressive prompt simplification
+        // Progressive prompt optimization
         const optimizedParams = this.optimizePrompt(params, retries);
         
         const result = await generateContentImage(optimizedParams);
+        
+        this.stats.successfulGenerations++;
+        console.log(`✅ Image generated successfully for slide ${slideIndex + 1}`);
         
         return {
           imageUrl: result.imageUrl,
@@ -53,26 +65,41 @@ class EnhancedImageService {
         
       } catch (error: any) {
         retries++;
-        console.warn(`⚠️ Image generation attempt ${retries} failed:`, error.message);
+        console.warn(`❌ [${slideIndex + 1}/${totalSlides}] Attempt ${retries} failed:`, error.message);
         
-        // Check if we should continue retrying
-        if (retries > this.retryConfig.maxRetries || this.shouldUseFallback(error)) {
+        // Enhanced error categorization
+        if (rateLimitService.isQuotaError(error)) {
+          this.stats.quotaErrors++;
+          console.log(`💳 Quota error detected, using fallback immediately`);
           break;
         }
         
-        // Progressive backoff delay
-        const delay = Math.min(
-          this.retryConfig.baseDelay * Math.pow(this.retryConfig.backoffMultiplier, retries - 1),
-          this.retryConfig.maxDelay
-        );
+        if (this.isContentPolicyError(error)) {
+          this.stats.contentPolicyErrors++;
+          console.log(`🔒 Content policy violation, using fallback`);
+          break;
+        }
         
-        console.log(`⏳ Waiting ${delay}ms before retry...`);
+        // Check if we should continue retrying
+        if (retries > this.retryConfig.maxRetries) {
+          console.log(`🔄 Max retries reached for slide ${slideIndex + 1}`);
+          break;
+        }
+        
+        // Progressive backoff with jitter
+        const baseDelay = this.retryConfig.baseDelay * Math.pow(this.retryConfig.backoffMultiplier, retries - 1);
+        const jitter = Math.random() * 200; // Add randomness to prevent thundering herd
+        const delay = Math.min(baseDelay + jitter, this.retryConfig.maxDelay);
+        
+        console.log(`⏳ Waiting ${Math.round(delay)}ms before retry...`);
         await new Promise(resolve => setTimeout(resolve, delay));
       }
     }
     
-    // Generate enhanced fallback
-    console.log(`🎯 Using enhanced fallback for slide ${slideIndex + 1}`);
+    // Generate intelligent fallback with detailed logging
+    this.stats.fallbacksUsed++;
+    console.log(`🎯 Using intelligent fallback for slide ${slideIndex + 1} (${this.stats.fallbacksUsed}/${this.stats.totalRequests} total fallbacks)`);
+    
     const fallbackUrl = this.generateIntelligentFallback(params, slideIndex, username);
     
     return {
@@ -80,6 +107,24 @@ class EnhancedImageService {
       generated: false,
       fallbackUsed: true,
       retries
+    };
+  }
+
+  // Enhanced error detection
+  private isContentPolicyError(error: any): boolean {
+    const msg = error?.message?.toLowerCase() || '';
+    return msg.includes('content_policy') || 
+           msg.includes('safety') ||
+           msg.includes('inappropriate') ||
+           msg.includes('policy violation');
+  }
+
+  // Get real-time statistics
+  getStats() {
+    return {
+      ...this.stats,
+      successRate: this.stats.totalRequests > 0 ? (this.stats.successfulGenerations / this.stats.totalRequests) * 100 : 0,
+      fallbackRate: this.stats.totalRequests > 0 ? (this.stats.fallbacksUsed / this.stats.totalRequests) * 100 : 0
     };
   }
 
@@ -113,23 +158,9 @@ class EnhancedImageService {
     };
   }
 
+  // Legacy method for backward compatibility - now uses enhanced detection
   private shouldUseFallback(error: any): boolean {
-    const errorMessage = error.message?.toLowerCase() || '';
-    
-    // Use fallback for quota/billing issues
-    if (errorMessage.includes('quota') || 
-        errorMessage.includes('billing') || 
-        errorMessage.includes('insufficient_quota')) {
-      return true;
-    }
-    
-    // Use fallback for content policy violations
-    if (errorMessage.includes('content_policy') || 
-        errorMessage.includes('safety')) {
-      return true;
-    }
-    
-    return false;
+    return rateLimitService.isQuotaError(error) || this.isContentPolicyError(error);
   }
 
   private generateIntelligentFallback(
@@ -166,24 +197,60 @@ class EnhancedImageService {
     totalSlides: number,
     onProgress?: (progress: number, current: number) => void
   ): Promise<EnhancedImageResult[]> {
+    console.log(`🚀 Starting batch generation: ${requests.length} images`);
+    const startTime = Date.now();
     const results: EnhancedImageResult[] = [];
+    
+    // Reset stats for this batch
+    this.stats = {
+      totalRequests: 0,
+      successfulGenerations: 0,
+      fallbacksUsed: 0,
+      quotaErrors: 0,
+      contentPolicyErrors: 0
+    };
     
     for (let i = 0; i < requests.length; i++) {
       const { params, slideIndex, username } = requests[i];
       
-      // Update progress
-      onProgress?.(((i + 1) / requests.length) * 100, i + 1);
+      // Update progress with detailed status
+      const progressPercent = ((i + 1) / requests.length) * 100;
+      onProgress?.(progressPercent, i + 1);
       
-      // Add delay between requests (except for the first one)
+      // Smart delay management - reduced delay after successful generations
       if (i > 0) {
-        await new Promise(resolve => setTimeout(resolve, rateLimitService.getDelayBetweenRequests()));
+        const previousResult = results[i - 1];
+        const delay = previousResult?.generated ? 
+          rateLimitService.getDelayBetweenRequests() * 0.8 : // Faster after success
+          rateLimitService.getDelayBetweenRequests();
+        
+        await new Promise(resolve => setTimeout(resolve, delay));
       }
       
       const result = await this.generateWithFallback(params, slideIndex, totalSlides, username);
       results.push(result);
       
-      console.log(`✅ Slide ${slideIndex + 1}/${totalSlides} completed: ${result.generated ? 'Generated' : 'Fallback'}`);
+      const status = result.generated ? 
+        `✅ Generated (${result.retries} retries)` : 
+        `🎯 Fallback (after ${result.retries} attempts)`;
+      
+      console.log(`[${i + 1}/${totalSlides}] ${status}`);
+      
+      // Log intermediate stats every 3 slides
+      if ((i + 1) % 3 === 0 || i === requests.length - 1) {
+        const stats = this.getStats();
+        console.log(`📊 Progress: ${Math.round(stats.successRate)}% success, ${Math.round(stats.fallbackRate)}% fallbacks`);
+      }
     }
+    
+    // Final batch statistics
+    const endTime = Date.now();
+    const duration = Math.round((endTime - startTime) / 1000);
+    const stats = this.getStats();
+    
+    console.log(`🏁 Batch completed in ${duration}s: ${stats.successfulGenerations} generated, ${stats.fallbacksUsed} fallbacks`);
+    if (stats.quotaErrors > 0) console.log(`💳 Quota errors: ${stats.quotaErrors}`);
+    if (stats.contentPolicyErrors > 0) console.log(`🔒 Content policy errors: ${stats.contentPolicyErrors}`);
     
     return results;
   }
