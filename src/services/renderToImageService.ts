@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { TwitterPost } from '@/components/TwitterPost';
 import { preloadSlideImages } from './imagePreprocessingService';
 import { nodeToPng } from './nodeToImageService';
+import { capturePreviewToImage } from './previewCaptureService';
 
 interface RenderToImageParams {
   username: string;
@@ -155,12 +156,55 @@ const waitForImages = async (container: HTMLElement): Promise<ImageValidationRes
  * Render TwitterPost component to a downloadable image
  */
 export const renderTwitterPostToImage = async (params: RenderToImageParams): Promise<Blob> => {
-  console.log('Starting image rendering for:', { 
-    username: params.username, 
+  console.log('🎨 Starting Twitter post rendering process...');
+  console.log('Input parameters:', {
+    username: params.username,
+    handle: params.handle,
+    isVerified: params.isVerified,
+    textLength: params.text?.length || 0,
     hasProfileImage: !!params.profileImageUrl,
-    hasContentImage: !!params.contentImageUrl 
+    hasContentImage: !!params.contentImageUrl,
+    profileImageUrl: params.profileImageUrl?.substring(0, 50),
+    contentImageUrl: params.contentImageUrl?.substring(0, 50)
   });
 
+  try {
+    // Try the new preview capture approach first
+    console.log('🎯 Attempting preview capture method...');
+    try {
+      const blob = await capturePreviewToImage({
+        username: params.username,
+        handle: params.handle,
+        isVerified: params.isVerified,
+        text: params.text,
+        profileImageUrl: params.profileImageUrl,
+        contentImageUrl: params.contentImageUrl
+      });
+      
+      if (blob && blob.size > 5000) {
+        console.log('✅ Preview capture successful, size:', blob.size);
+        return blob;
+      } else {
+        console.warn('⚠️ Preview capture produced small blob, trying fallback');
+      }
+    } catch (previewError) {
+      console.warn('⚠️ Preview capture failed, using fallback method:', previewError);
+    }
+
+    // Fallback to original method
+    console.log('🔄 Using fallback rendering method...');
+    return await renderWithFallbackMethod(params);
+    
+  } catch (error) {
+    console.error('❌ All rendering methods failed:', error);
+    throw error;
+  }
+};
+
+/**
+ * Fallback rendering method using original approach
+ */
+const renderWithFallbackMethod = async (params: RenderToImageParams): Promise<Blob> => {
   return new Promise(async (resolve, reject) => {
     let container: HTMLElement | null = null;
     let root: any = null;
