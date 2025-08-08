@@ -224,16 +224,24 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
       // Create a temporary container with optimal positioning for rendering
       container = document.createElement('div');
       container.style.position = 'absolute';
-      container.style.top = '0px';
-      container.style.left = '0px';
+      container.style.top = '10px'; // Slightly visible for better rendering
+      container.style.left = '10px';
       container.style.width = '1080px';
       container.style.height = '1350px';
       container.style.pointerEvents = 'none';
-      container.style.visibility = 'hidden'; // Better for html2canvas than opacity
-      container.style.zIndex = '-9999';
+      container.style.visibility = 'visible'; // Make visible during rendering
+      container.style.zIndex = '10000'; // Bring to front temporarily
       container.style.overflow = 'visible';
       container.style.backgroundColor = '#ffffff';
+      container.style.border = '1px solid red'; // Debug border
       document.body.appendChild(container);
+
+      console.log('📋 Container created and added to DOM:', {
+        position: container.style.position,
+        top: container.style.top,
+        visibility: container.style.visibility,
+        dimensions: `${container.style.width}x${container.style.height}`
+      });
 
       // Create React root and render component
       root = createRoot(container);
@@ -278,18 +286,22 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
       // Enhanced html2canvas configuration for perfect PNG generation
       console.log('🎨 Starting html2canvas with optimal PNG settings...');
       const html2canvas = await import('html2canvas');
+      
+      // Hide the debug border before capture
+      container.style.border = 'none';
+      
       const canvas = await html2canvas.default(container, {
         x: 0,
         y: 0,
         width: 1080,
         height: 1350,
-        scale: 2, // Higher quality
+        scale: 1, // Use scale 1 to avoid memory issues
         useCORS: false,
         allowTaint: true,
         backgroundColor: '#ffffff',
         logging: true, // Enable for debugging
-        imageTimeout: 0,
-        foreignObjectRendering: true,
+        imageTimeout: 15000,
+        foreignObjectRendering: false, // Disable for better compatibility
         removeContainer: false,
         scrollX: 0,
         scrollY: 0,
@@ -351,7 +363,32 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
         }
       });
 
-      console.log('html2canvas rendering completed, canvas size:', canvas.width, 'x', canvas.height);
+      console.log('📊 Canvas generated:', {
+        width: canvas.width,
+        height: canvas.height,
+        hasContent: canvas.width > 0 && canvas.height > 0
+      });
+
+      // Test canvas content by checking if it's not just blank
+      const ctx = canvas.getContext('2d');
+      if (ctx) {
+        const imageData = ctx.getImageData(0, 0, Math.min(canvas.width, 100), Math.min(canvas.height, 100));
+        const hasNonWhitePixels = imageData.data.some((value, index) => {
+          // Check RGB values (skip alpha channel)
+          return index % 4 !== 3 && value !== 255;
+        });
+        console.log('🎨 Canvas content check:', {
+          hasNonWhitePixels,
+          sampleDataLength: imageData.data.length
+        });
+
+        if (!hasNonWhitePixels) {
+          console.warn('⚠️ Canvas appears to be blank (all white pixels detected)');
+          // Save debug canvas as data URL for inspection
+          const debugDataUrl = canvas.toDataURL('image/png');
+          console.log('🔍 Debug canvas data URL (first 100 chars):', debugDataUrl.substring(0, 100));
+        }
+      }
 
       // Validate canvas content
       if (canvas.width === 0 || canvas.height === 0) {

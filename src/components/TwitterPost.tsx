@@ -27,23 +27,27 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
   const hasImage = !!contentImageUrl;
   
   return (
-    <Card 
-      className="w-[1080px] h-[1350px] bg-white text-black border-0 p-16 mx-auto font-twitter flex flex-col" 
+    <div 
       style={{
         width: '1080px',
         height: '1350px',
         backgroundColor: '#ffffff',
         color: '#000000',
-        fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+        fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        fontSize: '16px',
+        lineHeight: '1.5',
         padding: '64px',
         display: 'flex',
         flexDirection: 'column',
         border: 'none',
-        borderRadius: '0px'
+        borderRadius: '0px',
+        boxSizing: 'border-box',
+        margin: '0',
+        position: 'relative'
       }}
     >
       {/* Twitter Post Header */}
-      <div className="flex items-start space-x-4 mb-8">
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '32px' }}>
         {/* Profile Image */}
         <div className="w-12 h-12 rounded-full overflow-hidden bg-muted flex-shrink-0">
           {profileImageUrl ? (
@@ -144,6 +148,6 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
           />
         </div>
       )}
-    </Card>
+    </div>
   );
 };
