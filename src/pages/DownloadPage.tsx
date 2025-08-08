@@ -8,7 +8,7 @@ import { useToast } from '@/hooks/use-toast';
 import { CarouselData } from '@/types/carousel';
 import { renderTwitterPostToImage } from '@/services/renderToImageService';
 import { TwitterPost } from '@/components/TwitterPost';
-
+import { monitoringService } from '@/services/monitoringService';
 export default function DownloadPage() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -41,6 +41,7 @@ export default function DownloadPage() {
       const slide = data.slides[slideIndex];
       
       console.log(`🖼️ Generating preview for slide ${slideIndex + 1}`);
+      monitoringService.logDownloadEvent('preview_start', { slideIndex });
       
       const blob = await renderTwitterPostToImage({
         text: slide.text,
@@ -58,10 +59,12 @@ export default function DownloadPage() {
 
       const imageUrl = URL.createObjectURL(blob);
       setPreviewImages(prev => new Map(prev).set(slideIndex, imageUrl));
+      monitoringService.logDownloadEvent('preview_success', { slideIndex, size: blob.size });
       
       console.log(`✅ Preview generated for slide ${slideIndex + 1}, size: ${blob.size} bytes`);
     } catch (error) {
       console.error(`❌ Error generating preview for slide ${slideIndex + 1}:`, error);
+      monitoringService.logDownloadEvent('preview_fail', { slideIndex, error: String(error) });
       toast({
         title: "Erro no preview",
         description: `Não foi possível gerar preview do slide ${slideIndex + 1}`,
@@ -92,6 +95,7 @@ export default function DownloadPage() {
       const slide = data.slides[slideIndex];
       
       console.log(`🚀 Starting download for slide ${slideIndex + 1}`);
+      monitoringService.logDownloadEvent('download_start', { slideIndex });
       
       const blob = await renderTwitterPostToImage({
         text: slide.text,
@@ -114,12 +118,15 @@ export default function DownloadPage() {
       const filename = `slide-${slideIndex + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}`;
       await downloadImageWithValidation(validatedBlob, filename);
 
+      monitoringService.logDownloadEvent('download_success', { slideIndex, size: validatedBlob.size });
+      
       toast({
         title: "Sucesso!",
         description: `Slide ${slideIndex + 1} baixado com sucesso`,
       });
     } catch (error) {
       console.error('Error downloading slide:', error);
+      monitoringService.logDownloadEvent('download_fail', { slideIndex, error: String(error) });
       toast({
         title: "Falha no download",
         description: `Falha ao baixar slide ${slideIndex + 1}. Tente novamente.`,
@@ -142,6 +149,7 @@ export default function DownloadPage() {
     try {
       let successCount = 0;
       let errorCount = 0;
+      monitoringService.logDownloadEvent('download_all_start', { total: data.slides.length });
       
       for (let i = 0; i < data.slides.length; i++) {
         try {
@@ -167,10 +175,12 @@ export default function DownloadPage() {
           await downloadImageWithValidation(validatedBlob, filename);
           
           successCount++;
+          monitoringService.logDownloadEvent('download_success', { slideIndex: i, size: validatedBlob.size });
           console.log(`✅ Slide ${i + 1} downloaded successfully`);
           
         } catch (error) {
           errorCount++;
+          monitoringService.logDownloadEvent('download_fail', { slideIndex: i, error: String(error) });
           console.error(`❌ Failed to download slide ${i + 1}:`, error);
         }
         
@@ -179,21 +189,25 @@ export default function DownloadPage() {
       }
 
       if (successCount === data.slides.length) {
+        monitoringService.logDownloadEvent('download_all_complete', { success: true, total: data.slides.length });
         toast({
           title: "Sucesso!",
           description: `Todos os ${data.slides.length} slides foram baixados`,
         });
       } else if (successCount > 0) {
+        monitoringService.logDownloadEvent('download_all_complete', { success: false, partial: true, successCount, total: data.slides.length });
         toast({
           title: "Download parcial",
           description: `${successCount}/${data.slides.length} slides baixados com sucesso`,
           variant: "destructive",
         });
       } else {
+        monitoringService.logDownloadEvent('download_all_complete', { success: false, total: data.slides.length });
         throw new Error('All slides failed to download');
       }
     } catch (error) {
       console.error('Error downloading slides:', error);
+      monitoringService.logDownloadEvent('download_all_error', { error: String(error) });
       toast({
         title: "Falha no download",
         description: "Falha ao baixar slides. Tente novamente.",

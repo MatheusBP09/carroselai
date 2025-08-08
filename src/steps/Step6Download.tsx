@@ -12,6 +12,7 @@ import { useCarousel } from '../context/CarouselContext';
 import { toast } from '@/hooks/use-toast';
 import { downloadCarouselAsZip, testSlideRendering, ZipDownloadProgress } from '@/services/zipDownloadService';
 import { renderTwitterPostToImage } from '@/services/renderToImageService';
+import { monitoringService } from '@/services/monitoringService';
 
 export const Step6Download = ({ data, onBack }: StepProps) => {
   const { resetCarousel } = useCarousel();
@@ -38,10 +39,12 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
     try {
       setIsTestingSlide(slideIndex);
       console.log(`Testing slide ${slideIndex + 1}...`);
+      monitoringService.logDownloadEvent('test_start', { slideIndex });
       
       const result = await testSlideRendering(data, slideIndex);
       
       if (result.success) {
+        monitoringService.logDownloadEvent('test_success', { slideIndex });
         toast({
           title: "Teste bem-sucedido!",
           description: `Slide ${slideIndex + 1} foi renderizado e baixado para teste.`,
@@ -55,6 +58,7 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
       }
     } catch (error) {
       console.error('Test slide error:', error);
+      monitoringService.logDownloadEvent('test_fail', { slideIndex, error: String(error) });
       toast({
         title: "Erro no teste",
         description: error instanceof Error ? error.message : "Erro desconhecido",
@@ -81,6 +85,7 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
     setDownloadingSlides(new Set([...Array(data.slides.length).keys()]));
     
     try {
+      monitoringService.logDownloadEvent('download_all_start', { total: data.slides.length });
       for (let i = 0; i < data.slides.length; i++) {
         const slide = data.slides[i];
         
@@ -100,6 +105,7 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
         // Download with proper PNG validation
         const filename = `slide-${i + 1}-${(data.username || data.instagramHandle).replace(/\s+/g, '-').toLowerCase()}`;
         await downloadPngWithHeaders(validatedBlob, filename);
+        monitoringService.logDownloadEvent('download_success', { slideIndex: i, size: validatedBlob.size });
         
         // Small delay between downloads to prevent browser blocking
         await new Promise(resolve => setTimeout(resolve, 500));
@@ -109,8 +115,10 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
         title: "Sucesso!",
         description: `Todos os ${data.slides.length} slides foram baixados`,
       });
+      monitoringService.logDownloadEvent('download_all_complete', { success: true, total: data.slides.length });
     } catch (error) {
       console.error('Error downloading all slides:', error);
+      monitoringService.logDownloadEvent('download_all_error', { error: String(error) });
       toast({
         title: "Falha no download",
         description: "Falha ao baixar alguns slides. Tente novamente.",

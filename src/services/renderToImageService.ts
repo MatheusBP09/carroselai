@@ -2,6 +2,7 @@ import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { TwitterPost } from '@/components/TwitterPost';
 import { loadImageWithFallbacks } from './proxyImageService';
+import { nodeToPng } from './nodeToImageService';
 
 interface RenderToImageParams {
   username: string;
@@ -281,142 +282,28 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
         console.log(`Image ${i + 1}: ${img.complete ? '✅' : '❌'} complete, src: ${img.src.substring(0, 50)}...`);
       });
 
-      console.log('Starting html2canvas rendering...');
-
-      // Enhanced html2canvas configuration for perfect PNG generation
-      console.log('🎨 Starting html2canvas with optimal PNG settings...');
-      const html2canvas = await import('html2canvas');
+      // Use nodeToImage pipeline (html-to-image with html2canvas fallback)
+      console.log('🖼️ Starting nodeToImage rendering...');
       
       // Hide the debug border before capture
       container.style.border = 'none';
       
-      const canvas = await html2canvas.default(container, {
-        x: 0,
-        y: 0,
+      const blob = await nodeToPng(container, {
         width: 1080,
         height: 1350,
-        scale: 1, // Use scale 1 to avoid memory issues
-        useCORS: false,
-        allowTaint: true,
         backgroundColor: '#ffffff',
-        logging: true, // Enable for debugging
-        imageTimeout: 15000,
-        foreignObjectRendering: false, // Disable for better compatibility
-        removeContainer: false,
-        scrollX: 0,
-        scrollY: 0,
-        windowWidth: 1080,
-        windowHeight: 1350,
-        ignoreElements: (element) => {
-          // Skip any elements that might cause issues
-          return element.tagName === 'SCRIPT' || element.tagName === 'STYLE';
-        },
-        onclone: (clonedDoc) => {
-          console.log('🔧 html2canvas clone setup: Configuring fonts and images...');
-          
-          // Add comprehensive font and image styles
-          const style = clonedDoc.createElement('style');
-          style.textContent = `
-            @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
-            * { 
-              font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif !important;
-              box-sizing: border-box !important;
-              -webkit-font-smoothing: antialiased !important;
-              -moz-osx-font-smoothing: grayscale !important;
-            }
-            img {
-              max-width: 100% !important;
-              height: auto !important;
-              display: block !important;
-              object-fit: cover !important;
-              border: none !important;
-              outline: none !important;
-            }
-            .rounded-full img {
-              border-radius: 50% !important;
-            }
-            .rounded-2xl img {
-              border-radius: 1rem !important;
-            }
-          `;
-          clonedDoc.head.appendChild(style);
-          
-          // Validate and fix images in cloned document
-          const images = clonedDoc.querySelectorAll('img');
-          console.log(`🔍 Clone validation: Found ${images.length} images`);
-          
-          let validImages = 0;
-          images.forEach((img, index) => {
-            const isDataUrl = img.src.startsWith('data:');
-            const isProxyUrl = img.src.includes('allorigins.win');
-            const isValid = isDataUrl || isProxyUrl || img.src.startsWith('blob:');
-            
-            if (isValid) {
-              validImages++;
-              console.log(`✅ Image ${index + 1} validated: ${img.src.substring(0, 50)}...`);
-            } else {
-              console.warn(`⚠️ Image ${index + 1} may cause issues: ${img.src}`);
-            }
-          });
-          
-          console.log(`📊 Clone image validation: ${validImages}/${images.length} images ready for rendering`);
-        }
+        pixelRatio: 1,
       });
-
-      console.log('📊 Canvas generated:', {
-        width: canvas.width,
-        height: canvas.height,
-        hasContent: canvas.width > 0 && canvas.height > 0
-      });
-
-      // Test canvas content by checking if it's not just blank
-      const ctx = canvas.getContext('2d');
-      if (ctx) {
-        const imageData = ctx.getImageData(0, 0, Math.min(canvas.width, 100), Math.min(canvas.height, 100));
-        const hasNonWhitePixels = imageData.data.some((value, index) => {
-          // Check RGB values (skip alpha channel)
-          return index % 4 !== 3 && value !== 255;
-        });
-        console.log('🎨 Canvas content check:', {
-          hasNonWhitePixels,
-          sampleDataLength: imageData.data.length
-        });
-
-        if (!hasNonWhitePixels) {
-          console.warn('⚠️ Canvas appears to be blank (all white pixels detected)');
-          // Save debug canvas as data URL for inspection
-          const debugDataUrl = canvas.toDataURL('image/png');
-          console.log('🔍 Debug canvas data URL (first 100 chars):', debugDataUrl.substring(0, 100));
-        }
+      
+      if (blob && blob.size > 5000) {
+        console.log('✅ PNG blob created via nodeToImage:', { size: blob.size });
+        cleanup();
+        resolve(blob);
+      } else {
+        console.error('❌ Invalid PNG generated by nodeToImage', { size: blob?.size || 0 });
+        cleanup();
+        reject(new Error(`Invalid PNG generated: ${blob?.size || 0} bytes (minimum 5000 required)`));
       }
-
-      // Validate canvas content
-      if (canvas.width === 0 || canvas.height === 0) {
-        throw new Error('Generated canvas has invalid dimensions');
-      }
-
-      // Enhanced canvas to blob conversion with proper PNG generation
-      canvas.toBlob((blob) => {
-        if (blob && blob.size > 5000) {
-          console.log('✅ High-quality PNG blob created:', {
-            size: blob.size,
-            type: blob.type,
-            dimensions: `${canvas.width}x${canvas.height}`
-          });
-          cleanup();
-          resolve(blob);
-        } else {
-          console.error('❌ Generated blob is invalid:', { 
-            blob: !!blob, 
-            size: blob?.size,
-            canvasWidth: canvas.width,
-            canvasHeight: canvas.height,
-            type: blob?.type
-          });
-          cleanup();
-          reject(new Error(`Invalid PNG generated: ${blob?.size || 0} bytes (minimum 5000 required)`));
-        }
-      }, 'image/png', 1.0); // Maximum quality PNG
 
     } catch (error) {
       console.error('Error in renderTwitterPostToImage:', error);

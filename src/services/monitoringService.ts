@@ -129,6 +129,13 @@ class MonitoringService {
     return stats;
   }
 
+  // Simple download/preview telemetry
+  logDownloadEvent(action: string, details?: any) {
+    try {
+      console.log(`⬇️ DownloadEvent: ${action}` , details || '');
+    } catch {}
+  }
+
   // Monitor API health
   getApiHealthStatus(): string {
     const recentErrors = Object.values(this.errorMetrics).reduce((sum, count) => sum + count, 0);
