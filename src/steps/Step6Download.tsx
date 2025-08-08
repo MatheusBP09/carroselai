@@ -93,25 +93,13 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
           contentImageUrl: slide.contentImageUrls?.[0]
         });
 
-        // Ensure proper PNG blob with correct MIME type
-        const pngBlob = new Blob([blob], { type: 'image/png' });
+        // Create valid PNG with proper headers
+        const { createValidPngBlob, downloadPngWithHeaders } = await import('@/services/pngValidationService');
+        const validatedBlob = await createValidPngBlob(blob);
         
-        // Create download link
-        const url = URL.createObjectURL(pngBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `slide-${i + 1}-${(data.username || data.instagramHandle).replace(/\s+/g, '-').toLowerCase()}.png`;
-        link.type = 'image/png';
-        
-        // Add link to DOM, trigger download, then cleanup
-        document.body.appendChild(link);
-        link.click();
-        
-        // Cleanup and delay between downloads
-        setTimeout(() => {
-          document.body.removeChild(link);
-          URL.revokeObjectURL(url);
-        }, 100);
+        // Download with proper PNG validation
+        const filename = `slide-${i + 1}-${(data.username || data.instagramHandle).replace(/\s+/g, '-').toLowerCase()}`;
+        await downloadPngWithHeaders(validatedBlob, filename);
         
         // Small delay between downloads to prevent browser blocking
         await new Promise(resolve => setTimeout(resolve, 500));

@@ -76,119 +76,10 @@ export default function DownloadPage() {
     }
   };
 
-  // Função para validar e corrigir blob PNG
-  const validateAndFixPngBlob = async (blob: Blob): Promise<Blob> => {
-    return new Promise((resolve, reject) => {
-      const canvas = document.createElement('canvas');
-      const ctx = canvas.getContext('2d');
-      const img = new Image();
-      
-      if (!ctx) {
-        reject(new Error('Could not get canvas context'));
-        return;
-      }
-      
-      img.onload = () => {
-        try {
-          // Set canvas dimensions to exact Instagram size
-          canvas.width = 1080;
-          canvas.height = 1350;
-          
-          // Fill with white background first
-          ctx.fillStyle = '#ffffff';
-          ctx.fillRect(0, 0, canvas.width, canvas.height);
-          
-          // Draw the image
-          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-          
-          // Add PNG metadata
-          canvas.toBlob((validBlob) => {
-            if (validBlob && validBlob.size > 1000) {
-              console.log('✅ PNG validated and corrected, size:', validBlob.size);
-              resolve(validBlob);
-            } else {
-              reject(new Error('Invalid PNG blob generated'));
-            }
-          }, 'image/png', 1.0);
-          
-        } catch (error) {
-          reject(error);
-        }
-      };
-      
-      img.onerror = () => {
-        reject(new Error('Failed to load blob as image'));
-      };
-      
-      img.src = URL.createObjectURL(blob);
-    });
-  };
-
-  // Função robusta para download com múltiplos formatos
-  const downloadImageWithFallback = async (blob: Blob, filename: string) => {
-    const formats = [
-      { ext: 'png', type: 'image/png', quality: 1.0 },
-      { ext: 'jpg', type: 'image/jpeg', quality: 0.95 },
-      { ext: 'webp', type: 'image/webp', quality: 0.95 }
-    ];
-    
-    for (const format of formats) {
-      try {
-        let finalBlob = blob;
-        
-        // Re-encode if different format
-        if (format.type !== 'image/png') {
-          finalBlob = await new Promise<Blob>((resolve, reject) => {
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            
-            if (!ctx) {
-              reject(new Error('Canvas context not available'));
-              return;
-            }
-            
-            img.onload = () => {
-              canvas.width = 1080;
-              canvas.height = 1350;
-              ctx.fillStyle = '#ffffff';
-              ctx.fillRect(0, 0, canvas.width, canvas.height);
-              ctx.drawImage(img, 0, 0);
-              
-              canvas.toBlob((newBlob) => {
-                if (newBlob) resolve(newBlob);
-                else reject(new Error('Format conversion failed'));
-              }, format.type, format.quality);
-            };
-            
-            img.onerror = () => reject(new Error('Image load failed'));
-            img.src = URL.createObjectURL(blob);
-          });
-        }
-        
-        // Test download
-        const url = URL.createObjectURL(finalBlob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = filename.replace(/\.(png|jpg|jpeg|webp)$/i, `.${format.ext}`);
-        link.style.display = 'none';
-        
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        setTimeout(() => URL.revokeObjectURL(url), 1000);
-        
-        console.log(`✅ Download successful with format: ${format.ext}`);
-        return; // Success, exit loop
-        
-      } catch (error) {
-        console.warn(`❌ Download failed with ${format.ext}:`, error);
-        if (format === formats[formats.length - 1]) {
-          throw new Error('All download formats failed');
-        }
-      }
-    }
+  // Enhanced download function using PNG validation service
+  const downloadImageWithValidation = async (blob: Blob, filename: string) => {
+    const { downloadPngWithHeaders } = await import('@/services/pngValidationService');
+    await downloadPngWithHeaders(blob, filename);
   };
 
   // Função melhorada para download de slide individual
@@ -213,14 +104,15 @@ export default function DownloadPage() {
 
       console.log('📦 Raw blob received, size:', blob.size);
       
-      // Validate and fix the PNG blob
-      const validatedBlob = await validateAndFixPngBlob(blob);
+      // Create valid PNG with proper headers
+      const { createValidPngBlob } = await import('@/services/pngValidationService');
+      const validatedBlob = await createValidPngBlob(blob);
       
-      console.log('✅ Blob validated, proceeding with download');
+      console.log('✅ PNG validated and corrected, proceeding with download');
       
-      // Download with fallback formats
-      const filename = `slide-${slideIndex + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}.png`;
-      await downloadImageWithFallback(validatedBlob, filename);
+      // Download with proper PNG headers
+      const filename = `slide-${slideIndex + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}`;
+      await downloadImageWithValidation(validatedBlob, filename);
 
       toast({
         title: "Sucesso!",
@@ -266,12 +158,13 @@ export default function DownloadPage() {
             contentImageUrl: slide.contentImageUrls?.[0]
           });
 
-          // Validate and fix the PNG blob
-          const validatedBlob = await validateAndFixPngBlob(blob);
+          // Create valid PNG with proper headers
+          const { createValidPngBlob } = await import('@/services/pngValidationService');
+          const validatedBlob = await createValidPngBlob(blob);
           
-          // Download with fallback formats
-          const filename = `slide-${i + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}.png`;
-          await downloadImageWithFallback(validatedBlob, filename);
+          // Download with proper PNG validation
+          const filename = `slide-${i + 1}-${data.username.replace(/\s+/g, '-').toLowerCase()}`;
+          await downloadImageWithValidation(validatedBlob, filename);
           
           successCount++;
           console.log(`✅ Slide ${i + 1} downloaded successfully`);

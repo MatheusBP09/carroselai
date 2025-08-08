@@ -274,22 +274,24 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
 
       console.log('Starting html2canvas rendering...');
 
-      // Enhanced html2canvas configuration
-      console.log('🎨 Starting html2canvas with enhanced configuration...');
+      // Enhanced html2canvas configuration for perfect PNG generation
+      console.log('🎨 Starting html2canvas with optimal PNG settings...');
       const html2canvas = await import('html2canvas');
       const canvas = await html2canvas.default(container, {
         width: 1080,
         height: 1350,
         scale: 1,
-        useCORS: false, // Disabled since we pre-processed images
+        useCORS: false,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        logging: true, // Enable logging for debugging
-        imageTimeout: 0, // Disabled since images are pre-validated
-        foreignObjectRendering: true, // Enable for better text rendering
-        removeContainer: false, // Keep container for debugging
+        logging: false, // Disable for cleaner output
+        imageTimeout: 0,
+        foreignObjectRendering: true,
+        removeContainer: false,
         scrollX: 0,
         scrollY: 0,
+        windowWidth: 1080,
+        windowHeight: 1350,
         ignoreElements: (element) => {
           // Skip any elements that might cause issues
           return element.tagName === 'SCRIPT' || element.tagName === 'STYLE';
@@ -353,24 +355,28 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
         throw new Error('Generated canvas has invalid dimensions');
       }
 
-      // Convert canvas to blob with validation
+      // Enhanced canvas to blob conversion with proper PNG generation
       canvas.toBlob((blob) => {
-        if (blob && blob.size > 5000) { // Increased minimum size requirement
-          console.log('Image blob created successfully, size:', blob.size, 'bytes');
+        if (blob && blob.size > 5000) {
+          console.log('✅ High-quality PNG blob created:', {
+            size: blob.size,
+            type: blob.type,
+            dimensions: `${canvas.width}x${canvas.height}`
+          });
           cleanup();
           resolve(blob);
         } else {
-          console.error('Generated blob is too small or invalid:', { 
+          console.error('❌ Generated blob is invalid:', { 
             blob: !!blob, 
             size: blob?.size,
             canvasWidth: canvas.width,
             canvasHeight: canvas.height,
-            canvasData: canvas.getContext('2d')?.getImageData(0, 0, 100, 100).data.slice(0, 20)
+            type: blob?.type
           });
           cleanup();
-          reject(new Error(`Generated image is too small or invalid: ${blob?.size || 0} bytes (minimum 5000 required)`));
+          reject(new Error(`Invalid PNG generated: ${blob?.size || 0} bytes (minimum 5000 required)`));
         }
-      }, 'image/png', 1.0);
+      }, 'image/png', 1.0); // Maximum quality PNG
 
     } catch (error) {
       console.error('Error in renderTwitterPostToImage:', error);

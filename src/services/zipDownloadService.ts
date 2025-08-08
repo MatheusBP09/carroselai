@@ -1,6 +1,7 @@
 import JSZip from 'jszip';
 import { renderTwitterPostToImage } from './renderToImageService';
 import { CarouselData } from '@/types/carousel';
+import { createValidPngBlob, validatePngBlob } from './pngValidationService';
 
 export interface ZipDownloadProgress {
   currentSlide: number;
@@ -63,7 +64,7 @@ export const downloadCarouselAsZip = async (
         contentImageUrl: slide.contentImageUrls?.[0]
       });
 
-      // Validate blob with enhanced checks
+      // Validate and enhance PNG blob
       if (!blob || blob.size < 5000) {
         console.error(`Slide ${i + 1} validation failed:`, {
           hasBlob: !!blob,
@@ -79,10 +80,23 @@ export const downloadCarouselAsZip = async (
         throw new Error(`Generated image is too small (${blob?.size || 0} bytes, minimum 5000 required). Check console for details.`);
       }
 
-      console.log(`Slide ${i + 1} rendered successfully, size: ${blob.size} bytes`);
+      // Validate PNG format and create properly formatted PNG
+      console.log(`Validating PNG format for slide ${i + 1}...`);
+      const pngValidation = await validatePngBlob(blob);
+      
+      let finalBlob = blob;
+      if (!pngValidation.isValid) {
+        console.log(`PNG validation failed for slide ${i + 1}, creating valid PNG:`, pngValidation.errors);
+        finalBlob = await createValidPngBlob(blob);
+        console.log(`✅ Created valid PNG for slide ${i + 1}, size: ${finalBlob.size} bytes`);
+      } else {
+        console.log(`✅ PNG validation passed for slide ${i + 1}`);
+      }
+
+      console.log(`Slide ${i + 1} rendered and validated successfully, final size: ${finalBlob.size} bytes`);
       
       const fileName = `slide-${(i + 1).toString().padStart(2, '0')}.png`;
-      renderedSlides.push({ index: i, blob, fileName });
+      renderedSlides.push({ index: i, blob: finalBlob, fileName });
       
       // Small delay to prevent overwhelming the browser
       await new Promise(resolve => setTimeout(resolve, 200));
@@ -359,8 +373,11 @@ export const testSlideRendering = async (
       contentImageUrl: slide.contentImageUrls?.[0]
     });
 
+    // Validate and create properly formatted PNG
+    const validatedBlob = await createValidPngBlob(blob);
+
     // Create a temporary download for testing
-    const url = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(validatedBlob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `test-slide-${slideIndex + 1}.png`;
@@ -370,7 +387,7 @@ export const testSlideRendering = async (
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
 
-    return { success: true, blob };
+    return { success: true, blob: validatedBlob };
   } catch (error) {
     console.error(`Test rendering failed for slide ${slideIndex + 1}:`, error);
     return { 
