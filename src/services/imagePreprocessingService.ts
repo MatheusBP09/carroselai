@@ -39,6 +39,43 @@ class ImageCache {
 const imageCache = new ImageCache();
 
 /**
+ * Fetch image as Data URL (CORS-safe) using fetch -> blob -> FileReader
+ */
+const fetchImageAsDataUrl = async (
+  imageUrl: string,
+  timeout = 12000
+): Promise<string> => {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), timeout);
+  try {
+    const res = await fetch(imageUrl, { mode: 'cors', credentials: 'omit', signal: controller.signal });
+    if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+    const blob = await res.blob();
+    if (!blob || blob.size === 0) throw new Error('Empty blob received');
+
+    return await new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result as string);
+      reader.onerror = () => reject(new Error('Failed to convert blob to data URL'));
+      reader.readAsDataURL(blob);
+    });
+  } finally {
+    clearTimeout(timer);
+  }
+};
+
+/**
+ * Fetch image via proxy and return Data URL
+ */
+const fetchViaProxyAsDataUrl = async (
+  imageUrl: string,
+  timeout = 12000
+): Promise<string> => {
+  const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imageUrl)}`;
+  return fetchImageAsDataUrl(proxyUrl, timeout);
+};
+
+/**
  * Convert image to base64 with increased timeout and better error handling
  */
 const convertImageToBase64 = async (
@@ -112,9 +149,43 @@ export const processImage = async (
     return result;
   }
 
-  // Strategy 2: Convert to base64
+  // Strategy 2A: Fetch -> Blob -> DataURL (CORS-safe)
   try {
-    console.log(`🔄 Converting ${type} image to base64...`);
+    console.log(`🔄 Fetching ${type} image as data URL (CORS-safe)...`);
+    const dataUrl = await fetchImageAsDataUrl(imageUrl, 12000);
+    const result: ImageProcessingResult = {
+      url: dataUrl,
+      isOriginal: false,
+      isFallback: false,
+      method: 'base64'
+    };
+    imageCache.set(cacheKey, result);
+    console.log(`✅ ${type} image fetched and converted successfully`);
+    return result;
+  } catch (error) {
+    console.warn(`⚠️ Fetch->DataURL failed for ${type} image:`, error);
+  }
+
+  // Strategy 2B: Proxy fetch -> DataURL
+  try {
+    console.log(`🔄 Fetching via proxy for ${type} image...`);
+    const proxyDataUrl = await fetchViaProxyAsDataUrl(imageUrl, 12000);
+    const result: ImageProcessingResult = {
+      url: proxyDataUrl,
+      isOriginal: false,
+      isFallback: false,
+      method: 'proxy'
+    };
+    imageCache.set(cacheKey, result);
+    console.log(`✅ ${type} image loaded via proxy (fetch) successfully`);
+    return result;
+  } catch (error) {
+    console.warn(`⚠️ Proxy fetch method failed for ${type} image:`, error);
+  }
+
+  // Strategy 3: Convert to base64 via canvas
+  try {
+    console.log(`🔄 Converting ${type} image to base64 via canvas...`);
     const base64Url = await convertImageToBase64(imageUrl, 10000);
     const result: ImageProcessingResult = {
       url: base64Url,
@@ -123,15 +194,15 @@ export const processImage = async (
       method: 'base64'
     };
     imageCache.set(cacheKey, result);
-    console.log(`✅ ${type} image converted to base64 successfully`);
+    console.log(`✅ ${type} image converted to base64 (canvas) successfully`);
     return result;
   } catch (error) {
-    console.warn(`⚠️ Base64 conversion failed for ${type} image:`, error);
+    console.warn(`⚠️ Canvas base64 conversion failed for ${type} image:`, error);
   }
 
-  // Strategy 3: Try proxy URL
+  // Strategy 4: Try proxy URL via canvas
   try {
-    console.log(`🔄 Trying proxy for ${type} image...`);
+    console.log(`🔄 Trying proxy via canvas for ${type} image...`);
     const proxyUrl = `https://api.allorigins.win/raw?url=${encodeURIComponent(imageUrl)}`;
     const base64Url = await convertImageToBase64(proxyUrl, 8000);
     const result: ImageProcessingResult = {
@@ -141,13 +212,13 @@ export const processImage = async (
       method: 'proxy'
     };
     imageCache.set(cacheKey, result);
-    console.log(`✅ ${type} image loaded via proxy successfully`);
+    console.log(`✅ ${type} image loaded via proxy (canvas) successfully`);
     return result;
   } catch (error) {
-    console.warn(`⚠️ Proxy method failed for ${type} image:`, error);
+    console.warn(`⚠️ Proxy canvas method failed for ${type} image:`, error);
   }
 
-  // Strategy 4: Generate elegant fallback
+  // Strategy 5: Generate elegant fallback
   console.log(`🎨 Generating elegant fallback for ${type} image...`);
   const fallbackUrl = generateTwitterStylePlaceholder(type, username, {
     width: type === 'profile' ? 400 : 800,

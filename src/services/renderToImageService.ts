@@ -169,31 +169,33 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
   });
 
   try {
-    // Try the new preview capture approach first
-    console.log('🎯 Attempting preview capture method...');
+    // Use the 1080x1350 rendering method first for consistent sizing
+    console.log('🎯 Using 1080x1350 rendering method first...');
     try {
-      const blob = await capturePreviewToImage({
-        username: params.username,
-        handle: params.handle,
-        isVerified: params.isVerified,
-        text: params.text,
-        profileImageUrl: params.profileImageUrl,
-        contentImageUrl: params.contentImageUrl
-      });
-      
+      const blob = await renderWithFallbackMethod(params);
       if (blob && blob.size > 5000) {
-        console.log('✅ Preview capture successful, size:', blob.size);
+        console.log('✅ 1080x1350 render successful, size:', blob.size);
         return blob;
-      } else {
-        console.warn('⚠️ Preview capture produced small blob, trying fallback');
       }
-    } catch (previewError) {
-      console.warn('⚠️ Preview capture failed, using fallback method:', previewError);
+    } catch (primaryError) {
+      console.warn('⚠️ Primary render failed, attempting preview capture as fallback:', primaryError);
     }
 
-    // Fallback to original method
-    console.log('🔄 Using fallback rendering method...');
-    return await renderWithFallbackMethod(params);
+    // Fallback to preview capture if needed
+    console.log('🔄 Attempting preview capture fallback...');
+    const previewBlob = await capturePreviewToImage({
+      username: params.username,
+      handle: params.handle,
+      isVerified: params.isVerified,
+      text: params.text,
+      profileImageUrl: params.profileImageUrl,
+      contentImageUrl: params.contentImageUrl
+    });
+    if (previewBlob && previewBlob.size > 5000) {
+      console.log('✅ Preview capture fallback successful, size:', previewBlob.size);
+      return previewBlob;
+    }
+    throw new Error('Both primary and preview capture methods failed to produce a valid image');
     
   } catch (error) {
     console.error('❌ All rendering methods failed:', error);
@@ -256,7 +258,6 @@ const renderWithFallbackMethod = async (params: RenderToImageParams): Promise<Bl
       container.style.zIndex = '10000'; // Bring to front temporarily
       container.style.overflow = 'visible';
       container.style.backgroundColor = '#ffffff';
-      container.style.border = '1px solid red'; // Debug border
       document.body.appendChild(container);
 
       console.log('📋 Container created and added to DOM:', {
