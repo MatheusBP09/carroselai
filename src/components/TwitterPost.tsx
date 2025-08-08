@@ -55,30 +55,38 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
               src={profileImageUrl} 
               alt="Profile" 
               className="w-full h-full object-cover"
-              onError={(e) => {
-                console.error('Profile image failed to load, showing initials fallback');
-                const target = e.target as HTMLImageElement;
-                const container = target.parentElement;
-                if (container) {
-                  container.innerHTML = `
-                    <div class="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-                      <span class="text-white font-bold text-lg">
-                        ${username.substring(0, 2).toUpperCase()}
-                      </span>
-                    </div>
-                  `;
-                }
-              }}
+            onError={(e) => {
+              console.error('Profile image failed to load, showing initials fallback');
+              const target = e.target as HTMLImageElement;
+              const container = target.parentElement;
+              if (container) {
+                container.innerHTML = `
+                  <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #1d9bf0, #0c7abf); display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 18px; font-family: Inter, system-ui, sans-serif;">
+                    ${username.substring(0, 2).toUpperCase()}
+                  </div>
+                `;
+              }
+            }}
               onLoad={() => {
                 console.log('Profile image loaded successfully');
               }}
             />
           ) : null}
           {!profileImageUrl && (
-            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <span className="text-white font-bold text-lg">
-                {username.substring(0, 2).toUpperCase()}
-              </span>
+            <div style={{
+              width: '100%',
+              height: '100%',
+              background: 'linear-gradient(135deg, #1d9bf0, #0c7abf)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              color: 'white',
+              fontWeight: 'bold',
+              fontSize: '18px',
+              fontFamily: 'Inter, system-ui, sans-serif'
+            }}>
+              {username.substring(0, 2).toUpperCase()}
             </div>
           )}
         </div>
@@ -126,17 +134,49 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
             alt="Tweet content" 
             className="w-full max-h-[700px] object-cover"
             onError={(e) => {
-              console.error('Content image failed to load, showing placeholder');
+              console.error('Content image failed to load, showing elegant placeholder');
               const target = e.target as HTMLImageElement;
               const container = target.parentElement;
               if (container) {
                 container.innerHTML = `
-                  <div class="w-full h-[400px] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
-                    <div class="text-center text-gray-500">
-                      <svg class="w-16 h-16 mx-auto mb-4 opacity-50" fill="currentColor" viewBox="0 0 24 24">
-                        <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+                  <div style="
+                    width: 100%; 
+                    height: 400px; 
+                    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 30%, #cbd5e1 70%, #94a3b8 100%); 
+                    display: flex; 
+                    align-items: center; 
+                    justify-content: center; 
+                    position: relative;
+                    overflow: hidden;
+                  ">
+                    <div style="
+                      position: absolute;
+                      top: 0;
+                      left: 0;
+                      width: 100%;
+                      height: 100%;
+                      background-image: 
+                        repeating-linear-gradient(
+                          45deg,
+                          rgba(255,255,255,0.1) 0px,
+                          rgba(255,255,255,0.1) 2px,
+                          transparent 2px,
+                          transparent 20px
+                        );
+                    "></div>
+                    <div style="
+                      background: rgba(255,255,255,0.9);
+                      border-radius: 16px;
+                      padding: 32px;
+                      display: flex;
+                      align-items: center;
+                      justify-content: center;
+                      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+                      backdrop-filter: blur(8px);
+                    ">
+                      <svg style="width: 64px; height: 64px; color: #64748b;" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M9 2L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2h-3.17L15 2H9zm3 15c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-1.8c1.77 0 3.2-1.43 3.2-3.2 0-1.77-1.43-3.2-3.2-3.2S8.8 10.23 8.8 12c0 1.77 1.43 3.2 3.2 3.2z"/>
                       </svg>
-                      <p class="text-sm font-medium">Image unavailable</p>
                     </div>
                   </div>
                 `;

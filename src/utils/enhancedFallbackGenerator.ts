@@ -104,52 +104,62 @@ export const generateEnhancedContentPlaceholder = (
   canvas.width = width;
   canvas.height = height;
   
-  // Create subtle gradient background
+  // Create elegant gradient background
   const gradient = ctx.createLinearGradient(0, 0, width, height);
   gradient.addColorStop(0, '#f8fafc');
-  gradient.addColorStop(0.5, '#f1f5f9');
-  gradient.addColorStop(1, '#e2e8f0');
+  gradient.addColorStop(0.3, '#e2e8f0');
+  gradient.addColorStop(0.7, '#cbd5e1');
+  gradient.addColorStop(1, '#94a3b8');
   
   ctx.fillStyle = gradient;
   ctx.fillRect(0, 0, width, height);
   
-  // Add subtle border
-  ctx.strokeStyle = '#cbd5e1';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(1, 1, width - 2, height - 2);
+  // Add subtle geometric pattern
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
+  const patternSize = Math.min(width, height) * 0.05;
   
-  // Add pattern dots
-  ctx.fillStyle = 'rgba(148, 163, 184, 0.1)';
-  const dotSize = 4;
-  const spacing = 40;
-  
-  for (let x = spacing; x < width; x += spacing) {
-    for (let y = spacing; y < height; y += spacing) {
+  for (let x = 0; x < width + patternSize; x += patternSize * 2) {
+    for (let y = 0; y < height + patternSize; y += patternSize * 2) {
       ctx.beginPath();
-      ctx.arc(x, y, dotSize, 0, 2 * Math.PI);
+      ctx.rect(x, y, patternSize, patternSize);
       ctx.fill();
     }
   }
   
-  // Add centered icon and text
+  // Add centered elegant icon
   const centerX = width / 2;
   const centerY = height / 2;
+  const iconSize = Math.min(width, height) * 0.15;
   
-  // Draw image icon
-  ctx.fillStyle = '#64748b';
-  ctx.font = `${width * 0.15}px system-ui, -apple-system, sans-serif`;
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.fillText('🖼️', centerX, centerY - 40);
+  // Draw stylized camera icon
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+  ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+  ctx.lineWidth = 3;
   
-  // Add descriptive text
-  ctx.fillStyle = '#475569';
-  ctx.font = `${width * 0.04}px system-ui, -apple-system, sans-serif`;
-  ctx.fillText('Content image unavailable', centerX, centerY + 30);
+  // Camera body
+  const cameraWidth = iconSize * 1.2;
+  const cameraHeight = iconSize * 0.8;
+  const cameraX = centerX - cameraWidth / 2;
+  const cameraY = centerY - cameraHeight / 2;
   
-  ctx.fillStyle = '#64748b';
-  ctx.font = `${width * 0.03}px system-ui, -apple-system, sans-serif`;
-  ctx.fillText('Image could not be loaded', centerX, centerY + 60);
+  ctx.beginPath();
+  ctx.roundRect(cameraX, cameraY, cameraWidth, cameraHeight, 8);
+  ctx.fill();
+  ctx.stroke();
+  
+  // Camera lens
+  const lensRadius = iconSize * 0.25;
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, lensRadius, 0, 2 * Math.PI);
+  ctx.fillStyle = 'rgba(148, 163, 184, 0.6)';
+  ctx.fill();
+  ctx.stroke();
+  
+  // Inner lens circle
+  ctx.beginPath();
+  ctx.arc(centerX, centerY, lensRadius * 0.6, 0, 2 * Math.PI);
+  ctx.fillStyle = 'rgba(100, 116, 139, 0.8)';
+  ctx.fill();
   
   return canvas.toDataURL('image/png', quality);
 };
