@@ -27,7 +27,21 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
   const hasImage = !!contentImageUrl;
   
   return (
-    <Card className="w-[1080px] h-[1350px] bg-white text-black border-0 p-16 mx-auto font-twitter flex flex-col">
+    <Card 
+      className="w-[1080px] h-[1350px] bg-white text-black border-0 p-16 mx-auto font-twitter flex flex-col" 
+      style={{
+        width: '1080px',
+        height: '1350px',
+        backgroundColor: '#ffffff',
+        color: '#000000',
+        fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, sans-serif',
+        padding: '64px',
+        display: 'flex',
+        flexDirection: 'column',
+        border: 'none',
+        borderRadius: '0px'
+      }}
+    >
       {/* Twitter Post Header */}
       <div className="flex items-start space-x-4 mb-8">
         {/* Profile Image */}

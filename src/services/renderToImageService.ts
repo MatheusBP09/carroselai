@@ -221,17 +221,18 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
         contentImageType: processedParams.contentImageUrl?.substring(0, 30)
       });
 
-      // Create a temporary container with improved visibility
+      // Create a temporary container with optimal positioning for rendering
       container = document.createElement('div');
-      container.style.position = 'fixed';
-      container.style.top = '-2000px'; // Closer to viewport for better rendering
-      container.style.left = '-2000px';
+      container.style.position = 'absolute';
+      container.style.top = '0px';
+      container.style.left = '0px';
       container.style.width = '1080px';
       container.style.height = '1350px';
       container.style.pointerEvents = 'none';
-      container.style.opacity = '0'; // Use opacity instead of visibility hidden
+      container.style.visibility = 'hidden'; // Better for html2canvas than opacity
       container.style.zIndex = '-9999';
       container.style.overflow = 'visible';
+      container.style.backgroundColor = '#ffffff';
       document.body.appendChild(container);
 
       // Create React root and render component
@@ -278,13 +279,15 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
       console.log('🎨 Starting html2canvas with optimal PNG settings...');
       const html2canvas = await import('html2canvas');
       const canvas = await html2canvas.default(container, {
+        x: 0,
+        y: 0,
         width: 1080,
         height: 1350,
-        scale: 1,
+        scale: 2, // Higher quality
         useCORS: false,
         allowTaint: true,
         backgroundColor: '#ffffff',
-        logging: false, // Disable for cleaner output
+        logging: true, // Enable for debugging
         imageTimeout: 0,
         foreignObjectRendering: true,
         removeContainer: false,
