@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 import { renderTwitterPostToImage } from './renderToImageService';
 import { CarouselData } from '@/types/carousel';
 import { createValidPngBlob, validatePngBlob } from './pngValidationService';
+import { preloadSlideImages } from './imagePreprocessingService';
 
 export interface ZipDownloadProgress {
   currentSlide: number;
@@ -55,13 +56,21 @@ export const downloadCarouselAsZip = async (
     });
 
     try {
-      const blob = await renderTwitterPostToImage({
-        username: data.username || data.instagramHandle.replace('@', ''),
-        handle: data.instagramHandle.replace('@', ''),
-        isVerified: data.isVerified,
-        text: slide.text,
+      // Pre-process images before rendering
+      console.log(`🔄 Pre-processing images for slide ${i + 1}...`);
+      const processedImages = await preloadSlideImages({
         profileImageUrl: slide.profileImageUrl,
-        contentImageUrl: slide.contentImageUrls?.[0]
+        contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0],
+        username: data.username || data.instagramHandle?.replace('@', '') || 'user'
+      });
+
+      const blob = await renderTwitterPostToImage({
+        username: data.username || data.instagramHandle?.replace('@', '') || 'user',
+        handle: data.instagramHandle?.replace('@', '') || 'user',
+        isVerified: data.isVerified || false,
+        text: slide.text,
+        profileImageUrl: processedImages.profileImageUrl || slide.profileImageUrl,
+        contentImageUrl: processedImages.contentImageUrl || slide.customImageUrl || slide.contentImageUrls?.[0]
       });
 
       // Validate and enhance PNG blob
@@ -362,15 +371,23 @@ export const testSlideRendering = async (
     }
 
     const slide = data.slides[slideIndex];
-    console.log(`Testing slide ${slideIndex + 1} rendering...`);
+    console.log(`Testing slide ${slideIndex + 1} rendering with enhanced preprocessing...`);
+
+    // Pre-process images before rendering
+    console.log('🔄 Pre-processing images for test...');
+    const processedImages = await preloadSlideImages({
+      profileImageUrl: slide.profileImageUrl,
+      contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0],
+      username: data.username || data.instagramHandle?.replace('@', '') || 'user'
+    });
 
     const blob = await renderTwitterPostToImage({
-      username: data.username || data.instagramHandle.replace('@', ''),
-      handle: data.instagramHandle.replace('@', ''),
-      isVerified: data.isVerified,
+      username: data.username || data.instagramHandle?.replace('@', '') || 'user',
+      handle: data.instagramHandle?.replace('@', '') || 'user',
+      isVerified: data.isVerified || false,
       text: slide.text,
-      profileImageUrl: slide.profileImageUrl,
-      contentImageUrl: slide.contentImageUrls?.[0]
+      profileImageUrl: processedImages.profileImageUrl || slide.profileImageUrl,
+      contentImageUrl: processedImages.contentImageUrl || slide.customImageUrl || slide.contentImageUrls?.[0]
     });
 
     // Validate and create properly formatted PNG

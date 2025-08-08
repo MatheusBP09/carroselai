@@ -1,7 +1,7 @@
 import React from 'react';
 import { createRoot } from 'react-dom/client';
 import { TwitterPost } from '@/components/TwitterPost';
-import { loadImageWithFallbacks } from './proxyImageService';
+import { preloadSlideImages } from './imagePreprocessingService';
 import { nodeToPng } from './nodeToImageService';
 
 interface RenderToImageParams {
@@ -179,41 +179,19 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
     };
 
     try {
-      console.log('🚀 Starting enhanced image processing pipeline...');
+      console.log('🚀 Starting enhanced image preprocessing pipeline...');
       
-      // Use enhanced fallback system directly for all external images
-      const processedParams = { ...params };
+      // Pre-process all images to ensure they're ready for rendering
+      const processedImages = await preloadSlideImages({
+        profileImageUrl: params.profileImageUrl,
+        contentImageUrl: params.contentImageUrl,
+        username: params.username
+      });
       
-      // Process profile image with enhanced fallbacks
-      if (params.profileImageUrl && params.profileImageUrl.startsWith('http')) {
-        console.log('🖼️ Processing profile image with enhanced fallbacks...');
-        try {
-          processedParams.profileImageUrl = await loadImageWithFallbacks(
-            params.profileImageUrl, 
-            'profile', 
-            params.username
-          );
-          console.log('✅ Profile image processing successful');
-        } catch (error) {
-          console.error('❌ Profile image processing failed completely:', error);
-          processedParams.profileImageUrl = undefined;
-        }
-      }
-
-      // Process content image with enhanced fallbacks
-      if (params.contentImageUrl && params.contentImageUrl.startsWith('http')) {
-        console.log('🖼️ Processing content image with enhanced fallbacks...');
-        try {
-          processedParams.contentImageUrl = await loadImageWithFallbacks(
-            params.contentImageUrl, 
-            'content'
-          );
-          console.log('✅ Content image processing successful');
-        } catch (error) {
-          console.error('❌ Content image processing failed completely:', error);
-          processedParams.contentImageUrl = undefined;
-        }
-      }
+      const processedParams = {
+        ...params,
+        ...processedImages
+      };
       
       console.log('Image conversion completed:', {
         hasProfileImage: !!processedParams.profileImageUrl,

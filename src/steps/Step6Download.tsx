@@ -13,6 +13,7 @@ import { toast } from '@/hooks/use-toast';
 import { downloadCarouselAsZip, testSlideRendering, ZipDownloadProgress } from '@/services/zipDownloadService';
 import { renderTwitterPostToImage } from '@/services/renderToImageService';
 import { monitoringService } from '@/services/monitoringService';
+import { preloadSlideImages } from '@/services/imagePreprocessingService';
 
 export const Step6Download = ({ data, onBack }: StepProps) => {
   const { resetCarousel } = useCarousel();
@@ -38,23 +39,43 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
 
     try {
       setIsTestingSlide(slideIndex);
-      console.log(`Testing slide ${slideIndex + 1}...`);
+      console.log(`Testing slide ${slideIndex + 1} with enhanced preprocessing...`);
       monitoringService.logDownloadEvent('test_start', { slideIndex });
       
-      const result = await testSlideRendering(data, slideIndex);
-      
-      if (result.success) {
-        monitoringService.logDownloadEvent('test_success', { slideIndex });
+      // Pre-process images before testing
+      const slide = data.slides[slideIndex];
+      console.log('🔄 Pre-processing images for test...');
+      const processedImages = await preloadSlideImages({
+        profileImageUrl: slide.profileImageUrl,
+        contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0],
+        username: data.username || data.instagramHandle?.replace('@', '') || 'user'
+      });
+
+      const blob = await renderTwitterPostToImage({
+        username: data.username || data.instagramHandle?.replace('@', '') || 'user',
+        handle: data.instagramHandle?.replace('@', '') || 'user',
+        text: slide.text,
+        profileImageUrl: processedImages.profileImageUrl || slide.profileImageUrl,
+        contentImageUrl: processedImages.contentImageUrl || slide.customImageUrl || slide.contentImageUrls?.[0],
+        isVerified: data.isVerified || false
+      });
+
+      if (blob && blob.size > 1000) {
+        // Test successful - show preview
+        const url = URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `slide-${slideIndex + 1}-test.png`;
+        link.click();
+        URL.revokeObjectURL(url);
+        
+        monitoringService.logDownloadEvent('test_success', { slideIndex, blobSize: blob.size });
         toast({
           title: "Teste bem-sucedido!",
           description: `Slide ${slideIndex + 1} foi renderizado e baixado para teste.`,
         });
       } else {
-        toast({
-          title: "Falha no teste",
-          description: `Erro ao renderizar slide ${slideIndex + 1}: ${result.error}`,
-          variant: "destructive",
-        });
+        throw new Error('Blob inválido ou muito pequeno');
       }
     } catch (error) {
       console.error('Test slide error:', error);
