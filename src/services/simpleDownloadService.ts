@@ -1,5 +1,6 @@
 import { renderTwitterPostToImage } from './renderToImageService';
 import { CarouselData } from '@/types/carousel';
+import { imageDownloadService } from './imageDownloadService';
 
 export interface DownloadProgress {
   current: number;

@@ -5,6 +5,7 @@ import { preloadSlideImages } from './imagePreprocessingService';
 import { nodeToPng } from './nodeToImageService';
 import { capturePreviewToImage } from './previewCaptureService';
 import { isDalleUrl, convertDalleUrlToDataUrl } from './dalleUrlService';
+import { imageDownloadService, type ImageDownloadResult } from './imageDownloadService';
 
 interface RenderToImageParams {
   username: string;
@@ -176,10 +177,10 @@ const isUrlAccessible = async (url: string): Promise<boolean> => {
 };
 
 /**
- * Render TwitterPost component to a downloadable image - DALL-E OPTIMIZED APPROACH
+ * Render TwitterPost component to a downloadable image - ROBUST DOWNLOAD STRATEGY
  */
 export const renderTwitterPostToImage = async (params: RenderToImageParams): Promise<Blob> => {
-  console.log('🎨 Starting Twitter post rendering with DALL-E optimization...');
+  console.log('🎯 Starting Twitter post rendering with robust download strategy...');
   console.log('Original URLs:', {
     username: params.username,
     profileImageUrl: params.profileImageUrl,
@@ -189,39 +190,32 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
   });
 
   try {
-    // Try direct URLs first - no preprocessing
-    console.log('🚀 Attempting direct URL rendering (no preprocessing)');
+    // Download and convert all external images to local URLs first
+    console.log('🔄 Step 1: Converting external images to local URLs...');
+    const processedParams = await preprocessImagesForDownload(params);
+    console.log('✅ Images preprocessed for download');
     
+    // Render with local URLs (should work reliably)
+    const result = await renderPostWithParams(processedParams, 'robust');
+    if (result && result.size > 5000) {
+      console.log('✅ Robust rendering successful, size:', result.size);
+      return result;
+    }
+    
+    console.log('⚠️ Robust rendering failed, trying direct approach...');
+    
+    // Fallback to direct approach
     const directBlob = await renderPostWithParams(params, 'direct');
     if (directBlob && directBlob.size > 5000) {
-      console.log('✅ Direct URL render successful, size:', directBlob.size);
+      console.log('✅ Direct fallback successful, size:', directBlob.size);
       return directBlob;
     }
     
-    console.log('⚠️ Direct rendering failed, trying with preprocessing...');
-    
-    // Fallback: Use pre-processed data URLs if available
-    if (params.contentImageDataUrl || params.profileImageDataUrl) {
-      console.log('🔄 Fallback: Using pre-processed data URLs');
-      
-      const processedParams = {
-        ...params,
-        contentImageUrl: params.contentImageDataUrl || params.contentImageUrl,
-        profileImageUrl: params.profileImageDataUrl || params.profileImageUrl
-      };
-      
-      const fallbackBlob = await renderPostWithParams(processedParams, 'preprocessed');
-      if (fallbackBlob && fallbackBlob.size > 5000) {
-        console.log('✅ Preprocessed fallback successful, size:', fallbackBlob.size);
-        return fallbackBlob;
-      }
-    }
-    
-    // Final fallback: Use full preprocessing pipeline
-    console.log('🔄 Final fallback: Using full preprocessing pipeline...');
+    // Final fallback: Use legacy preprocessing
+    console.log('🔄 Final fallback: Using legacy preprocessing pipeline...');
     const preprocessedBlob = await renderWithPreprocessedImages(params);
     if (preprocessedBlob && preprocessedBlob.size > 5000) {
-      console.log('✅ Fallback render successful, size:', preprocessedBlob.size);
+      console.log('✅ Legacy fallback successful, size:', preprocessedBlob.size);
       return preprocessedBlob;
     }
     
@@ -231,6 +225,49 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
     console.error('❌ All rendering methods failed:', error);
     throw error;
   }
+};
+
+/**
+ * Downloads and converts external images to local URLs for reliable rendering
+ */
+const preprocessImagesForDownload = async (params: RenderToImageParams): Promise<RenderToImageParams> => {
+  console.log('🔄 Starting robust image download preprocessing...');
+  
+  const processedParams = { ...params };
+  
+  // Download profile image
+  if (params.profileImageUrl && params.profileImageUrl.startsWith('http')) {
+    try {
+      console.log('📥 Downloading profile image:', params.profileImageUrl.substring(0, 50) + '...');
+      const profileResult = await imageDownloadService.downloadAndConvertImage(params.profileImageUrl);
+      if (profileResult.success && profileResult.localUrl) {
+        processedParams.profileImageUrl = profileResult.localUrl;
+        console.log('✅ Profile image downloaded and converted to local URL');
+      } else {
+        console.log('⚠️ Profile image download failed, keeping original URL:', profileResult.error);
+      }
+    } catch (error) {
+      console.log('⚠️ Profile image download error:', error);
+    }
+  }
+  
+  // Download content image
+  if (params.contentImageUrl && params.contentImageUrl.startsWith('http')) {
+    try {
+      console.log('📥 Downloading content image:', params.contentImageUrl.substring(0, 50) + '...');
+      const contentResult = await imageDownloadService.downloadAndConvertImage(params.contentImageUrl);
+      if (contentResult.success && contentResult.localUrl) {
+        processedParams.contentImageUrl = contentResult.localUrl;
+        console.log('✅ Content image downloaded and converted to local URL');
+      } else {
+        console.log('⚠️ Content image download failed, keeping original URL:', contentResult.error);
+      }
+    } catch (error) {
+      console.log('⚠️ Content image download error:', error);
+    }
+  }
+  
+  return processedParams;
 };
 
 /**
@@ -267,9 +304,9 @@ const renderWithPreprocessedImages = async (params: RenderToImageParams): Promis
 };
 
 /**
- * Core rendering function used by both direct and preprocessed methods
+ * Core rendering function used by all rendering methods
  */
-const renderPostWithParams = async (params: RenderToImageParams, method: 'direct' | 'preprocessed'): Promise<Blob> => {
+const renderPostWithParams = async (params: RenderToImageParams, method: 'direct' | 'preprocessed' | 'robust'): Promise<Blob> => {
   return new Promise(async (resolve, reject) => {
     let container: HTMLElement | null = null;
     let root: any = null;
