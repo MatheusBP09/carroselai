@@ -56,9 +56,9 @@ export const downloadCarouselAsZip = async (
     });
 
     try {
-      // Use DIRECT URLs (no preprocessing) - this should fix the download issue
-      console.log(`🎯 Rendering slide ${i + 1} with DIRECT URLs (original DALL-E links)...`);
-      console.log('Original image URLs:', {
+      // Use original URLs directly - let renderToImageService handle fallbacks
+      console.log(`🎯 Rendering slide ${i + 1} with original URLs...`);
+      console.log('Image URLs:', {
         profileImageUrl: slide.profileImageUrl,
         contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
       });
@@ -69,9 +69,7 @@ export const downloadCarouselAsZip = async (
         isVerified: data.isVerified || false,
         text: slide.text,
         profileImageUrl: slide.profileImageUrl,
-        contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0],
-        contentImageDataUrl: slide.contentImageDataUrls?.[0], // Use pre-processed data URL
-        profileImageDataUrl: slide.profileImageDataUrl // Use pre-processed profile data URL
+        contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
       });
 
       // Validate and enhance PNG blob

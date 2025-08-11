@@ -189,9 +189,20 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
   });
 
   try {
-    // First priority: Use pre-processed data URLs if available
+    // Try direct URLs first - no preprocessing
+    console.log('🚀 Attempting direct URL rendering (no preprocessing)');
+    
+    const directBlob = await renderPostWithParams(params, 'direct');
+    if (directBlob && directBlob.size > 5000) {
+      console.log('✅ Direct URL render successful, size:', directBlob.size);
+      return directBlob;
+    }
+    
+    console.log('⚠️ Direct rendering failed, trying with preprocessing...');
+    
+    // Fallback: Use pre-processed data URLs if available
     if (params.contentImageDataUrl || params.profileImageDataUrl) {
-      console.log('✅ Using pre-processed data URLs for reliable rendering');
+      console.log('🔄 Fallback: Using pre-processed data URLs');
       
       const processedParams = {
         ...params,
@@ -199,66 +210,19 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
         profileImageUrl: params.profileImageDataUrl || params.profileImageUrl
       };
       
-      const blob = await renderPostWithParams(processedParams, 'preprocessed');
-      if (blob && blob.size > 5000) {
-        console.log('✅ Pre-processed render successful, size:', blob.size);
-        return blob;
+      const fallbackBlob = await renderPostWithParams(processedParams, 'preprocessed');
+      if (fallbackBlob && fallbackBlob.size > 5000) {
+        console.log('✅ Preprocessed fallback successful, size:', fallbackBlob.size);
+        return fallbackBlob;
       }
     }
     
-    // Check if we have DALL-E URLs and preprocess them
-    const shouldPreprocessProfile = params.profileImageUrl && isDalleUrl(params.profileImageUrl);
-    const shouldPreprocessContent = params.contentImageUrl && isDalleUrl(params.contentImageUrl);
-    
-    if (shouldPreprocessProfile || shouldPreprocessContent) {
-      console.log('🎯 DALL-E URLs detected, preprocessing required:', {
-        profile: shouldPreprocessProfile,
-        content: shouldPreprocessContent
-      });
-      
-      const processedParams = { ...params };
-      
-      // Convert DALL-E URLs to data URLs
-      if (shouldPreprocessProfile && params.profileImageUrl) {
-        console.log('🔄 Converting DALL-E profile image...');
-        const result = await convertDalleUrlToDataUrl(params.profileImageUrl);
-        processedParams.profileImageUrl = result.url;
-        console.log(`✅ Profile image conversion: ${result.success ? 'success' : 'fallback'} (${result.method})`);
-      }
-      
-      if (shouldPreprocessContent && params.contentImageUrl) {
-        console.log('🔄 Converting DALL-E content image...');
-        const result = await convertDalleUrlToDataUrl(params.contentImageUrl);
-        processedParams.contentImageUrl = result.url;
-        console.log(`✅ Content image conversion: ${result.success ? 'success' : 'fallback'} (${result.method})`);
-      }
-      
-      // Render with converted URLs
-      const blob = await renderPostWithParams(processedParams, 'preprocessed');
-      if (blob && blob.size > 5000) {
-        console.log('✅ DALL-E optimized render successful, size:', blob.size);
-        return blob;
-      }
-    } else {
-      // No DALL-E URLs, try direct rendering first
-      console.log('🎯 No DALL-E URLs detected, attempting direct rendering...');
-      try {
-        const blob = await renderWithDirectUrls(params);
-        if (blob && blob.size > 5000) {
-          console.log('✅ Direct URL render successful, size:', blob.size);
-          return blob;
-        }
-      } catch (directError) {
-        console.warn('⚠️ Direct URL render failed:', directError);
-      }
-    }
-
     // Final fallback: Use full preprocessing pipeline
     console.log('🔄 Final fallback: Using full preprocessing pipeline...');
-    const blob = await renderWithPreprocessedImages(params);
-    if (blob && blob.size > 5000) {
-      console.log('✅ Fallback render successful, size:', blob.size);
-      return blob;
+    const preprocessedBlob = await renderWithPreprocessedImages(params);
+    if (preprocessedBlob && preprocessedBlob.size > 5000) {
+      console.log('✅ Fallback render successful, size:', preprocessedBlob.size);
+      return preprocessedBlob;
     }
     
     throw new Error('All rendering methods failed');

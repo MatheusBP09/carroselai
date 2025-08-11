@@ -231,22 +231,8 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
         let contentDataUrls: string[] = [];
         let profileDataUrl: string | undefined;
         
-        // Pre-process content images (DALL-E URLs)
-        if (imageResult?.imageUrl) {
-          try {
-            const { convertDalleUrlToDataUrl, isDalleUrl } = await import('../services/dalleUrlService');
-            if (isDalleUrl(imageResult.imageUrl)) {
-              console.log(`🔄 Pré-processando imagem DALL-E do slide ${i + 1}...`);
-              const result = await convertDalleUrlToDataUrl(imageResult.imageUrl);
-              if (result.success) {
-                contentDataUrls = [result.url];
-                console.log(`✅ Imagem do slide ${i + 1} pré-processada com sucesso`);
-              }
-            }
-          } catch (error) {
-            console.warn(`⚠️ Falha no pré-processamento da imagem do slide ${i + 1}:`, error);
-          }
-        }
+        // Keep original DALL-E URLs - let html-to-image handle them directly
+        console.log(`💡 Mantendo URLs originais do slide ${i + 1} para renderização direta`);
         
         // Pre-process profile image if needed
         if (profileImageUrl && i === 0) { // Only process once
