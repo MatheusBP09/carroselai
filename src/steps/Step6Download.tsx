@@ -39,44 +39,41 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
 
     try {
       setIsTestingSlide(slideIndex);
-      console.log(`Testing slide ${slideIndex + 1} with enhanced preprocessing...`);
+      console.log(`🎯 Testing slide ${slideIndex + 1} using same logic as download...`);
       monitoringService.logDownloadEvent('test_start', { slideIndex });
       
-      // Pre-process images before testing
       const slide = data.slides[slideIndex];
-      console.log('🔄 Pre-processing images for test...');
-      const processedImages = await preloadSlideImages({
-        profileImageUrl: slide.profileImageUrl,
-        contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0],
-        username: data.username || data.instagramHandle?.replace('@', '') || 'user'
-      });
-
+      
+      // Use the exact same rendering logic as simpleDownloadService
       const blob = await renderTwitterPostToImage({
-        username: data.username || data.instagramHandle?.replace('@', '') || 'user',
-        handle: data.instagramHandle?.replace('@', '') || 'user',
         text: slide.text,
-        profileImageUrl: processedImages.profileImageUrl || slide.profileImageUrl,
-        contentImageUrl: processedImages.contentImageUrl || slide.customImageUrl || slide.contentImageUrls?.[0],
-        isVerified: data.isVerified || false
+        username: data.username,
+        handle: data.instagramHandle,
+        isVerified: data.isVerified,
+        profileImageUrl: slide.profileImageUrl,
+        contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
       });
 
-      if (blob && blob.size > 1000) {
-        // Test successful - show preview
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `slide-${slideIndex + 1}-test.png`;
-        link.click();
-        URL.revokeObjectURL(url);
-        
-        monitoringService.logDownloadEvent('test_success', { slideIndex, blobSize: blob.size });
-        toast({
-          title: "Teste bem-sucedido!",
-          description: `Slide ${slideIndex + 1} foi renderizado e baixado para teste.`,
-        });
-      } else {
-        throw new Error('Blob inválido ou muito pequeno');
+      if (!blob || blob.size < 1000) {
+        throw new Error(`Slide ${slideIndex + 1} generated invalid image`);
       }
+
+      // Download test file
+      const filename = `slide-${(slideIndex + 1).toString().padStart(2, '0')}-test-${data.username.replace(/\s+/g, '-').toLowerCase()}.png`;
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      monitoringService.logDownloadEvent('test_success', { slideIndex, blobSize: blob.size });
+      toast({
+        title: "Teste bem-sucedido!",
+        description: `Slide ${slideIndex + 1} foi renderizado e baixado para teste.`,
+      });
     } catch (error) {
       console.error('Test slide error:', error);
       monitoringService.logDownloadEvent('test_fail', { slideIndex, error: String(error) });
