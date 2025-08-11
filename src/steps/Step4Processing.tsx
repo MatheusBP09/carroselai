@@ -224,18 +224,59 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
       currentImageResults = imageResults;
 
       // Process results and create slides with images
-      const slidesWithImages = result.slides.map((slide, i) => {
+      setCurrentStep('Pré-processando imagens para download...');
+      
+      const slidesWithImages = await Promise.all(result.slides.map(async (slide, i) => {
         const imageResult = imageResults[i];
+        let contentDataUrls: string[] = [];
+        let profileDataUrl: string | undefined;
+        
+        // Pre-process content images (DALL-E URLs)
+        if (imageResult?.imageUrl) {
+          try {
+            const { convertDalleUrlToDataUrl, isDalleUrl } = await import('../services/dalleUrlService');
+            if (isDalleUrl(imageResult.imageUrl)) {
+              console.log(`🔄 Pré-processando imagem DALL-E do slide ${i + 1}...`);
+              const result = await convertDalleUrlToDataUrl(imageResult.imageUrl);
+              if (result.success) {
+                contentDataUrls = [result.url];
+                console.log(`✅ Imagem do slide ${i + 1} pré-processada com sucesso`);
+              }
+            }
+          } catch (error) {
+            console.warn(`⚠️ Falha no pré-processamento da imagem do slide ${i + 1}:`, error);
+          }
+        }
+        
+        // Pre-process profile image if needed
+        if (profileImageUrl && i === 0) { // Only process once
+          try {
+            const { convertDalleUrlToDataUrl, isDalleUrl } = await import('../services/dalleUrlService');
+            if (isDalleUrl(profileImageUrl)) {
+              console.log('🔄 Pré-processando imagem de perfil...');
+              const result = await convertDalleUrlToDataUrl(profileImageUrl);
+              if (result.success) {
+                profileDataUrl = result.url;
+                console.log('✅ Imagem de perfil pré-processada com sucesso');
+              }
+            }
+          } catch (error) {
+            console.warn('⚠️ Falha no pré-processamento da imagem de perfil:', error);
+          }
+        }
+        
         return {
           ...slide,
           needsImage: true,
           imagePrompt: imageRequests[i].params.text,
           contentImageUrls: imageResult ? [imageResult.imageUrl] : [],
+          contentImageDataUrls: contentDataUrls,
           profileImageUrl,
+          profileImageDataUrl: i === 0 ? profileDataUrl : undefined,
           imageGenerated: imageResult?.generated || false,
           fallbackUsed: imageResult?.fallbackUsed || false
         };
-      });
+      }));
 
       // Final stats
       const finalGenerated = imageResults.filter(r => r.generated).length;

@@ -69,7 +69,9 @@ export const downloadCarouselAsZip = async (
         isVerified: data.isVerified || false,
         text: slide.text,
         profileImageUrl: slide.profileImageUrl,
-        contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
+        contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0],
+        contentImageDataUrl: slide.contentImageDataUrls?.[0], // Use pre-processed data URL
+        profileImageDataUrl: slide.profileImageDataUrl // Use pre-processed profile data URL
       });
 
       // Validate and enhance PNG blob
@@ -385,7 +387,9 @@ export const testSlideRendering = async (
       isVerified: data.isVerified || false,
       text: slide.text,
       profileImageUrl: slide.profileImageUrl,
-      contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
+      contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0],
+      contentImageDataUrl: slide.contentImageDataUrls?.[0], // Use pre-processed data URL
+      profileImageDataUrl: slide.profileImageDataUrl // Use pre-processed profile data URL
     });
 
     // Validate and create properly formatted PNG

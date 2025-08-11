@@ -13,6 +13,8 @@ interface RenderToImageParams {
   text: string;
   profileImageUrl?: string;
   contentImageUrl?: string;
+  contentImageDataUrl?: string; // Pre-processed data URL
+  profileImageDataUrl?: string; // Pre-processed profile data URL
 }
 
 interface ImageValidationResult {
@@ -181,10 +183,29 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
   console.log('Original URLs:', {
     username: params.username,
     profileImageUrl: params.profileImageUrl,
-    contentImageUrl: params.contentImageUrl
+    contentImageUrl: params.contentImageUrl,
+    hasPreprocessedContent: !!params.contentImageDataUrl,
+    hasPreprocessedProfile: !!params.profileImageDataUrl
   });
 
   try {
+    // First priority: Use pre-processed data URLs if available
+    if (params.contentImageDataUrl || params.profileImageDataUrl) {
+      console.log('✅ Using pre-processed data URLs for reliable rendering');
+      
+      const processedParams = {
+        ...params,
+        contentImageUrl: params.contentImageDataUrl || params.contentImageUrl,
+        profileImageUrl: params.profileImageDataUrl || params.profileImageUrl
+      };
+      
+      const blob = await renderPostWithParams(processedParams, 'preprocessed');
+      if (blob && blob.size > 5000) {
+        console.log('✅ Pre-processed render successful, size:', blob.size);
+        return blob;
+      }
+    }
+    
     // Check if we have DALL-E URLs and preprocess them
     const shouldPreprocessProfile = params.profileImageUrl && isDalleUrl(params.profileImageUrl);
     const shouldPreprocessContent = params.contentImageUrl && isDalleUrl(params.contentImageUrl);
