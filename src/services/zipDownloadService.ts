@@ -56,12 +56,11 @@ export const downloadCarouselAsZip = async (
     });
 
     try {
-      // Pre-process images before rendering
-      console.log(`🔄 Pre-processing images for slide ${i + 1}...`);
-      const processedImages = await preloadSlideImages({
+      // Use DIRECT URLs (no preprocessing) - this should fix the download issue
+      console.log(`🎯 Rendering slide ${i + 1} with DIRECT URLs (original DALL-E links)...`);
+      console.log('Original image URLs:', {
         profileImageUrl: slide.profileImageUrl,
-        contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0],
-        username: data.username || data.instagramHandle?.replace('@', '') || 'user'
+        contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
       });
 
       const blob = await renderTwitterPostToImage({
@@ -69,8 +68,8 @@ export const downloadCarouselAsZip = async (
         handle: data.instagramHandle?.replace('@', '') || 'user',
         isVerified: data.isVerified || false,
         text: slide.text,
-        profileImageUrl: processedImages.profileImageUrl || slide.profileImageUrl,
-        contentImageUrl: processedImages.contentImageUrl || slide.customImageUrl || slide.contentImageUrls?.[0]
+        profileImageUrl: slide.profileImageUrl,
+        contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
       });
 
       // Validate and enhance PNG blob
@@ -373,12 +372,11 @@ export const testSlideRendering = async (
     const slide = data.slides[slideIndex];
     console.log(`Testing slide ${slideIndex + 1} rendering with enhanced preprocessing...`);
 
-    // Pre-process images before rendering
-    console.log('🔄 Pre-processing images for test...');
-    const processedImages = await preloadSlideImages({
+    // Use DIRECT URLs for testing (no preprocessing)
+    console.log('🎯 Testing with DIRECT URLs...');
+    console.log('Original URLs:', {
       profileImageUrl: slide.profileImageUrl,
-      contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0],
-      username: data.username || data.instagramHandle?.replace('@', '') || 'user'
+      contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
     });
 
     const blob = await renderTwitterPostToImage({
@@ -386,8 +384,8 @@ export const testSlideRendering = async (
       handle: data.instagramHandle?.replace('@', '') || 'user',
       isVerified: data.isVerified || false,
       text: slide.text,
-      profileImageUrl: processedImages.profileImageUrl || slide.profileImageUrl,
-      contentImageUrl: processedImages.contentImageUrl || slide.customImageUrl || slide.contentImageUrls?.[0]
+      profileImageUrl: slide.profileImageUrl,
+      contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
     });
 
     // Validate and create properly formatted PNG

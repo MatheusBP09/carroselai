@@ -153,49 +153,58 @@ const waitForImages = async (container: HTMLElement): Promise<ImageValidationRes
 };
 
 /**
- * Render TwitterPost component to a downloadable image
+ * Simple URL validation to check if an image URL is accessible
+ */
+const isUrlAccessible = async (url: string): Promise<boolean> => {
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
+    const response = await fetch(url, { 
+      method: 'HEAD', 
+      signal: controller.signal 
+    });
+    
+    clearTimeout(timeoutId);
+    return response.ok;
+  } catch {
+    return false;
+  }
+};
+
+/**
+ * Render TwitterPost component to a downloadable image - DIRECT URL APPROACH
  */
 export const renderTwitterPostToImage = async (params: RenderToImageParams): Promise<Blob> => {
-  console.log('🎨 Starting Twitter post rendering process...');
-  console.log('Input parameters:', {
+  console.log('🎨 Starting Twitter post rendering with DIRECT URL approach...');
+  console.log('Original URLs:', {
     username: params.username,
-    handle: params.handle,
-    isVerified: params.isVerified,
-    textLength: params.text?.length || 0,
-    hasProfileImage: !!params.profileImageUrl,
-    hasContentImage: !!params.contentImageUrl,
-    profileImageUrl: params.profileImageUrl?.substring(0, 50),
-    contentImageUrl: params.contentImageUrl?.substring(0, 50)
+    profileImageUrl: params.profileImageUrl,
+    contentImageUrl: params.contentImageUrl
   });
 
   try {
-    // Use the 1080x1350 rendering method first for consistent sizing
-    console.log('🎯 Using 1080x1350 rendering method first...');
+    // First attempt: Use original URLs directly (preferred method)
+    console.log('🎯 Attempting render with original URLs...');
     try {
-      const blob = await renderWithFallbackMethod(params);
+      const blob = await renderWithDirectUrls(params);
       if (blob && blob.size > 5000) {
-        console.log('✅ 1080x1350 render successful, size:', blob.size);
+        console.log('✅ Direct URL render successful, size:', blob.size);
         return blob;
       }
-    } catch (primaryError) {
-      console.warn('⚠️ Primary render failed, attempting preview capture as fallback:', primaryError);
+    } catch (directError) {
+      console.warn('⚠️ Direct URL render failed:', directError);
     }
 
-    // Fallback to preview capture if needed
-    console.log('🔄 Attempting preview capture fallback...');
-    const previewBlob = await capturePreviewToImage({
-      username: params.username,
-      handle: params.handle,
-      isVerified: params.isVerified,
-      text: params.text,
-      profileImageUrl: params.profileImageUrl,
-      contentImageUrl: params.contentImageUrl
-    });
-    if (previewBlob && previewBlob.size > 5000) {
-      console.log('✅ Preview capture fallback successful, size:', previewBlob.size);
-      return previewBlob;
+    // Fallback: Use preprocessing only if direct method fails
+    console.log('🔄 Fallback: Using preprocessed images...');
+    const blob = await renderWithPreprocessedImages(params);
+    if (blob && blob.size > 5000) {
+      console.log('✅ Preprocessed render successful, size:', blob.size);
+      return blob;
     }
-    throw new Error('Both primary and preview capture methods failed to produce a valid image');
+    
+    throw new Error('Both direct and preprocessed rendering methods failed');
     
   } catch (error) {
     console.error('❌ All rendering methods failed:', error);
@@ -204,9 +213,42 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
 };
 
 /**
- * Fallback rendering method using original approach
+ * Direct URL rendering method (no preprocessing)
  */
-const renderWithFallbackMethod = async (params: RenderToImageParams): Promise<Blob> => {
+const renderWithDirectUrls = async (params: RenderToImageParams): Promise<Blob> => {
+  return renderPostWithParams(params, 'direct');
+};
+
+/**
+ * Preprocessed rendering method (fallback)
+ */
+const renderWithPreprocessedImages = async (params: RenderToImageParams): Promise<Blob> => {
+  console.log('🚀 Starting image preprocessing pipeline...');
+  
+  // Pre-process all images to ensure they're ready for rendering
+  const processedImages = await preloadSlideImages({
+    profileImageUrl: params.profileImageUrl,
+    contentImageUrl: params.contentImageUrl,
+    username: params.username
+  });
+  
+  const processedParams = {
+    ...params,
+    ...processedImages
+  };
+  
+  console.log('Image preprocessing completed:', {
+    hasProfileImage: !!processedParams.profileImageUrl,
+    hasContentImage: !!processedParams.contentImageUrl
+  });
+  
+  return renderPostWithParams(processedParams, 'preprocessed');
+};
+
+/**
+ * Core rendering function used by both direct and preprocessed methods
+ */
+const renderPostWithParams = async (params: RenderToImageParams, method: 'direct' | 'preprocessed'): Promise<Blob> => {
   return new Promise(async (resolve, reject) => {
     let container: HTMLElement | null = null;
     let root: any = null;
@@ -225,26 +267,7 @@ const renderWithFallbackMethod = async (params: RenderToImageParams): Promise<Bl
     };
 
     try {
-      console.log('🚀 Starting enhanced image preprocessing pipeline...');
-      
-      // Pre-process all images to ensure they're ready for rendering
-      const processedImages = await preloadSlideImages({
-        profileImageUrl: params.profileImageUrl,
-        contentImageUrl: params.contentImageUrl,
-        username: params.username
-      });
-      
-      const processedParams = {
-        ...params,
-        ...processedImages
-      };
-      
-      console.log('Image conversion completed:', {
-        hasProfileImage: !!processedParams.profileImageUrl,
-        hasContentImage: !!processedParams.contentImageUrl,
-        profileImageType: processedParams.profileImageUrl?.substring(0, 30),
-        contentImageType: processedParams.contentImageUrl?.substring(0, 30)
-      });
+      console.log(`🚀 Starting rendering with ${method} URLs...`);
 
       // Create a temporary container with optimal positioning for rendering
       container = document.createElement('div');
@@ -271,7 +294,7 @@ const renderWithFallbackMethod = async (params: RenderToImageParams): Promise<Bl
       root = createRoot(container);
       
       root.render(
-        React.createElement(TwitterPost, processedParams)
+        React.createElement(TwitterPost, params)
       );
 
       // Wait for DOM to be updated
