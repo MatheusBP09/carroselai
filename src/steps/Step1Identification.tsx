@@ -11,7 +11,7 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
   const [formData, setFormData] = useState({
     title: data.title || '',
     username: data.username || '',
-    instagramHandle: data.instagramHandle || '',
+    instagramHandle: data.instagramHandle ? data.instagramHandle.replace('@', '') : '',
     isVerified: data.isVerified || false
   });
   
@@ -32,11 +32,13 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
       newErrors.username = 'Nome deve ter no máximo 50 caracteres';
     }
     
-    if (!formData.instagramHandle.startsWith('@')) {
-      newErrors.instagramHandle = 'Handle deve começar com @';
-    } else if (formData.instagramHandle.length < 2) {
-      newErrors.instagramHandle = 'Handle deve ter pelo menos 2 caracteres';
-    } else if (!/^@[a-zA-Z0-9_]+$/.test(formData.instagramHandle)) {
+    if (!formData.instagramHandle || formData.instagramHandle.length < 1) {
+      newErrors.instagramHandle = 'Instagram handle é obrigatório';
+    } else if (formData.instagramHandle.startsWith('@')) {
+      newErrors.instagramHandle = 'Digite apenas o nome de usuário, sem o @';
+    } else if (formData.instagramHandle.length < 1) {
+      newErrors.instagramHandle = 'Handle deve ter pelo menos 1 caractere';
+    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.instagramHandle)) {
       newErrors.instagramHandle = 'Handle deve conter apenas letras, números e underscore';
     }
     
@@ -49,26 +51,25 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
       onNext({
         title: formData.title,
         username: formData.username,
-        instagramHandle: formData.instagramHandle.toLowerCase(),
+        instagramHandle: '@' + formData.instagramHandle.toLowerCase(), // Add @ when saving
         isVerified: formData.isVerified
       });
     }
   };
 
   const handleInstagramHandleChange = (value: string) => {
-    let handle = value;
-    if (!handle.startsWith('@') && handle.length > 0) {
-      handle = '@' + handle;
-    }
+    // Remove @ if user adds it (since we want them to type without @)
+    let handle = value.replace('@', '');
     setFormData(prev => ({ ...prev, instagramHandle: handle.toLowerCase() }));
   };
 
-  const isFormValid = (formData.title.length === 0 || formData.title.length >= 3) && 
-                     formData.title.length <= 100 && 
-                     formData.username.length >= 2 &&
-                     formData.username.length <= 50 &&
-                     formData.instagramHandle.startsWith('@') && 
-                     formData.instagramHandle.length > 1;
+  const isFormValid = () => {
+    return (formData.title.length === 0 || formData.title.length >= 3) && 
+           formData.title.length <= 100 && 
+           formData.username.length >= 2 &&
+           formData.username.length <= 50 &&
+           formData.instagramHandle.length > 0;
+  };
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -136,11 +137,14 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
             </Label>
             <Input
               id="instagram"
-              placeholder="@seuusuario"
+              placeholder="yansimoesss"
               value={formData.instagramHandle}
               onChange={(e) => handleInstagramHandleChange(e.target.value)}
               className={`transition-all duration-300 ${errors.instagramHandle ? 'border-destructive focus:border-destructive' : 'focus:border-primary'}`}
             />
+            <p className="text-xs text-muted-foreground">
+              Digite apenas o nome de usuário, sem o @
+            </p>
             {errors.instagramHandle && (
               <span className="text-sm text-destructive">{errors.instagramHandle}</span>
             )}
@@ -175,7 +179,7 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
               variant="instagram"
               size="xl"
               onClick={handleSubmit}
-              disabled={!isFormValid}
+              disabled={!isFormValid()}
               className="flex-1"
             >
               Próximo Passo
