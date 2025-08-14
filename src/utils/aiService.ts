@@ -234,16 +234,16 @@ JSON:
         }
       }
 
-      // Validate and trim text length based on image presence
+      // Validate and trim text length - increased to 350 characters
       result.slides = result.slides.map((slide: any, index: number) => {
-        const maxLength = slide.needsImage ? 180 : 500;
+        const maxLength = 350; // Increased limit to 350 characters for all slides
         if (slide.text && slide.text.length > maxLength) {
           console.warn(`📏 Slide ${index + 1} text too long: ${slide.text.length} chars, trimming to ${maxLength}`);
           const trimLength = maxLength - 3;
           slide.text = slide.text.substring(0, trimLength) + '...';
           slide.originalText = slide.originalText?.substring(0, trimLength) + '...';
         }
-        console.log(`📝 Slide ${index + 1}: ${slide.text.length} chars (${slide.needsImage ? 'with' : 'without'} image)`);
+        console.log(`📝 Slide ${index + 1}: ${slide.text.length} chars (max ${maxLength})`);
         return slide;
       });
 

@@ -180,7 +180,7 @@ const isUrlAccessible = async (url: string): Promise<boolean> => {
  * Render TwitterPost component to a downloadable image - ROBUST DOWNLOAD STRATEGY
  */
 export const renderTwitterPostToImage = async (params: RenderToImageParams): Promise<Blob> => {
-  console.log('🎯 Starting Twitter post rendering with robust download strategy...');
+  console.log('🎯 SIMPLIFIED: Starting Twitter post rendering with DALL-E image download...');
   console.log('Original URLs:', {
     username: params.username,
     profileImageUrl: params.profileImageUrl,
@@ -190,39 +190,25 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
   });
 
   try {
-    // Download and convert all external images to local URLs first
-    console.log('🔄 Step 1: Converting external images to local URLs...');
+    // ALWAYS download and convert external images to local URLs first
+    console.log('🔄 MANDATORY: Converting ALL external images to local URLs...');
     const processedParams = await preprocessImagesForDownload(params);
-    console.log('✅ Images preprocessed for download');
+    console.log('✅ All images converted to local URLs:', {
+      profileConverted: processedParams.profileImageUrl !== params.profileImageUrl,
+      contentConverted: processedParams.contentImageUrl !== params.contentImageUrl
+    });
     
-    // Render with local URLs (should work reliably)
+    // Use ONLY the preprocessed params with local URLs
     const result = await renderPostWithParams(processedParams, 'robust');
-    if (result && result.size > 5000) {
-      console.log('✅ Robust rendering successful, size:', result.size);
-      return result;
+    if (!result || result.size < 5000) {
+      throw new Error(`Rendering failed - invalid blob size: ${result?.size || 0}`);
     }
     
-    console.log('⚠️ Robust rendering failed, trying direct approach...');
-    
-    // Fallback to direct approach
-    const directBlob = await renderPostWithParams(params, 'direct');
-    if (directBlob && directBlob.size > 5000) {
-      console.log('✅ Direct fallback successful, size:', directBlob.size);
-      return directBlob;
-    }
-    
-    // Final fallback: Use legacy preprocessing
-    console.log('🔄 Final fallback: Using legacy preprocessing pipeline...');
-    const preprocessedBlob = await renderWithPreprocessedImages(params);
-    if (preprocessedBlob && preprocessedBlob.size > 5000) {
-      console.log('✅ Legacy fallback successful, size:', preprocessedBlob.size);
-      return preprocessedBlob;
-    }
-    
-    throw new Error('All rendering methods failed');
+    console.log('✅ DALL-E rendering successful, size:', result.size);
+    return result;
     
   } catch (error) {
-    console.error('❌ All rendering methods failed:', error);
+    console.error('❌ DALL-E rendering failed:', error);
     throw error;
   }
 };

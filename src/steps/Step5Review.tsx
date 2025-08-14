@@ -222,11 +222,10 @@ const Step5Review = ({
                         onChange={e => setEditingText(e.target.value)} 
                         className="min-h-[120px]" 
                         placeholder="Edite o texto do tweet..." 
-                        maxLength={slide.hasImage ? 180 : 500} 
+                        maxLength={350} 
                       />
                       <div className="text-sm text-muted-foreground">
-                        {editingText.length}/{slide.hasImage ? 180 : 500} caracteres
-                        {slide.hasImage ? ' (com imagem)' : ' (sem imagem)'}
+                        {editingText.length}/350 caracteres
                       </div>
                       <div className="flex gap-2">
                         <Button size="sm" onClick={saveEdit}>
