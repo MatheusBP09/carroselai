@@ -1,6 +1,5 @@
-import { renderTwitterPostToImage } from './renderToImageService';
+import { generateTwitterImage } from '@/utils/twitter';
 import { CarouselData } from '@/types/carousel';
-import { imageDownloadService } from './imageDownloadService';
 
 export interface DownloadProgress {
   current: number;
@@ -10,7 +9,22 @@ export interface DownloadProgress {
 }
 
 /**
- * Simple download service - renders and downloads one slide at a time
+ * Convert Fabric.js dataURL to Blob
+ */
+const dataUrlToBlob = (dataUrl: string): Blob => {
+  const arr = dataUrl.split(',');
+  const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+  const bstr = atob(arr[1]);
+  let n = bstr.length;
+  const u8arr = new Uint8Array(n);
+  while (n--) {
+    u8arr[n] = bstr.charCodeAt(n);
+  }
+  return new Blob([u8arr], { type: mime });
+};
+
+/**
+ * Simple download service - renders and downloads one slide at a time using Fabric.js
  */
 export class SimpleDownloadService {
   
@@ -33,10 +47,10 @@ export class SimpleDownloadService {
         message: `Renderizando slide ${slideIndex + 1}...`
       });
 
-      console.log(`🎯 Rendering slide ${slideIndex + 1} for download`);
+      console.log(`🎯 Rendering slide ${slideIndex + 1} for download using Fabric.js`);
       
-      // Use the same rendering logic that works in preview
-      const blob = await renderTwitterPostToImage({
+      // Use the new Fabric.js rendering system with correct layout
+      const dataUrl = await generateTwitterImage({
         text: slide.text,
         username: data.username,
         handle: data.instagramHandle,
@@ -44,6 +58,9 @@ export class SimpleDownloadService {
         profileImageUrl: slide.profileImageUrl,
         contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
       });
+
+      // Convert dataURL to blob
+      const blob = dataUrlToBlob(dataUrl);
 
       if (!blob || blob.size < 1000) {
         throw new Error(`Slide ${slideIndex + 1} generated invalid image`);

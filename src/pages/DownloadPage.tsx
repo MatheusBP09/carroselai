@@ -7,7 +7,7 @@ import { ArrowLeft, Copy, Eye } from 'lucide-react';
 import { CarouselData } from '@/types/carousel';
 import { TwitterPost } from '@/components/TwitterPost';
 import { SimpleDownloadButton } from '@/components/SimpleDownloadButton';
-import { renderTwitterPostToImage } from '@/services/renderToImageService';
+import { generateTwitterImage } from '@/utils/twitter';
 import { toast } from '@/hooks/use-toast';
 
 export const DownloadPage: React.FC = () => {
@@ -37,8 +37,8 @@ export const DownloadPage: React.FC = () => {
 
     const slide = data.slides![slideIndex];
     try {
-      console.log(`🔍 Generating preview for slide ${slideIndex + 1}`);
-      const blob = await renderTwitterPostToImage({
+      console.log(`🔍 Generating preview for slide ${slideIndex + 1} using Fabric.js`);
+      const dataUrl = await generateTwitterImage({
         text: slide.text,
         username: data.username,
         handle: data.instagramHandle,
@@ -47,7 +47,7 @@ export const DownloadPage: React.FC = () => {
         contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
       });
 
-      const url = URL.createObjectURL(blob);
+      const url = dataUrl;
       setPreviewImages(prev => ({ ...prev, [slideIndex]: url }));
       console.log(`✅ Preview generated for slide ${slideIndex + 1}`);
     } catch (error) {

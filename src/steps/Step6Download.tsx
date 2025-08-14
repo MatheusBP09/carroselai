@@ -11,7 +11,7 @@ import { StepProps } from '../types/carousel';
 import { useCarousel } from '../context/CarouselContext';
 import { toast } from '@/hooks/use-toast';
 import { downloadCarouselAsZip, testSlideRendering, ZipDownloadProgress } from '@/services/zipDownloadService';
-import { renderTwitterPostToImage } from '@/services/renderToImageService';
+import { generateTwitterImage } from '@/utils/twitter';
 import { monitoringService } from '@/services/monitoringService';
 import { preloadSlideImages } from '@/services/imagePreprocessingService';
 
@@ -44,8 +44,8 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
       
       const slide = data.slides[slideIndex];
       
-      // Use the exact same rendering logic as simpleDownloadService
-      const blob = await renderTwitterPostToImage({
+      // Use the new Fabric.js rendering system
+      const dataUrl = await generateTwitterImage({
         text: slide.text,
         username: data.username,
         handle: data.instagramHandle,
@@ -53,6 +53,17 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
         profileImageUrl: slide.profileImageUrl,
         contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
       });
+
+      // Convert dataURL to blob
+      const arr = dataUrl.split(',');
+      const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+      const bstr = atob(arr[1]);
+      let n = bstr.length;
+      const u8arr = new Uint8Array(n);
+      while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+      }
+      const blob = new Blob([u8arr], { type: mime });
 
       if (!blob || blob.size < 1000) {
         throw new Error(`Slide ${slideIndex + 1} generated invalid image`);
@@ -107,7 +118,7 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
       for (let i = 0; i < data.slides.length; i++) {
         const slide = data.slides[i];
         
-        const blob = await renderTwitterPostToImage({
+        const dataUrl = await generateTwitterImage({
           text: slide.text,
           username: data.username || data.instagramHandle.replace('@', ''),
           handle: data.instagramHandle.replace('@', ''),
@@ -115,6 +126,17 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
           profileImageUrl: slide.profileImageUrl,
           contentImageUrl: slide.contentImageUrls?.[0]
         });
+
+        // Convert dataURL to blob
+        const arr = dataUrl.split(',');
+        const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
+        const bstr = atob(arr[1]);
+        let n = bstr.length;
+        const u8arr = new Uint8Array(n);
+        while (n--) {
+          u8arr[n] = bstr.charCodeAt(n);
+        }
+        const blob = new Blob([u8arr], { type: mime });
 
         // Create valid PNG with proper headers
         const { createValidPngBlob, downloadPngWithHeaders } = await import('@/services/pngValidationService');
