@@ -25,15 +25,15 @@ export const DEFAULT_METRICS: TwitterMetrics = {
 export const TYPOGRAPHY = {
   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
   username: {
-    fontSize: 22,
+    fontSize: 66, // 3x increase: 22 → 66
     fontWeight: 'bold' as const,
   },
   handle: {
-    fontSize: 18,
+    fontSize: 54, // 3x increase: 18 → 54
     fontWeight: 'normal' as const,
   },
   tweet: {
-    fontSize: 28,
+    fontSize: 56, // 2x increase: 28 → 56
     lineHeight: 1.4,
     charSpacing: 0,
   },
@@ -44,17 +44,18 @@ export const TYPOGRAPHY = {
 } as const;
 
 export const LAYOUT = {
-  margin: 80,
-  profileSize: 48,
+  margin: 240, // 3x increase: 80 → 240
+  profileSize: 144, // 3x increase: 48 → 144
   spacing: {
-    small: 12,
-    medium: 24,
-    large: 80,
+    small: 36, // 3x increase: 12 → 36
+    medium: 72, // 3x increase: 24 → 72
+    large: 240, // 3x increase: 80 → 240
   },
   positions: {
-    profile: { x: 120, y: 320 },
-    username: { x: 180, y: 304 },
-    handle: { x: 180, y: 330 },
-    tweet: { x: 180, y: 380 },
+    // Vertically center elements around canvas center (1350/2 = 675)
+    profile: { x: 360, y: 600 }, // 3x spacing increase and centered
+    username: { x: 540, y: 560 }, // 3x spacing increase and centered
+    handle: { x: 540, y: 630 }, // 3x spacing increase and centered  
+    tweet: { x: 540, y: 720 }, // 3x spacing increase and centered
   },
 } as const;

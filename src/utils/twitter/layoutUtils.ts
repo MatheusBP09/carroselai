@@ -19,9 +19,9 @@ export const createCanvas = (): FabricCanvas => {
 export const createTweetContainer = (): Rect => {
   return new Rect({
     left: LAYOUT.margin,
-    top: 250,
+    top: 400, // Centered: (1350 - 750) / 2 = 300, plus margin adjustment
     width: CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2),
-    height: CANVAS_DIMENSIONS.height - 330, // Adjust height for 1080x1350 format
+    height: 750, // Fixed height for better centering
     fill: TWITTER_COLORS.cardBackground,
     rx: 0,
     ry: 0,
@@ -50,8 +50,8 @@ export const createUsernameText = (username: string): FabricText => {
 export const createVerifiedBadge = (usernameText: FabricText): [Circle, FabricText] => {
   const badge = new Circle({
     left: usernameText.left + usernameText.width + LAYOUT.spacing.small,
-    top: LAYOUT.positions.username.y + 4,
-    radius: 8,
+    top: LAYOUT.positions.username.y + 12, // Adjusted for larger elements
+    radius: 24, // 3x increase: 8 → 24
     fill: TWITTER_COLORS.blue,
     originX: 'center',
     originY: 'center',
@@ -59,8 +59,8 @@ export const createVerifiedBadge = (usernameText: FabricText): [Circle, FabricTe
 
   const checkmark = new FabricText('✓', {
     left: usernameText.left + usernameText.width + LAYOUT.spacing.small,
-    top: LAYOUT.positions.username.y - 1,
-    fontSize: 11,
+    top: LAYOUT.positions.username.y - 3, // Adjusted for larger elements
+    fontSize: 33, // 3x increase: 11 → 33
     fill: '#FFFFFF',
     fontWeight: 'bold',
     originX: 'center',

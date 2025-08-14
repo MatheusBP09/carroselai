@@ -4,6 +4,7 @@ export interface TwitterImageParams {
   handle: string;
   isVerified: boolean;
   profileImageUrl?: string;
+  contentImageUrl?: string;
 }
 
 export interface TwitterColors {

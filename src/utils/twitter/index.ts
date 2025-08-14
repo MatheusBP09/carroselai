@@ -3,6 +3,7 @@ import { DEFAULT_METRICS } from './constants';
 import { wrapText, generateRealisticMetrics } from './textUtils';
 import { createProfileImage } from './profileUtils';
 import { createEngagementMetrics } from './engagementUtils';
+import { createContentImage } from './imageUtils';
 import {
   createCanvas,
   createTweetContainer,
@@ -16,7 +17,7 @@ import {
  * Generate high-quality Twitter-style image for Instagram carousel
  */
 export const generateTwitterImage = async (params: TwitterImageParams): Promise<string> => {
-  const { text, username, handle, isVerified, profileImageUrl } = params;
+  const { text, username, handle, isVerified, profileImageUrl, contentImageUrl } = params;
 
   try {
     // Create canvas and basic layout
@@ -45,11 +46,19 @@ export const generateTwitterImage = async (params: TwitterImageParams): Promise<
     const handleAndTime = createHandleAndTime(handle, '');
     canvas.add(handleAndTime);
 
-    // Add tweet text with proper wrapping
-    const maxWidth = 820;
-    const wrappedText = wrapText(text, maxWidth, 28);
+    // Add tweet text with proper wrapping (increased max width for larger text)
+    const maxWidth = 2460; // 3x increase: 820 → 2460
+    const wrappedText = wrapText(text, maxWidth, 56); // Use new font size
     const tweetText = createTweetText(wrappedText);
     canvas.add(tweetText);
+
+    // Add content image if provided (DALL-E image)
+    if (contentImageUrl) {
+      const contentImage = await createContentImage(contentImageUrl);
+      if (contentImage) {
+        canvas.add(contentImage);
+      }
+    }
 
     // Generate high-quality image
     const dataURL = canvas.toDataURL({
