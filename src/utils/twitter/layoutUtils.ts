@@ -3,14 +3,29 @@ import { CANVAS_DIMENSIONS, TWITTER_COLORS, TYPOGRAPHY, LAYOUT } from './constan
 import { TwitterImageParams } from './types';
 
 /**
- * Create the main canvas with proper styling
+ * Create the main canvas with proper DOM element for headless rendering
  */
 export const createCanvas = (): FabricCanvas => {
-  return new FabricCanvas(null, {
+  // Create temporary canvas element for proper Fabric.js initialization
+  const canvasElement = document.createElement('canvas');
+  canvasElement.width = CANVAS_DIMENSIONS.width;
+  canvasElement.height = CANVAS_DIMENSIONS.height;
+  
+  // Temporarily add to DOM (required for Fabric.js v6)
+  canvasElement.style.position = 'absolute';
+  canvasElement.style.left = '-9999px';
+  canvasElement.style.top = '-9999px';
+  document.body.appendChild(canvasElement);
+  
+  console.log('🎨 Creating Fabric canvas with DOM element');
+  
+  const canvas = new FabricCanvas(canvasElement, {
     width: CANVAS_DIMENSIONS.width,
     height: CANVAS_DIMENSIONS.height,
     backgroundColor: TWITTER_COLORS.background,
   });
+  
+  return canvas;
 };
 
 /**
