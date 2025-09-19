@@ -60,24 +60,31 @@
   };
 
   /**
-   * Create verified badge if user is verified - optimized for square format
+   * Create verified badge with proper alignment and positioning
    */
   export const createVerifiedBadge = (usernameText: FabricText): [Circle, FabricText] => {
+    // Get username text width for proper positioning
+    const usernameWidth = usernameText.width || 0;
+    const badgeX = usernameText.left + usernameWidth + LAYOUT.spacing.small;
+    const badgeY = usernameText.top + (TYPOGRAPHY.username.fontSize / 2) - 12; // Center vertically with username
+    
     const badge = new Circle({
-      left: usernameText.left + usernameText.width + LAYOUT.spacing.small,
-      top: LAYOUT.positions.username.y + 8, // Adjusted for smaller elements
-      radius: 16, // Reduced for better proportion: 24 → 16
+      left: badgeX,
+      top: badgeY,
+      radius: 12, // Smaller, more proportional size
       fill: TWITTER_COLORS.blue,
       originX: 'center',
       originY: 'center',
     });
 
     const checkmark = new FabricText('✓', {
-      left: usernameText.left + usernameText.width + LAYOUT.spacing.small,
-      top: LAYOUT.positions.username.y - 2, // Adjusted for smaller elements
-      fontSize: 22, // Reduced for better proportion: 33 → 22
-      fill: '#FFFFFF',
+      left: badgeX,
+      top: badgeY,
+      fontSize: 16, // Proportional to badge size
+      fontFamily: TYPOGRAPHY.fontFamily,
+      fill: '#ffffff',
       fontWeight: 'bold',
+      textAlign: 'center',
       originX: 'center',
       originY: 'center',
     });
@@ -103,20 +110,22 @@
   };
 
   /**
-   * Create tweet text with proper formatting and line breaks
+   * Create tweet text with centered and justified formatting
    */
   export const createTweetText = (text: string): FabricText => {
+    const maxWidth = CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2);
+    
     return new FabricText(text, {
       left: LAYOUT.positions.tweet.x,
       top: LAYOUT.positions.tweet.y,
       fontSize: TYPOGRAPHY.tweet.fontSize,
       fontFamily: TYPOGRAPHY.fontFamily,
       fill: TWITTER_COLORS.text,
-      lineHeight: 1.4, // Better line spacing
+      lineHeight: TYPOGRAPHY.tweet.lineHeight,
       charSpacing: 0,
-      splitByGrapheme: false, // Better word wrapping
-      width: CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2) - 40, // Consistent width
-      textAlign: 'left',
-      objectCaching: false, // Prevent caching issues
+      splitByGrapheme: false,
+      width: maxWidth,
+      textAlign: 'justify', // Justified text like requested
+      objectCaching: false,
     });
   };

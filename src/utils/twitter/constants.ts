@@ -25,16 +25,16 @@ export const DEFAULT_METRICS: TwitterMetrics = {
 export const TYPOGRAPHY = {
   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
   username: {
-    fontSize: 48, // Reduced for better proportion
+    fontSize: 52, // Slightly larger for better visibility
     fontWeight: 'bold' as const,
   },
   handle: {
-    fontSize: 36, // Reduced for better proportion
+    fontSize: 38, // Better proportion
     fontWeight: 'normal' as const,
   },
   tweet: {
-    fontSize: 40, // Better readable size
-    lineHeight: 1.3,
+    fontSize: 42, // Better readable size for main content
+    lineHeight: 1.5, // Better line spacing for readability
     charSpacing: 0,
   },
   metrics: {
@@ -44,18 +44,18 @@ export const TYPOGRAPHY = {
 } as const;
 
 export const LAYOUT = {
-  margin: 60,
-  profileSize: 100,
+  margin: 80, // Increased margin for better centering
+  profileSize: 120, // Slightly larger profile
   spacing: {
-    small: 16,
-    medium: 32,
-    large: 48,
+    small: 12,
+    medium: 24,
+    large: 40,
   },
   positions: {
-    // Fixed positioning for better layout
-    profile: { x: 110, y: 110 },
-    username: { x: 230, y: 95 }, // Slightly higher
-    handle: { x: 230, y: 135 }, // Better spacing from username
-    tweet: { x: 110, y: 200 }, // More space for proper text layout
+    // Better centered positioning for Instagram-like layout
+    profile: { x: 150, y: 150 }, // More centered
+    username: { x: 290, y: 120 }, // Aligned with profile center
+    handle: { x: 290, y: 165 }, // Better spacing from username
+    tweet: { x: 150, y: 260 }, // More space and centered alignment
   },
 } as const;

@@ -18,7 +18,7 @@ import { FabricImage, Rect, FabricText } from "fabric";
           // Calculate optimal positioning and sizing
           const maxImageHeight = 300;
           const maxImageWidth = CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2);
-          const imageTop = LAYOUT.positions.tweet.y + 300; // Adjusted spacing below text
+          const contentImageTop = LAYOUT.positions.tweet.y + 400; // Better spacing below text
 
           // Calculate scale to fit within bounds
           const imageWidth = contentImage.width || 400;
@@ -27,9 +27,12 @@ import { FabricImage, Rect, FabricText } from "fabric";
           const scaleY = maxImageHeight / imageHeight;
           const scale = Math.min(scaleX, scaleY, 1); // Don't upscale
 
+          // Center horizontally
+          const imageLeft = (CANVAS_DIMENSIONS.width - (imageWidth * scale)) / 2;
+
           contentImage.set({
-            left: LAYOUT.margin,
-            top: imageTop,
+            left: imageLeft,
+            top: contentImageTop,
             scaleX: scale,
             scaleY: scale,
             originX: 'left',

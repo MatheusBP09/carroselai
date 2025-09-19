@@ -1,16 +1,16 @@
 /**
- * Enhanced text wrapping with proper line breaks and formatting
+ * Enhanced text wrapping with improved formatting for posts
  */
 export const wrapText = (text: string, maxWidth: number, fontSize: number): string => {
-  // Clean and normalize text first
+  // Clean and normalize text
   const cleanText = text.trim().replace(/\s+/g, ' ');
   
   const words = cleanText.split(' ');
   const lines: string[] = [];
   let currentLine = '';
   
-  // Better character width calculation for Instagram format
-  const avgCharWidth = fontSize * 0.55; // More accurate for modern fonts
+  // Better character width calculation for justified text
+  const avgCharWidth = fontSize * 0.52; // Optimized for justified alignment
   const maxCharsPerLine = Math.floor(maxWidth / avgCharWidth);
   
   console.log(`📝 Text wrapping - Max width: ${maxWidth}px, Font: ${fontSize}px, Max chars: ${maxCharsPerLine}`);
@@ -25,11 +25,12 @@ export const wrapText = (text: string, maxWidth: number, fontSize: number): stri
         currentLine = '';
       }
       
-      // Split long words intelligently
+      // Split long words more elegantly
       let remainingWord = word;
       while (remainingWord.length > maxCharsPerLine) {
-        lines.push(remainingWord.substring(0, maxCharsPerLine - 1) + '-');
-        remainingWord = remainingWord.substring(maxCharsPerLine - 1);
+        const breakPoint = maxCharsPerLine - 1;
+        lines.push(remainingWord.substring(0, breakPoint) + '-');
+        remainingWord = remainingWord.substring(breakPoint);
       }
       currentLine = remainingWord;
       
@@ -37,18 +38,18 @@ export const wrapText = (text: string, maxWidth: number, fontSize: number): stri
       currentLine = testLine;
     } else {
       if (currentLine) {
-        lines.push(currentLine);
+        lines.push(currentLine.trim()); // Trim whitespace for better justified alignment
       }
       currentLine = word;
     }
   }
   
   if (currentLine) {
-    lines.push(currentLine);
+    lines.push(currentLine.trim());
   }
   
   const result = lines.join('\n');
-  console.log(`📝 Text wrapped into ${lines.length} lines:`, result.substring(0, 100) + '...');
+  console.log(`📝 Text wrapped into ${lines.length} lines for justified display`);
   
   return result;
 };
