@@ -27,6 +27,68 @@ export const testImagePreprocessing = async () => {
       contentUrlType: result.contentImageUrl?.startsWith('data:') ? 'base64' : 'original'
     });
 
+    // Create visual preview
+    const previewContainer = document.createElement('div');
+    previewContainer.style.position = 'fixed';
+    previewContainer.style.top = '50%';
+    previewContainer.style.left = '50%';
+    previewContainer.style.transform = 'translate(-50%, -50%)';
+    previewContainer.style.background = 'white';
+    previewContainer.style.padding = '20px';
+    previewContainer.style.borderRadius = '12px';
+    previewContainer.style.boxShadow = '0 10px 25px rgba(0,0,0,0.3)';
+    previewContainer.style.zIndex = '9999';
+    previewContainer.style.maxWidth = '80vw';
+    previewContainer.style.maxHeight = '80vh';
+    previewContainer.style.overflow = 'auto';
+
+    previewContainer.innerHTML = `
+      <div style="text-align: center; margin-bottom: 20px;">
+        <h3 style="margin: 0 0 10px 0; color: #333;">✅ Teste de Imagens Concluído</h3>
+        <button onclick="this.parentElement.parentElement.remove()" style="
+          background: #dc2626; 
+          color: white; 
+          border: none; 
+          padding: 8px 16px; 
+          border-radius: 6px; 
+          cursor: pointer;
+          font-size: 14px;
+        ">Fechar</button>
+      </div>
+      
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;">
+        <div style="text-align: center;">
+          <h4 style="margin: 0 0 10px 0; color: #666;">Imagem de Perfil</h4>
+          <img src="${result.profileImageUrl}" style="
+            max-width: 200px; 
+            max-height: 200px; 
+            border-radius: 50%; 
+            border: 3px solid #ddd;
+            object-fit: cover;
+          " />
+          <p style="font-size: 12px; color: #888; margin-top: 8px;">
+            Tipo: ${result.profileImageUrl?.startsWith('data:') ? 'Base64 (Processada)' : 'URL Original'}
+          </p>
+        </div>
+        
+        <div style="text-align: center;">
+          <h4 style="margin: 0 0 10px 0; color: #666;">Imagem de Conteúdo</h4>
+          <img src="${result.contentImageUrl}" style="
+            max-width: 200px; 
+            max-height: 150px; 
+            border-radius: 8px; 
+            border: 2px solid #ddd;
+            object-fit: cover;
+          " />
+          <p style="font-size: 12px; color: #888; margin-top: 8px;">
+            Tipo: ${result.contentImageUrl?.startsWith('data:') ? 'Base64 (Processada)' : 'URL Original'}
+          </p>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(previewContainer);
+
     return result;
   } catch (error) {
     console.error('❌ Image preprocessing test failed:', error);
