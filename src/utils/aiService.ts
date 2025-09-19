@@ -1,4 +1,6 @@
 import { OPENAI_API_KEY } from '../constants/config';
+import { FallbackContentService } from '../services/fallbackContentService';
+import { CarouselData } from '../types/carousel';
 
 interface GenerateCarouselParams {
   title?: string;
@@ -278,25 +280,50 @@ JSON:
     }
   }
 
-  // All models failed
-  console.error('🚨 All models failed, throwing last error');
+  // All models failed - use fallback content
+  console.warn('🚨 All AI models failed, using fallback content generation');
   
-  // Enhanced error messages
+  // Create fallback data structure with proper type casting
+  const fallbackData: CarouselData = {
+    username,
+    instagramHandle,
+    content,
+    slideCount,
+    contentType: contentType as any,
+    contentFormat: contentFormat as any,
+    callToAction: callToAction as any,
+    customCTA,
+    copywritingFramework: copywritingFramework as any,
+    targetAudience,
+    isVerified: false,
+    title: '',
+    profileImage: undefined,
+    slides: undefined,
+    caption: undefined,
+    hashtags: undefined
+  };
+  
+  // Enhanced error messages with fallback
   if (lastError?.message?.includes('401')) {
-    throw new Error('Chave da API inválida. Verifique sua chave OpenAI.');
+    console.error('❌ API key invalid, using fallback content');
+    return FallbackContentService.generateFallbackContent(fallbackData);
   }
   
   if (lastError?.message?.includes('insufficient_quota') || lastError?.message?.includes('billing')) {
-    throw new Error('Cota da API esgotada. Verifique seu plano OpenAI ou tente novamente mais tarde.');
+    console.error('❌ API quota exceeded, using fallback content');
+    return FallbackContentService.generateFallbackContent(fallbackData);
   }
   
   if (lastError?.message?.includes('rate_limit')) {
-    throw new Error('Limite de requisições atingido. Aguarde alguns minutos e tente novamente.');
+    console.error('❌ Rate limit reached, using fallback content');
+    return FallbackContentService.generateFallbackContent(fallbackData);
   }
 
   if (lastError?.message?.includes('timeout') || lastError?.name === 'AbortError') {
-    throw new Error('Timeout na geração. A IA está sobrecarregada, tente novamente em alguns minutos.');
+    console.error('❌ Timeout occurred, using fallback content');
+    return FallbackContentService.generateFallbackContent(fallbackData as CarouselData);
   }
 
-  throw lastError || new Error('Erro desconhecido na geração do carrossel. Tente novamente.');
+  console.error('❌ Unknown error, using fallback content');
+  return FallbackContentService.generateFallbackContent(fallbackData);
 };

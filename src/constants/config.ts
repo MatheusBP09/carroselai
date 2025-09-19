@@ -1,5 +1,11 @@
-// OpenAI API Configuration
-export const OPENAI_API_KEY = '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';
+// OpenAI API Configuration - Using fallback system
+const getApiKey = () => {
+  // Try environment variable first, then fallback
+  return import.meta.env.VITE_OPENAI_API_KEY || 
+         localStorage.getItem('openai_api_key') || 
+         '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';
+};
 
-// Note: This is a pre-configured API key for internal use only.
-// In production, ensure this key has appropriate rate limits and permissions.
+export const OPENAI_API_KEY = getApiKey();
+
+// Note: API key management with multiple fallback options for better reliability.
