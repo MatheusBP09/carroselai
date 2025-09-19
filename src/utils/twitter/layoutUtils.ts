@@ -72,18 +72,19 @@
       left: badgeX,
       top: badgeY,
       radius: 14, // Tamanho como no Twitter real
-      fill: TWITTER_COLORS.blue,
+      fill: '#1D9BF0', // Cor azul oficial do Twitter/X
       originX: 'center',
       originY: 'center',
     });
 
+    // Use the proper checkmark unicode character
     const checkmark = new FabricText('✓', {
       left: badgeX,
       top: badgeY - 2, // Pequeno ajuste vertical
-      fontSize: 18, // Proporcional ao badge
+      fontSize: 16, // Tamanho menor e mais proporcional
       fontFamily: TYPOGRAPHY.fontFamily,
       fill: '#ffffff',
-      fontWeight: '700',
+      fontWeight: 'bold',
       textAlign: 'center',
       originX: 'center',
       originY: 'center',

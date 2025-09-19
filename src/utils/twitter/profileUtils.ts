@@ -14,6 +14,9 @@ export const createProfileImage = async (profileImageUrl?: string): Promise<Fabr
         crossOrigin: 'anonymous',
       });
       
+      // Wait for image to load completely
+      await new Promise(resolve => setTimeout(resolve, 100));
+      
       // Create circular clip path
       const clipPath = new Circle({
         radius: profileSize / 2,
@@ -21,9 +24,11 @@ export const createProfileImage = async (profileImageUrl?: string): Promise<Fabr
         originY: 'center',
       });
       
-      // Calculate scale to ensure image fills the circle
-      const imageSize = Math.max(profileImage.width || 100, profileImage.height || 100);
-      const scale = profileSize / imageSize;
+      // Calculate scale to ensure image fills the circle properly
+      const imageWidth = profileImage.width || 100;
+      const imageHeight = profileImage.height || 100;
+      const minImageDimension = Math.min(imageWidth, imageHeight);
+      const scale = profileSize / minImageDimension;
       
       profileImage.set({
         left: profile.x,
@@ -35,18 +40,19 @@ export const createProfileImage = async (profileImageUrl?: string): Promise<Fabr
         clipPath: clipPath,
       });
       
+      console.log('✅ Profile image loaded successfully:', { scale, width: imageWidth, height: imageHeight });
       return profileImage;
     } catch (error) {
-      console.warn('Failed to load profile image:', error);
+      console.warn('⚠️ Failed to load profile image:', error);
     }
   }
   
-  // Default profile circle with gradient-like effect
+  // Default profile circle with random color
   return new Circle({
     left: profile.x,
     top: profile.y,
     radius: profileSize / 2,
-    fill: TWITTER_COLORS.blue,
+    fill: getRandomAvatarColor(),
     originX: 'center',
     originY: 'center',
   });

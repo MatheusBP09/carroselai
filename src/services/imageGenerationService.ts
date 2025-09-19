@@ -17,10 +17,20 @@ interface ImageGenerationResponse {
 export const generateContentImage = async (params: ImageGenerationParams): Promise<ImageGenerationResponse> => {
   const { text, style = 'modern', aspectRatio = '1:1', contentFormat = 'feed', contentType = 'educational', width, height } = params;
 
+  // Check if API key is available
+  if (!OPENAI_API_KEY || OPENAI_API_KEY === 'your_openai_api_key_here') {
+    throw new Error('OpenAI API key not configured. Please set your API key in the config.');
+  }
+
   // Get exact dimensions based on format
   const dimensions = width && height ? { width, height } : getFormatDimensions(contentFormat);
   
   const optimizedPrompt = createImagePrompt(text, style, contentFormat, contentType);
+  
+  console.log('🎨 Generating image with DALL-E 3:', { 
+    prompt: optimizedPrompt.substring(0, 100) + '...', 
+    dimensions 
+  });
 
   try {
     const response = await fetch('https://api.openai.com/v1/images/generations', {
@@ -40,30 +50,33 @@ export const generateContentImage = async (params: ImageGenerationParams): Promi
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       
       if (response.status === 401) {
-        throw new Error('Invalid OpenAI API key. Please check your API key.');
+        throw new Error('Chave da API OpenAI inválida. Verifique sua chave de API.');
       } else if (response.status === 429) {
-        throw new Error('Rate limit exceeded. Please try again later.');
+        throw new Error('Limite de taxa excedido. Tente novamente mais tarde.');
       } else if (response.status === 400) {
-        throw new Error(`Bad request: ${errorData.error?.message || 'Invalid request parameters'}`);
+        const errorMsg = errorData.error?.message || 'Parâmetros de solicitação inválidos';
+        throw new Error(`Erro na solicitação: ${errorMsg}`);
       } else {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
+        throw new Error(`Falha na API: ${response.status} ${response.statusText}`);
       }
     }
 
     const data = await response.json();
     
     if (!data.data || !data.data[0] || !data.data[0].url) {
-      throw new Error('Invalid response format from OpenAI API');
+      throw new Error('Resposta inválida da API OpenAI');
     }
 
+    console.log('✅ Image generated successfully');
+    
     return {
       imageUrl: data.data[0].url
     };
   } catch (error) {
-    console.error('Error generating content image:', error);
+    console.error('❌ Error generating content image:', error);
     throw error;
   }
 };
