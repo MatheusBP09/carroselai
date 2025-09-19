@@ -44,7 +44,7 @@ export const TYPOGRAPHY = {
 } as const;
 
 export const LAYOUT = {
-  margin: 240, // 3x increase: 80 → 240
+  margin: 120, // Reduced margin to fit content better
   profileSize: 144, // 3x increase: 48 → 144
   spacing: {
     small: 36, // 3x increase: 12 → 36
@@ -53,9 +53,9 @@ export const LAYOUT = {
   },
   positions: {
     // Vertically center elements around canvas center (1350/2 = 675)
-    profile: { x: 360, y: 600 }, // 3x spacing increase and centered
-    username: { x: 540, y: 560 }, // 3x spacing increase and centered
-    handle: { x: 540, y: 630 }, // 3x spacing increase and centered  
-    tweet: { x: 540, y: 720 }, // 3x spacing increase and centered
+    profile: { x: 300, y: 600 }, // Moved left to fit within canvas
+    username: { x: 480, y: 560 }, // Moved left to fit within canvas
+    handle: { x: 480, y: 630 }, // Moved left to fit within canvas  
+    tweet: { x: 480, y: 720 }, // Moved left to fit within canvas
   },
 } as const;
