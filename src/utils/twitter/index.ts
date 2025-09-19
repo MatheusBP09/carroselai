@@ -38,17 +38,21 @@
 
       console.log('📐 Canvas created:', { width: canvas.width, height: canvas.height, bg: canvas.backgroundColor });
 
-      // Add tweet container
+      // Add tweet container first
       const tweetContainer = createTweetContainer();
       canvas.add(tweetContainer);
       console.log('📦 Tweet container added');
 
-      // Add profile image
-      const profileImage = await createProfileImage(profileImageUrl);
-      canvas.add(profileImage);
-      console.log('👤 Profile image added');
+      // Add profile image (await properly)
+      try {
+        const profileImage = await createProfileImage(profileImageUrl);
+        canvas.add(profileImage);
+        console.log('👤 Profile image added');
+      } catch (error) {
+        console.warn('⚠️ Failed to add profile image:', error);
+      }
 
-      // Add username
+      // Add username text
       const usernameText = createUsernameText(username);
       canvas.add(usernameText);
       console.log('📝 Username added:', username);
@@ -61,10 +65,10 @@
         console.log('✅ Verified badge added');
       }
 
-      // Add handle without timestamp
+      // Add handle
       const handleAndTime = createHandleAndTime(handle, '');
       canvas.add(handleAndTime);
-      console.log('🏷️ Handle added:' , handle);
+      console.log('🏷️ Handle added:', handle);
 
       // Add tweet text with dynamic sizing and proper wrapping
       const maxWidth = CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2) - 40;
@@ -91,48 +95,61 @@
       canvas.add(tweetText);
       console.log('💬 Tweet text added with dynamic sizing, length:', text.length);
 
-      // Add content image or placeholder if provided
+      // Add content image with improved error handling
       if (contentImageUrl) {
-        console.log('🖼️ Processing content image:' , contentImageUrl);
-        const contentResult = await createContentImage(contentImageUrl);
-        if (contentResult) {
-          // Add background first if it exists
-          if (contentResult.background) {
-            canvas.add(contentResult.background);
-            console.log('🎨 Content background added');
-          }
+        console.log('🖼️ Processing content image:', contentImageUrl);
+        try {
+          const contentResult = await createContentImage(contentImageUrl);
+          if (contentResult) {
+            // Add background first if it exists
+            if (contentResult.background) {
+              canvas.add(contentResult.background);
+              console.log('🎨 Content background added');
+            }
 
-          // Add actual image or placeholder
-          if (contentResult.image) {
-            canvas.add(contentResult.image);
-            console.log('✅ Actual content image loaded and added');
-          } else if (contentResult.placeholder) {
-            canvas.add(contentResult.placeholder);
-            console.log('📝 Content placeholder added');
-          }
+            // Add actual image or placeholder
+            if (contentResult.image) {
+              canvas.add(contentResult.image);
+              console.log('✅ Actual content image loaded and added');
+            } else if (contentResult.placeholder) {
+              canvas.add(contentResult.placeholder);
+              console.log('📝 Content placeholder added');
+            }
 
-          console.log('✅ Content processing completed successfully');
-        } else {
-          console.warn('⚠️ Content processing failed completely');
+            console.log('✅ Content processing completed successfully');
+          } else {
+            console.warn('⚠️ Content processing failed completely');
+          }
+        } catch (error) {
+          console.warn('⚠️ Error processing content image:', error);
         }
+      }
+
+      // Force canvas rendering with proper await
+      console.log('🔄 Forcing canvas render before validation');
+      canvas.renderAll();
+      
+      // Wait for rendering to complete
+      await new Promise(resolve => setTimeout(resolve, 300));
+
+      // Check canvas state
+      const objectCount = canvas.getObjects().length;
+      console.log(`📊 Canvas has ${objectCount} objects after rendering`);
+
+      if (objectCount === 0) {
+        console.error('❌ Canvas is empty after adding all elements');
+        throw new Error('Canvas rendering failed - no objects found');
       }
 
       // Get layout metrics for debugging
       const layoutMetrics = TwitterImageDebugger.getLayoutMetrics(canvas, text, fontSize);
 
-      // Wait for all elements to be fully rendered
-      TwitterImageDebugger.log('Waiting for rendering to complete');
+      // Wait additional time for all elements to stabilize
+      TwitterImageDebugger.log('Waiting for final rendering to complete');
       await new Promise(resolve => {
         canvas.renderAll();
-        // Give extra time for any async operations and image loading
-        setTimeout(resolve, 200); // Increased timeout for better stability
+        setTimeout(resolve, 200);
       });
-
-      // Final validation after all elements are added
-      if (!TwitterImageDebugger.validateCanvas(canvas)) {
-        TwitterImageDebugger.error('Final canvas validation failed, but continuing with generation');
-        // Don't throw error here, just log it - the canvas might still work
-      }
 
       TwitterImageDebugger.log('Canvas rendering completed', { objectCount: canvas.getObjects().length, metrics: layoutMetrics });
 
