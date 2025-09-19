@@ -1,4 +1,4 @@
-import { OPENAI_API_KEY } from '../constants/config';
+import { supabase } from '@/integrations/supabase/client';
 
 export interface ImageGenerationParams {
   text: string;
@@ -23,131 +23,106 @@ export const generateContentImage = async (params: ImageGenerationParams): Promi
   const optimizedPrompt = createImagePrompt(text, style, contentFormat, contentType);
 
   try {
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: 'dall-e-3',
+    console.log('🎨 Generating image via Supabase edge function...');
+    
+    const { data, error } = await supabase.functions.invoke('generate-image', {
+      body: {
         prompt: optimizedPrompt,
-        n: 1,
-        size: `${dimensions.width}x${dimensions.height}` as any,
-        quality: 'hd',
-        response_format: 'url'
-      }),
+        size: `${dimensions.width}x${dimensions.height}`
+      }
     });
 
-    if (!response.ok) {
-      const errorData = await response.json();
-      
-      if (response.status === 401) {
-        throw new Error('Invalid OpenAI API key. Please check your API key.');
-      } else if (response.status === 429) {
-        throw new Error('Rate limit exceeded. Please try again later.');
-      } else if (response.status === 400) {
-        throw new Error(`Bad request: ${errorData.error?.message || 'Invalid request parameters'}`);
-      } else {
-        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
-      }
+    if (error) {
+      console.error('❌ Supabase function error:', error);
+      throw new Error(error.message || 'Erro na geração da imagem');
     }
 
-    const data = await response.json();
+    if (!data?.success) {
+      throw new Error(data?.error || 'Falha na geração da imagem');
+    }
+
+    console.log('✅ Image generated successfully');
+    return { imageUrl: data.imageUrl };
+
+  } catch (error: any) {
+    console.error('🚨 Image generation error:', error);
     
-    if (!data.data || !data.data[0] || !data.data[0].url) {
-      throw new Error('Invalid response format from OpenAI API');
-    }
-
-    return {
-      imageUrl: data.data[0].url
-    };
-  } catch (error) {
-    console.error('Error generating content image:', error);
-    throw error;
+    // Return fallback image for better UX
+    const fallbackUrl = getFallbackImage(contentType, contentFormat);
+    console.log('🔄 Using fallback image:', fallbackUrl);
+    
+    return { imageUrl: fallbackUrl };
   }
 };
 
-// Helper function to get correct API dimensions (OpenAI supported sizes only)
+// Helper functions
 const getFormatDimensions = (format: string): { width: number; height: number } => {
-  const dimensions = {
-    'stories': { width: 1024, height: 1792 }, // Vertical format for stories
-    'reels': { width: 1024, height: 1792 },   // Vertical format for reels  
-    'feed': { width: 1024, height: 1024 },    // Square format (DALL-E supported)
-    'default': { width: 1024, height: 1024 }  // Square format (DALL-E supported)
-  };
-  
-  return dimensions[format as keyof typeof dimensions] || dimensions.default;
-};
-
-// Enhanced prompt creation focused on realistic photography
-const createImagePrompt = (text: string, style: string, format: string = 'feed', contentType: string = 'educational'): string => {
-  // Extract key concepts from the text for better image relevance
-  const cleanText = text.replace(/[🧵📊💡⚡🔥✨💰📈📉🎯🚀]/g, '').trim();
-  const lowerText = cleanText.toLowerCase();
-  
-  // Analyze content to create realistic photo subjects
-  let photoSubject = '';
-  let photoContext = '';
-  let photographyStyle = '';
-  
-  // Content-specific realistic photography elements
-  if (lowerText.includes('dinheiro') || lowerText.includes('renda') || lowerText.includes('financeiro') || lowerText.includes('investir')) {
-    photoSubject = 'pessoa profissional analisando gráficos financeiros em escritório moderno';
-    photoContext = 'ambiente corporativo com computadores, documentos financeiros, atmosfera de sucesso';
-    photographyStyle = 'fotografia corporativa profissional, iluminação natural';
-  } else if (lowerText.includes('negócio') || lowerText.includes('empresa') || lowerText.includes('vendas') || lowerText.includes('empreend')) {
-    photoSubject = 'empreendedor ou executivo em ambiente de negócios';
-    photoContext = 'escritório moderno, reunião de negócios, apresentação profissional';
-    photographyStyle = 'fotografia corporate, luz profissional, ambiente business';
-  } else if (lowerText.includes('saúde') || lowerText.includes('exercício') || lowerText.includes('bem-estar') || lowerText.includes('energia')) {
-    photoSubject = 'pessoa praticando atividade saudável ou em ambiente wellness';
-    photoContext = 'academia, parque, consultório médico, ambiente de bem-estar';
-    photographyStyle = 'fotografia lifestyle saudável, luz natural, atmosfera positiva';
-  } else if (lowerText.includes('tecnologia') || lowerText.includes('digital') || lowerText.includes('ia') || lowerText.includes('inovação')) {
-    photoSubject = 'profissional trabalhando com tecnologia, programador ou analista';
-    photoContext = 'escritório tech, telas de computador, ambiente inovador e moderno';
-    photographyStyle = 'fotografia tech moderna, iluminação LED, ambiente futurista';
-  } else if (lowerText.includes('educação') || lowerText.includes('aprender') || lowerText.includes('curso') || lowerText.includes('estud')) {
-    photoSubject = 'estudante ou professor em ambiente educacional';
-    photoContext = 'biblioteca, sala de aula, workspace de estudos, livros e materiais';
-    photographyStyle = 'fotografia educacional, luz suave, ambiente acadêmico';
-  } else if (lowerText.includes('casa') || lowerText.includes('família') || lowerText.includes('vida') || lowerText.includes('pessoal')) {
-    photoSubject = 'pessoa em ambiente doméstico confortável e organizado';
-    photoContext = 'casa moderna, ambiente familiar acolhedor, decoração contemporânea';
-    photographyStyle = 'fotografia lifestyle, luz natural aconchegante';
-  } else if (lowerText.includes('trabalho') || lowerText.includes('carreira') || lowerText.includes('profiss')) {
-    photoSubject = 'profissional competente em seu ambiente de trabalho';
-    photoContext = 'escritório, co-working, ambiente profissional organizado';
-    photographyStyle = 'fotografia profissional, iluminação corporativa';
-  } else {
-    // Generic realistic photo based on actual text content
-    const keyWords = cleanText.split(' ').slice(0, 4).join(' ');
-    photoSubject = `pessoa real em situação relacionada a: ${keyWords}`;
-    photoContext = 'ambiente moderno e profissional adequado ao contexto';
-    photographyStyle = 'fotografia realista de alta qualidade, iluminação natural';
+  switch (format) {
+    case 'stories':
+      return { width: 1080, height: 1920 };
+    case 'reels':
+      return { width: 1080, height: 1920 };
+    case 'feed':
+    default:
+      return { width: 1080, height: 1080 };
   }
-  
-  // Enhanced prompt focused on realistic photography
-  const prompt = `Fotografia profissional realista, alta resolução, ${photoSubject}, ${photoContext}, ${photographyStyle}, cores naturais e harmoniosas, composição bem balanceada, luz natural ou profissional, estilo fotojornalístico moderno, relacionado especificamente ao tema: "${cleanText.substring(0, 80)}", sem texto na imagem, foco na autenticidade e realismo`;
-  
-  return prompt;
 };
 
-/**
- * Convert profile image file to URL for use in Twitter post
- */
+const createImagePrompt = (text: string, style: string, format: string, type: string): string => {
+  // Clean text for better prompt
+  const cleanText = text.replace(/[🧵📊💡⚡🔥✨💰📈📉🎯🚀]/g, '').trim();
+  
+  const styleDescriptors = {
+    professional: 'professional, clean, business-like',
+    modern: 'modern, sleek, contemporary',
+    minimalist: 'minimalist, simple, clean lines',
+    creative: 'creative, artistic, dynamic'
+  };
+
+  const typeDescriptors = {
+    educational: 'educational, informative, professional setting',
+    motivational: 'inspiring, energetic, uplifting',
+    tutorial: 'step-by-step, clear, instructional',
+    business: 'corporate, professional, success-oriented',
+    lifestyle: 'lifestyle, everyday, relatable'
+  };
+
+  const baseStyle = styleDescriptors[style as keyof typeof styleDescriptors] || styleDescriptors.modern;
+  const typeStyle = typeDescriptors[type as keyof typeof typeDescriptors] || typeDescriptors.educational;
+
+  return `High-quality photograph: ${typeStyle}, ${baseStyle}, realistic lighting, no text overlay, ${format === 'stories' ? 'vertical composition' : 'square composition'}, professional photography`;
+};
+
+const getFallbackImage = (contentType: string, format: string): string => {
+  const baseUrl = 'https://images.unsplash.com';
+  const dimensions = format === 'stories' ? '1080x1920' : '1080x1080';
+  
+  const fallbackCategories = {
+    educational: 'study,learning,books',
+    motivational: 'success,motivation,achievement',
+    tutorial: 'workspace,computer,tutorial',
+    business: 'business,office,professional',
+    lifestyle: 'lifestyle,modern,clean',
+    default: 'abstract,modern,minimal'
+  };
+
+  const category = fallbackCategories[contentType as keyof typeof fallbackCategories] || fallbackCategories.default;
+  return `${baseUrl}/${dimensions}/?${category}&auto=format&fit=crop`;
+};
+
+// Profile image conversion utility
 export const convertProfileImageToUrl = (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const reader = new FileReader();
     reader.onload = (e) => {
-      if (e.target?.result) {
-        resolve(e.target.result as string);
+      const result = e.target?.result;
+      if (typeof result === 'string') {
+        resolve(result);
       } else {
-        reject(new Error('Failed to convert image to URL'));
+        reject(new Error('Failed to convert file to URL'));
       }
     };
-    reader.onerror = () => reject(new Error('Failed to read image file'));
+    reader.onerror = () => reject(new Error('Failed to read file'));
     reader.readAsDataURL(file);
   });
 };
