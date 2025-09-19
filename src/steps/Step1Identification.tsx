@@ -87,79 +87,36 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
     }
   };
 
-  const handleFullCarouselTest = () => {
+  const handleFullCarouselTest = async () => {
     toast.info('Gerando carrossel de teste completo...');
     
-    // Dados de teste básicos que funcionam com o tipo CarouselData
-    const testData = {
-      title: 'Teste de Carrossel Automático',
-      username: 'Teste User',
-      instagramHandle: '@testeuser',
-      isVerified: true,
-      content: 'Este é um carrossel de teste gerado automaticamente para verificar se todo o processo está funcionando corretamente. Inclui múltiplos slides com conteúdo educacional sobre empreendedorismo digital.',
-      slideCount: 5,
-      contentType: 'educational' as const,
-      contentFormat: 'feed' as const,
-      callToAction: 'follow' as const,
-      copywritingFramework: 'aida' as const,
-      slides: [
-        { 
-          id: 1, 
-          text: 'Slide 1: Introdução ao Empreendedorismo Digital', 
-          isEdited: false,
-          originalText: 'Slide 1: Introdução ao Empreendedorismo Digital',
-          hasImage: true,
-          needsImage: true,
-          imagePrompt: 'Person working on laptop in modern office, digital business concept'
-        },
-        { 
-          id: 2, 
-          text: 'Slide 2: Primeiro Passo - Defina seu Nicho', 
-          isEdited: false,
-          originalText: 'Slide 2: Primeiro Passo - Defina seu Nicho',
-          hasImage: true,
-          needsImage: true,
-          imagePrompt: 'Target audience analysis, market research concept'
-        },
-        { 
-          id: 3, 
-          text: 'Slide 3: Segundo Passo - Crie Conteúdo de Valor', 
-          isEdited: false,
-          originalText: 'Slide 3: Segundo Passo - Crie Conteúdo de Valor',
-          hasImage: true,
-          needsImage: true,
-          imagePrompt: 'Content creation, writing blog posts, video editing'
-        },
-        { 
-          id: 4, 
-          text: 'Slide 4: Terceiro Passo - Construa sua Audiência', 
-          isEdited: false,
-          originalText: 'Slide 4: Terceiro Passo - Construa sua Audiência',
-          hasImage: true,
-          needsImage: true,
-          imagePrompt: 'Social media growth, community building concept'
-        },
-        { 
-          id: 5, 
-          text: 'Slide 5: Comece Hoje! Siga @testeuser para mais dicas', 
-          isEdited: false,
-          originalText: 'Slide 5: Comece Hoje! Siga @testeuser para mais dicas',
-          hasImage: true,
-          needsImage: true,
-          imagePrompt: 'Call to action, follow button, social media engagement'
-        }
-      ],
-      caption: 'Aprenda os fundamentos do empreendedorismo digital em 5 slides! 🚀 Salve este post e comece sua jornada hoje mesmo. ✨',
-      hashtags: ['#empreendedorismo', '#digital', '#negociosonline', '#dicas', '#marketing']
-    };
+    try {
+      // Dados de teste básicos
+      const testData = {
+        title: 'Empreendedorismo Digital - Guia Completo',
+        username: 'Teste User',
+        instagramHandle: '@testeuser',
+        isVerified: true,
+        content: 'Descubra como começar no empreendedorismo digital. Este guia completo vai te mostrar os primeiros passos essenciais para criar seu negócio online. Aprenda sobre planejamento, execução, marketing digital e como construir uma audiência engajada nas redes sociais. Tudo que você precisa saber para começar sua jornada empreendedora.',
+        slideCount: 5,
+        contentType: 'educational' as const,
+        contentFormat: 'feed' as const,
+        callToAction: 'follow' as const,
+        copywritingFramework: 'aida' as const,
+        targetAudience: 'Pessoas interessadas em começar no empreendedorismo digital'
+      };
 
-    // Atualizar dados do contexto
-    updateData(testData);
-    
-    // Navegar diretamente para a etapa 6 (download)
-    setCurrentStep(6);
-    
-    toast.success('Carrossel de teste gerado! Redirecionando para download...');
+      // Atualizar dados do contexto
+      updateData(testData);
+      
+      // Navegar diretamente para a etapa 4 (processamento) que vai gerar texto e imagens reais
+      setCurrentStep(4);
+      
+      toast.success('Iniciando geração completa de carrossel...');
+    } catch (error) {
+      console.error('Erro ao iniciar teste:', error);
+      toast.error('Erro ao iniciar teste. Tente novamente.');
+    }
   };
 
   return (
