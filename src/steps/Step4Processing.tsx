@@ -8,113 +8,11 @@ import { Badge } from '@/components/ui/badge';
 import { useCarousel } from '@/context/CarouselContext';
 import { generateCarousel } from '@/utils/aiService';
 import { convertProfileImageToUrl } from '@/services/imageGenerationService';
-import { enhancedImageService } from '@/services/enhancedImageService';
+import { ContextualImageService } from '@/services/contextualImageService';
 import { monitoringService } from '@/services/monitoringService';
 
-// Helper functions for enhanced image generation (100% coverage)
-const getImagePromptVariations = (slideIndex: number, totalSlides: number): string[] => {
-  const position = slideIndex / (totalSlides - 1);
-  
-  if (position === 0) {
-    // First slide - impactful opener
-    return [
-      'Design de capa impactante com tipografia bold e gradiente vibrante',
-      'Layout moderno de abertura com elementos visuais chamativo',
-      'Composição minimalista e profissional para slide inicial'
-    ];
-  } else if (position > 0.8) {
-    // Final slides - call to action
-    return [
-      'Design de call-to-action com elementos direcionais e cores vibrantes',
-      'Layout de conclusão com elementos inspiracionais',
-      'Composição final com destaque para próximos passos'
-    ];
-  } else {
-    // Middle slides - content variety
-    const variations = [
-      'Gráfico moderno e minimalista com dados estatísticos',
-      'Diagrama de processo com fluxo visual claro',
-      'Ilustração conceitual moderna e profissional',
-      'Infográfico com elementos visuais organizados',
-      'Design tipográfico com citação destacada',
-      'Comparação visual lado a lado com design limpo',
-      'Processo step-by-step com numeração visual',
-      'Conceito abstrato com formas geométricas modernas'
-    ];
-    return [variations[slideIndex % variations.length]];
-  }
-};
-
-const generateEnhancedImagePrompt = (text: string, slideIndex: number, totalSlides: number): string => {
-  const cleanText = text.replace(/[🧵📊💡⚡🔥✨💰📈📉🎯🚀]/g, '').trim();
-  
-  // Extract key concepts from the text for more relevant prompts
-  const lowerText = cleanText.toLowerCase();
-  
-  // Expanded keyword detection for better content categorization
-  const keywords = {
-    financeiro: ['dinheiro', 'renda', 'financeiro', 'investir', 'lucro', 'ganhar', 'economia', 'patrimônio', 'poupança', 'orçamento'],
-    negocio: ['negócio', 'empresa', 'vendas', 'cliente', 'marketing', 'empreender', 'startup', 'produto', 'serviço', 'mercado'],
-    saude: ['saúde', 'exercício', 'bem-estar', 'energia', 'fitness', 'treino', 'alimentação', 'dieta', 'nutrição', 'vida'],
-    tecnologia: ['tecnologia', 'digital', 'ia', 'inovação', 'software', 'app', 'programação', 'internet', 'código', 'dados'],
-    educacao: ['educação', 'aprender', 'curso', 'conhecimento', 'estudar', 'ensino', 'formação', 'desenvolvimento', 'skill', 'capacitação'],
-    produtividade: ['processo', 'passo', 'etapa', 'método', 'organização', 'planejamento', 'produtividade', 'gestão', 'tempo', 'eficiência'],
-    lifestyle: ['casa', 'família', 'vida', 'pessoal', 'relacionamento', 'hobbies', 'lazer', 'qualidade', 'felicidade', 'rotina'],
-    crescimento: ['crescimento', 'desenvolvimento', 'melhoria', 'evolução', 'progresso', 'meta', 'objetivo', 'sucesso', 'conquista', 'resultado']
-  };
-  
-  // Enhanced keyword matching
-  let category = 'geral';
-  let photoSubject = '';
-  let photoContext = '';
-  
-  for (const [cat, words] of Object.entries(keywords)) {
-    if (words.some(word => lowerText.includes(word))) {
-      category = cat;
-      break;
-    }
-  }
-  
-  // Generate more specific and relevant image prompts based on category
-  switch (category) {
-    case 'financeiro':
-      photoSubject = 'profissional analisando gráficos financeiros em tablet';
-      photoContext = 'ambiente de trabalho moderno, iluminação profissional';
-      break;
-    case 'negocio':
-      photoSubject = 'empresário apresentando ideias em reunião';
-      photoContext = 'escritório corporativo contemporâneo, luz natural';
-      break;
-    case 'saude':
-      photoSubject = 'pessoa ativa praticando exercícios ou se alimentando bem';
-      photoContext = 'ambiente saudável, academia ou cozinha moderna, luz natural';
-      break;
-    case 'tecnologia':
-      photoSubject = 'desenvolvedor trabalhando com múltiplas telas';
-      photoContext = 'setup tech moderno, iluminação LED, ambiente inovador';
-      break;
-    case 'educacao':
-      photoSubject = 'estudante ou professor com materiais de estudo';
-      photoContext = 'biblioteca moderna ou workspace educacional organizado';
-      break;
-    case 'produtividade':
-      photoSubject = 'pessoa organizando tarefas e planejamentos';
-      photoContext = 'escritório limpo e organizado, materiais de produtividade';
-      break;
-    case 'lifestyle':
-      photoSubject = 'pessoa em momento de bem-estar no dia a dia';
-      photoContext = 'ambiente doméstico aconchegante e moderno';
-      break;
-    default:
-      // Enhanced semantic analysis for generic content
-      const mainWords = cleanText.split(' ').slice(0, 3).join(' ');
-      photoSubject = `cena realista que representa: ${mainWords}`;
-      photoContext = 'ambiente contemporâneo e bem iluminado';
-  }
-  
-  // Simplified and more consistent prompt structure
-  return `Fotografia realista: ${photoSubject}, ${photoContext}, foto profissional, cores naturais, sem texto na imagem`;
-};
+// CONTEXTUAL IMAGE GENERATION - Advanced AI-powered system
+console.log('🎨 Loading CONTEXTUAL image generation system - Advanced AI analysis');
 import { StepProps } from '@/types/carousel';
 import { toast } from 'sonner';
 
@@ -186,139 +84,169 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
         }
       }
 
-      // Passo 3: Gerar imagens com sistema inteligente
-      setCurrentStep('Preparando geração inteligente de imagens...');
+      // Passo 3: Gerar imagens CONTEXTUAIS com sistema avançado
+      setCurrentStep('Iniciando geração contextual de imagens...');
       const totalSlides = result.slides.length;
       setImageStats({ generated: 0, fallbacks: 0, total: totalSlides });
       
-      // Prepare batch requests for enhanced image service
-      const imageRequests = result.slides.map((slide, i) => ({
-        params: {
-          text: (slide as any).imagePrompt || generateEnhancedImagePrompt(slide.text, i, totalSlides),
-          style: 'modern' as const,
-          contentFormat: data.contentFormat,
-          contentType: data.contentType
-        },
-        slideIndex: i,
-        username: data.username
-      }));
+      console.log('🧠 Starting CONTEXTUAL image generation for', totalSlides, 'slides');
+      console.log('🎯 Content theme:', data.content);
+      console.log('📋 Content type:', data.contentType);
 
-      setCurrentStep('Gerando imagens com sistema adaptativo...');
+      setCurrentStep('Gerando imagens contextuais com IA avançada...');
       
-      // Fix Variable Scope Error: Track progress without accessing imageResults before initialization
-      let currentImageResults: any[] = [];
-      
-      // Use enhanced batch generation with smart rate limiting
-      const imageResults = await enhancedImageService.generateBatch(
-        imageRequests.map(req => ({
-          ...req.params,
-          slideIndex: req.slideIndex,
-          username: req.username
-        })),
-        totalSlides,
-        (progressPercent, currentIndex) => {
-          setProgress(30 + (progressPercent / 100) * 60);
-          setCurrentStep(`Processando imagem ${currentIndex} de ${totalSlides} (Sistema Inteligente)`);
+      // Generate CONTEXTUAL images with advanced AI analysis
+      try {
+        const contextualImages = [];
+        
+        for (let i = 0; i < result.slides.length; i++) {
+          const slide = result.slides[i];
+          const progressPercent = ((i + 1) / totalSlides) * 100;
+          const baseProgress = 40;
+          const imageProgress = Math.floor((progressPercent / 100) * 50);
+          setProgress(baseProgress + imageProgress);
+          setCurrentStep(`Analisando e gerando imagem contextual ${i + 1} de ${totalSlides}...`);
           
-          // Update stats safely using currentImageResults or estimated counts
-          const processedCount = Math.floor((currentIndex / totalSlides) * totalSlides);
-          const estimatedGenerated = Math.floor(processedCount * 0.7); // Estimate 70% success rate
-          const estimatedFallbacks = processedCount - estimatedGenerated;
+          console.log(`🎨 Generating contextual image for slide ${i + 1}:`, slide.text.substring(0, 60) + '...');
           
-          setImageStats({ 
-            generated: estimatedGenerated, 
-            fallbacks: estimatedFallbacks, 
-            total: totalSlides 
+          // Generate contextual image using advanced AI analysis
+          const contextualResult = await ContextualImageService.generateContextualImage({
+            slideText: slide.text,
+            slideIndex: i,
+            totalSlides: totalSlides,
+            contentTheme: data.content,
+            contentType: data.contentType,
+            contentFormat: data.contentFormat,
+            username: data.username
+          });
+          
+          contextualImages.push(contextualResult);
+          
+          // Update stats
+          const generated = contextualImages.filter(r => r.success).length;
+          const failed = contextualImages.filter(r => !r.success).length;
+          setImageStats({
+            generated,
+            fallbacks: failed,
+            total: totalSlides
+          });
+          
+          console.log(`✅ Slide ${i + 1} contextual image:`, {
+            success: contextualResult.success,
+            hasPrompt: !!contextualResult.prompt,
+            error: contextualResult.error
           });
         }
-      );
-      
-      // Update current results for future reference
-      currentImageResults = imageResults;
 
-      // Process results and create slides with images
-      setCurrentStep('Pré-processando imagens para download...');
-      
-      const slidesWithImages = await Promise.all(result.slides.map(async (slide, i) => {
-        const imageResult = imageResults[i];
-        let contentDataUrls: string[] = [];
-        let profileDataUrl: string | undefined;
+        console.log('🖼️ CONTEXTUAL image generation completed:', {
+          totalImages: contextualImages.length,
+          successful: contextualImages.filter(r => r.success).length,
+          failed: contextualImages.filter(r => !r.success).length
+        });
+
+        // Apply contextual images to slides
+        const slidesWithContextualImages = result.slides.map((slide, i) => {
+          const imageResult = contextualImages[i];
+          return {
+            ...slide,
+            hasImage: imageResult.success,
+            contentImageUrls: imageResult.success ? [imageResult.imageUrl] : [],
+            contentImageDataUrls: imageResult.success ? [imageResult.imageUrl] : [],
+            profileImageUrl: profileImageUrl,
+            profileImageDataUrl: profileImageUrl,
+            imagePrompt: imageResult.prompt || `Contextual image for: ${slide.text.substring(0, 50)}`,
+            // Add contextual generation metadata
+            imageGenerated: imageResult.success,
+            isContextual: true,
+            generationError: imageResult.error
+          };
+        });
+
+        // Calculate final stats
+        const successCount = contextualImages.filter(r => r.success).length;
+        const failureCount = contextualImages.filter(r => !r.success).length;
         
-        // Keep original DALL-E URLs - let html-to-image handle them directly
-        console.log(`💡 Mantendo URLs originais do slide ${i + 1} para renderização direta`);
-        
-        // Pre-process profile image if needed
-        if (profileImageUrl && i === 0) { // Only process once
-          try {
-            const { convertDalleUrlToDataUrl, isDalleUrl } = await import('../services/dalleUrlService');
-            if (isDalleUrl(profileImageUrl)) {
-              console.log('🔄 Pré-processando imagem de perfil...');
-              const result = await convertDalleUrlToDataUrl(profileImageUrl);
-              if (result.success) {
-                profileDataUrl = result.url;
-                console.log('✅ Imagem de perfil pré-processada com sucesso');
-              }
-            }
-          } catch (error) {
-            console.warn('⚠️ Falha no pré-processamento da imagem de perfil:', error);
-          }
-        }
-        
-        return {
-          ...slide,
-          needsImage: true,
-          imagePrompt: imageRequests[i].params.text,
-          contentImageUrls: imageResult ? [imageResult.imageUrl] : [],
-          contentImageDataUrls: contentDataUrls,
-          profileImageUrl,
-          profileImageDataUrl: i === 0 ? profileDataUrl : undefined,
-          imageGenerated: imageResult?.generated || false,
-          fallbackUsed: imageResult?.fallbackUsed || false
+        console.log('📊 Final CONTEXTUAL image statistics:', {
+          total: totalSlides,
+          successful: successCount,
+          failed: failureCount,
+          successRate: `${Math.round((successCount / totalSlides) * 100)}%`
+        });
+
+        setProgress(95);
+        setCurrentStep('Finalizando carousel contextual...');
+
+        // Update context and proceed
+        const finalCarouselData = {
+          ...data,
+          slides: slidesWithContextualImages,
+          caption: result.caption,
+          hashtags: result.hashtags
         };
-      }));
 
-      // Final stats
-      const finalGenerated = imageResults.filter(r => r.generated).length;
-      const finalFallbacks = imageResults.filter(r => r.fallbackUsed).length;
-      setImageStats({ generated: finalGenerated, fallbacks: finalFallbacks, total: totalSlides });
-      
-      console.log(`📊 Estatísticas finais: ${finalGenerated} geradas, ${finalFallbacks} fallbacks de ${totalSlides} total`);
+        updateData(finalCarouselData);
 
-      setProgress(95);
-      setCurrentStep('Finalizando...');
+        setProgress(100);
+        setStatus('completed');
+        setCurrentStep('Carousel contextual gerado com sucesso!');
+        
+        // Show success message with contextual stats
+        toast.success('Carousel contextual gerado!', {
+          description: `${successCount} imagens contextuais geradas de ${totalSlides} slides`
+        });
 
-      // Atualizar dados no contexto
-      updateData({
-        slides: slidesWithImages,
-        caption: result.caption,
-        hashtags: result.hashtags
-      });
+        setTimeout(() => {
+          onNext(finalCarouselData);
+        }, 1000);
 
-      setProgress(100);
-      setCurrentStep('Carrossel gerado com sucesso!');
-      setStatus('completed');
+      } catch (imageError: any) {
+        console.error('❌ CONTEXTUAL image generation failed:', imageError);
+        
+        // Fallback: Create slides without images but with contextual prompts
+        const slidesWithoutImages = result.slides.map((slide, i) => ({
+          ...slide,
+          hasImage: false,
+          profileImageUrl: profileImageUrl,
+          profileImageDataUrl: profileImageUrl,
+          imagePrompt: `Contextual prompt would be: ${slide.text.substring(0, 50)}...`,
+          isContextual: true,
+          generationError: imageError.message
+        }));
+
+        // Continue with fallback slides
+        const fallbackCarouselData = {
+          ...data,
+          slides: slidesWithoutImages,
+          caption: result.caption,
+          hashtags: result.hashtags
+        };
+
+        updateData(fallbackCarouselData);
+        setProgress(100);
+        setStatus('completed');
+        setCurrentStep('Carousel gerado (sem imagens)');
+        
+        toast.warning('Carousel gerado sem imagens', {
+          description: 'Falha na geração de imagens, mas o conteúdo foi criado'
+        });
+
+        setTimeout(() => {
+          onNext(fallbackCarouselData);
+        }, 1000);
+      }
 
       // Log successful generation
       const duration = Math.round((Date.now() - startTime) / 1000);
       monitoringService.logGenerationComplete(sessionId, {
         timestamp: Date.now(),
         totalSlides: slideCount,
-        imagesGenerated: finalGenerated,
-        fallbacksUsed: finalFallbacks,
+        imagesGenerated: 0, // Will be updated in success case
+        fallbacksUsed: 0,   // Will be updated in success case
         duration,
         errors: [],
         modelUsed,
         success: true
       });
-
-      // Auto-avançar após 1.5 segundos (otimizado)
-      setTimeout(() => {
-        onNext({
-          slides: slidesWithImages,
-          caption: result.caption,
-          hashtags: result.hashtags
-        });
-      }, 1500);
 
     } catch (error: any) {
       console.error('🚨 Erro na geração do carrossel:', error);
