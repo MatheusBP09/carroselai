@@ -1,5 +1,5 @@
   import { TwitterImageParams } from './types';
-  import { DEFAULT_METRICS, CANVAS_DIMENSIONS } from './constants';
+  import { DEFAULT_METRICS, CANVAS_DIMENSIONS, LAYOUT } from './constants';
   import { wrapText, generateRealisticMetrics } from './textUtils';
   import { createProfileImage } from './profileUtils';
   import { createEngagementMetrics } from './engagementUtils';
