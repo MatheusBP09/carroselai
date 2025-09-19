@@ -1,18 +1,18 @@
-  import { TwitterImageParams } from './types';
-  import { DEFAULT_METRICS, CANVAS_DIMENSIONS, LAYOUT } from './constants';
-  import { wrapText, generateRealisticMetrics } from './textUtils';
-  import { createProfileImage } from './profileUtils';
-  import { createEngagementMetrics } from './engagementUtils';
-  import { createContentImage } from './imageUtils';
-  import { TwitterImageDebugger } from './debugUtils';
-  import {
-    createCanvas,
-    createTweetContainer,
-    createUsernameText,
-    createVerifiedBadge,
-    createHandleAndTime,
-    createTweetText,
-  } from './layoutUtils';
+import { TwitterImageParams } from './types';
+import { DEFAULT_METRICS, CANVAS_DIMENSIONS, LAYOUT, TYPOGRAPHY, TWITTER_COLORS } from './constants';
+import { wrapText, generateRealisticMetrics } from './textUtils';
+import { createProfileImage } from './profileUtils';
+import { createEngagementMetrics } from './engagementUtils';
+import { createContentImage } from './imageUtils';
+import { TwitterImageDebugger } from './debugUtils';
+import { FabricText } from 'fabric';
+import {
+  createCanvas,
+  createTweetContainer,
+  createUsernameText,
+  createVerifiedBadge,
+  createHandleAndTime,
+} from './layoutUtils';
 
   /**
    * Generate high-quality Twitter-style image for Instagram carousel
@@ -70,7 +70,7 @@
       canvas.add(handleAndTime);
       console.log('🏷️ Handle added:', handle);
 
-      // Add tweet text with dynamic sizing and proper wrapping
+      // Add tweet text with proper wrapping and dynamic sizing
       const maxWidth = CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2) - 40;
       const textLength = text.length;
       let fontSize = 40;
@@ -84,8 +84,25 @@
         fontSize = 36;
       }
 
+      console.log(`📝 Processing text: ${textLength} chars, fontSize: ${fontSize}px, maxWidth: ${maxWidth}px`);
+
+      // Wrap text properly before creating text object
       const wrappedText = wrapText(text, maxWidth, fontSize);
-      const tweetText = createTweetText(wrappedText);
+      
+      // Create text object with proper wrapped text
+      const tweetText = new FabricText(wrappedText, {
+        left: LAYOUT.positions.tweet.x,
+        top: LAYOUT.positions.tweet.y,
+        fontSize: fontSize,
+        fontFamily: TYPOGRAPHY.fontFamily,
+        fill: TWITTER_COLORS.text,
+        lineHeight: 1.4,
+        charSpacing: 0,
+        splitByGrapheme: false,
+        width: maxWidth,
+        textAlign: 'left',
+        objectCaching: false,
+      });
 
       // Calculate text metrics for better positioning
       const textHeight = tweetText.height || 0;
@@ -93,7 +110,7 @@
       console.log('📏 Text metrics:', { textHeight, textLines, fontSize, wrappedLength: wrappedText.length });
 
       canvas.add(tweetText);
-      console.log('💬 Tweet text added with dynamic sizing, length:', text.length);
+      console.log('💬 Tweet text added with proper formatting, length:', text.length);
 
       // Add content image with improved error handling
       if (contentImageUrl) {

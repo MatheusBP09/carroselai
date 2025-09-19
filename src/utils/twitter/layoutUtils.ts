@@ -89,7 +89,10 @@
    * Create handle and timestamp text
    */
   export const createHandleAndTime = (handle: string, timestamp: string): FabricText => {
-    const displayText = timestamp ? `@${handle} · ${timestamp}` : `@${handle}`;
+    // Clean handle - remove @ if already present and add single @
+    const cleanHandle = handle.startsWith('@') ? handle.slice(1) : handle;
+    const displayText = timestamp ? `@${cleanHandle} · ${timestamp}` : `@${cleanHandle}`;
+    
     return new FabricText(displayText, {
       left: LAYOUT.positions.handle.x,
       top: LAYOUT.positions.handle.y,
@@ -100,31 +103,20 @@
   };
 
   /**
-   * Create tweet text with dynamic sizing and optimized wrapping
+   * Create tweet text with proper formatting and line breaks
    */
   export const createTweetText = (text: string): FabricText => {
-    // Calculate dynamic font size based on text length
-    const textLength = text.length;
-    let fontSize = TYPOGRAPHY.tweet.fontSize;
-
-    if (textLength > 200) {
-      fontSize = 32 as any; // Smaller for long texts
-    } else if (textLength > 100) {
-      fontSize = 36 as any; // Medium size
-    }
-
-    const maxWidth = CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2) - 40; // Leave some padding
-
     return new FabricText(text, {
       left: LAYOUT.positions.tweet.x,
       top: LAYOUT.positions.tweet.y,
-      fontSize: fontSize,
+      fontSize: TYPOGRAPHY.tweet.fontSize,
       fontFamily: TYPOGRAPHY.fontFamily,
       fill: TWITTER_COLORS.text,
-      lineHeight: TYPOGRAPHY.tweet.lineHeight,
-      charSpacing: TYPOGRAPHY.tweet.charSpacing,
-      splitByGrapheme: true,
-      width: maxWidth,
+      lineHeight: 1.4, // Better line spacing
+      charSpacing: 0,
+      splitByGrapheme: false, // Better word wrapping
+      width: CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2) - 40, // Consistent width
       textAlign: 'left',
+      objectCaching: false, // Prevent caching issues
     });
   };

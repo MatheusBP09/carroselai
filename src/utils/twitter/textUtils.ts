@@ -1,33 +1,38 @@
 /**
- * Advanced text wrapping with better word break handling
+ * Enhanced text wrapping with proper line breaks and formatting
  */
 export const wrapText = (text: string, maxWidth: number, fontSize: number): string => {
-  const words = text.split(' ');
+  // Clean and normalize text first
+  const cleanText = text.trim().replace(/\s+/g, ' ');
+  
+  const words = cleanText.split(' ');
   const lines: string[] = [];
   let currentLine = '';
   
-  // More accurate character width calculation
-  const avgCharWidth = fontSize * 0.35; // Optimized for square format and better text flow
+  // Better character width calculation for Instagram format
+  const avgCharWidth = fontSize * 0.55; // More accurate for modern fonts
   const maxCharsPerLine = Math.floor(maxWidth / avgCharWidth);
+  
+  console.log(`📝 Text wrapping - Max width: ${maxWidth}px, Font: ${fontSize}px, Max chars: ${maxCharsPerLine}`);
   
   for (const word of words) {
     const testLine = currentLine + (currentLine ? ' ' : '') + word;
     
-    // Handle long words that exceed line length
+    // Handle very long words
     if (word.length > maxCharsPerLine) {
       if (currentLine) {
         lines.push(currentLine);
         currentLine = '';
       }
-      // Break long words
-      const chunks = word.match(new RegExp(`.{1,${maxCharsPerLine}}`, 'g')) || [word];
-      chunks.forEach((chunk, index) => {
-        if (index === chunks.length - 1) {
-          currentLine = chunk;
-        } else {
-          lines.push(chunk);
-        }
-      });
+      
+      // Split long words intelligently
+      let remainingWord = word;
+      while (remainingWord.length > maxCharsPerLine) {
+        lines.push(remainingWord.substring(0, maxCharsPerLine - 1) + '-');
+        remainingWord = remainingWord.substring(maxCharsPerLine - 1);
+      }
+      currentLine = remainingWord;
+      
     } else if (testLine.length <= maxCharsPerLine) {
       currentLine = testLine;
     } else {
@@ -42,7 +47,10 @@ export const wrapText = (text: string, maxWidth: number, fontSize: number): stri
     lines.push(currentLine);
   }
   
-  return lines.join('\n');
+  const result = lines.join('\n');
+  console.log(`📝 Text wrapped into ${lines.length} lines:`, result.substring(0, 100) + '...');
+  
+  return result;
 };
 
 /**
