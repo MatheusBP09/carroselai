@@ -1,4 +1,4 @@
-import { OPENAI_API_KEY } from '../constants/config';
+import { OPENAI_CONFIG } from '../constants/config';
 
 export interface ImageGenerationParams {
   text: string;
@@ -26,11 +26,8 @@ export const generateContentImage = async (params: ImageGenerationParams): Promi
     style
   });
 
-  // Check if API key is available
-  if (!OPENAI_API_KEY || OPENAI_API_KEY.trim() === '') {
-    console.error('❌ OpenAI API key not configured or empty');
-    throw new Error('OpenAI API key not configured. Please add it in Supabase secrets.');
-  }
+  // No need to check API key since we're using Supabase Edge Functions
+  console.log('🎨 Using secure Supabase Edge Functions for image generation');
 
   // Get exact dimensions based on format
   const dimensions = width && height ? { width, height } : getFormatDimensions(contentFormat);
@@ -50,14 +47,16 @@ export const generateContentImage = async (params: ImageGenerationParams): Promi
       output_format: 'png'
     };
 
-    console.log('🚀 Making OpenAI API request...');
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
+    console.log('🚀 Making OpenAI API request via Supabase Edge Function...');
+    const response = await fetch(OPENAI_CONFIG.imageEndpoint, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify(requestBody),
+      headers: OPENAI_CONFIG.headers,
+      body: JSON.stringify({
+        prompt: optimizedPrompt,
+        model: 'gpt-image-1',
+        size: `${dimensions.width}x${dimensions.height}`,
+        quality: 'high',
+      }),
     });
 
     console.log('📡 OpenAI response status:', response.status);

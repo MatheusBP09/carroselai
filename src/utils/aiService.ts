@@ -1,4 +1,4 @@
-import { OPENAI_API_KEY } from '../constants/config';
+import { OPENAI_CONFIG } from '../constants/config';
 import { FallbackContentService } from '../services/fallbackContentService';
 import { CarouselData } from '../types/carousel';
 
@@ -42,7 +42,7 @@ export const generateCarousel = async (params: GenerateCarouselParams): Promise<
   console.log('📝 Theme:', content);
   console.log('🎯 Content Type:', contentType);
   console.log('📊 Slide Count:', slideCount);
-  console.log('🔑 API Key available:', !!import.meta.env.VITE_OPENAI_API_KEY);
+  console.log('🔑 Using secure Supabase Edge Functions for OpenAI API');
 
   // Model cascade with fallback - increased timeouts for better success
   const modelConfigs: ModelConfig[] = [
@@ -137,12 +137,9 @@ JSON:
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), config.timeout);
       
-      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      const response = await fetch(OPENAI_CONFIG.chatEndpoint, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${OPENAI_API_KEY}`,
-        },
+        headers: OPENAI_CONFIG.headers,
         body: JSON.stringify({
           model: config.model,
           messages: [

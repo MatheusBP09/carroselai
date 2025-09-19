@@ -1,15 +1,20 @@
-// OpenAI API Configuration - Using Supabase secrets
-const getApiKey = () => {
-  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
-  
-  if (!apiKey) {
-    console.error('OpenAI API key not found. Please configure OPENAI_API_KEY in Supabase secrets.');
-    return '';
-  }
-  
-  return apiKey;
+import { supabase } from '@/integrations/supabase/client';
+
+// Configuration to use Supabase Edge Functions for OpenAI API calls
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
+const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+const getApiEndpoint = (type: 'chat' | 'image') => {
+  return `${SUPABASE_URL}/functions/v1/generate-${type === 'chat' ? 'carousel' : 'image'}`;
 };
 
-export const OPENAI_API_KEY = getApiKey();
+export const OPENAI_CONFIG = {
+  chatEndpoint: getApiEndpoint('chat'),
+  imageEndpoint: getApiEndpoint('image'),
+  headers: {
+    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+    'Content-Type': 'application/json',
+  }
+};
 
-// Note: API key is now securely managed through Supabase secrets.
+// Note: API calls now go through secure Supabase Edge Functions

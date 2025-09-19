@@ -146,7 +146,7 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
         theme: data.content, 
         contentType: data.contentType, 
         slideCount: data.slideCount,
-        hasApiKey: !!import.meta.env.VITE_OPENAI_API_KEY,
+        hasApiKey: true, // Using Supabase Edge Functions
         username: data.username
       });
       

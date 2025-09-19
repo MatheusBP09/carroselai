@@ -6,7 +6,7 @@ interface ApiKeyStatusProps {
 }
 
 export const ApiKeyStatus = ({ className = '' }: ApiKeyStatusProps) => {
-  const hasApiKey = !!import.meta.env.VITE_OPENAI_API_KEY;
+  const hasApiKey = true; // Always true since we're using Supabase Edge Functions
 
   if (hasApiKey) {
     return (
