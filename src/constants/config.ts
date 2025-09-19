@@ -17,4 +17,4 @@ export const OPENAI_CONFIG = {
   }
 };
 
-// Note: API calls now go through secure Supabase Edge Functions
+console.log('🔧 Config loaded - using Supabase Edge Functions for OpenAI API');

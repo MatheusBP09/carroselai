@@ -1,5 +1,7 @@
 import { OPENAI_CONFIG } from '../constants/config';
 
+console.log('🔧 Image Generation Service loaded with Supabase config');
+
 export interface ImageGenerationParams {
   text: string;
   style?: 'professional' | 'modern' | 'minimalist' | 'creative';

@@ -2,6 +2,8 @@ import { OPENAI_CONFIG } from '../constants/config';
 import { FallbackContentService } from '../services/fallbackContentService';
 import { CarouselData } from '../types/carousel';
 
+console.log('🔧 AI Service loaded with Supabase config');
+
 interface GenerateCarouselParams {
   title?: string;
   username: string;
