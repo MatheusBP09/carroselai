@@ -59,9 +59,9 @@ export const generateTwitterImage = async (params: TwitterImageParams): Promise<
     canvas.add(handleAndTime);
     console.log('🏷️ Handle added:', handle);
 
-    // Add tweet text with automatic sizing based on content
-    const maxWidth = 720; // Canvas width (1080) - left margin (300) - right padding (60)
-    const wrappedText = wrapText(text, maxWidth, 56); // Use new font size
+    // Add tweet text with automatic sizing for square format
+    const maxWidth = 880; // Almost full width: 1080 - 200 (margins)
+    const wrappedText = wrapText(text, maxWidth, 40); // Use optimized font size
     const tweetText = createTweetText(wrappedText);
     
     // Calculate text height and adjust layout if needed
@@ -72,15 +72,20 @@ export const generateTwitterImage = async (params: TwitterImageParams): Promise<
     canvas.add(tweetText);
     console.log('💬 Tweet text added, length:', text.length);
 
-    // Add content image if provided (DALL-E image)
+    // Add content image placeholder if provided
     if (contentImageUrl) {
-      console.log('🖼️ Loading content image:', contentImageUrl);
-      const contentImage = await createContentImage(contentImageUrl);
-      if (contentImage) {
-        canvas.add(contentImage);
-        console.log('✅ Content image added successfully');
+      console.log('🖼️ Adding content placeholder');
+      const contentPlaceholder = await createContentImage(contentImageUrl);
+      if (contentPlaceholder) {
+        if (contentPlaceholder.background) {
+          canvas.add(contentPlaceholder.background);
+        }
+        if (contentPlaceholder.placeholder) {
+          canvas.add(contentPlaceholder.placeholder);
+        }
+        console.log('✅ Content placeholder added successfully');
       } else {
-        console.warn('⚠️ Content image failed to load');
+        console.warn('⚠️ Content placeholder failed to create');
       }
     }
 

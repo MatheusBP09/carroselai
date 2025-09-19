@@ -2,7 +2,7 @@ import { TwitterColors, TwitterMetrics } from './types';
 
 export const CANVAS_DIMENSIONS = {
   width: 1080,
-  height: 1350,
+  height: 1080, // Square format for Instagram posts
 } as const;
 
 export const TWITTER_COLORS: TwitterColors = {
@@ -25,16 +25,16 @@ export const DEFAULT_METRICS: TwitterMetrics = {
 export const TYPOGRAPHY = {
   fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
   username: {
-    fontSize: 66, // 3x increase: 22 → 66
+    fontSize: 48, // Reduced for better proportion
     fontWeight: 'bold' as const,
   },
   handle: {
-    fontSize: 54, // 3x increase: 18 → 54
+    fontSize: 36, // Reduced for better proportion
     fontWeight: 'normal' as const,
   },
   tweet: {
-    fontSize: 56, // 2x increase: 28 → 56
-    lineHeight: 1.4,
+    fontSize: 40, // Better readable size
+    lineHeight: 1.3,
     charSpacing: 0,
   },
   metrics: {
@@ -44,18 +44,18 @@ export const TYPOGRAPHY = {
 } as const;
 
 export const LAYOUT = {
-  margin: 120, // Reduced margin to fit content better
-  profileSize: 144, // 3x increase: 48 → 144
+  margin: 80, // Better margins for square format
+  profileSize: 120, // Reduced for better proportion
   spacing: {
-    small: 36, // 3x increase: 12 → 36
-    medium: 72, // 3x increase: 24 → 72
-    large: 240, // 3x increase: 80 → 240
+    small: 24, 
+    medium: 48, 
+    large: 160, 
   },
   positions: {
-    // Optimized positions for better content fit
-    profile: { x: 180, y: 450 }, // Moved up to create more space
-    username: { x: 360, y: 410 }, // Moved up to create more space
-    handle: { x: 360, y: 480 }, // Moved up to create more space  
-    tweet: { x: 300, y: 540 }, // Moved up significantly to fit content
+    // Optimized for square 1080x1080 format
+    profile: { x: 100, y: 100 }, 
+    username: { x: 250, y: 80 }, 
+    handle: { x: 250, y: 140 }, 
+    tweet: { x: 100, y: 220 }, // More space for text
   },
 } as const;

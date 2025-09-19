@@ -29,17 +29,17 @@ export const createCanvas = (): FabricCanvas => {
 };
 
 /**
- * Create the tweet container background
+ * Create the tweet container background - optimized for square format
  */
 export const createTweetContainer = (): Rect => {
   return new Rect({
     left: LAYOUT.margin,
-    top: 400, // Centered: (1350 - 750) / 2 = 300, plus margin adjustment
+    top: LAYOUT.margin,
     width: CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2),
-    height: 750, // Fixed height for better centering
+    height: CANVAS_DIMENSIONS.height - (LAYOUT.margin * 2),
     fill: TWITTER_COLORS.cardBackground,
-    rx: 0,
-    ry: 0,
+    rx: 24, // Rounded corners for modern look
+    ry: 24,
     stroke: TWITTER_COLORS.border,
     strokeWidth: 0,
   });
@@ -60,13 +60,13 @@ export const createUsernameText = (username: string): FabricText => {
 };
 
 /**
- * Create verified badge if user is verified
+ * Create verified badge if user is verified - optimized for square format
  */
 export const createVerifiedBadge = (usernameText: FabricText): [Circle, FabricText] => {
   const badge = new Circle({
     left: usernameText.left + usernameText.width + LAYOUT.spacing.small,
-    top: LAYOUT.positions.username.y + 12, // Adjusted for larger elements
-    radius: 24, // 3x increase: 8 → 24
+    top: LAYOUT.positions.username.y + 8, // Adjusted for smaller elements
+    radius: 16, // Reduced for better proportion: 24 → 16
     fill: TWITTER_COLORS.blue,
     originX: 'center',
     originY: 'center',
@@ -74,8 +74,8 @@ export const createVerifiedBadge = (usernameText: FabricText): [Circle, FabricTe
 
   const checkmark = new FabricText('✓', {
     left: usernameText.left + usernameText.width + LAYOUT.spacing.small,
-    top: LAYOUT.positions.username.y - 3, // Adjusted for larger elements
-    fontSize: 33, // 3x increase: 11 → 33
+    top: LAYOUT.positions.username.y - 2, // Adjusted for smaller elements
+    fontSize: 22, // Reduced for better proportion: 33 → 22
     fill: '#FFFFFF',
     fontWeight: 'bold',
     originX: 'center',
@@ -100,7 +100,7 @@ export const createHandleAndTime = (handle: string, timestamp: string): FabricTe
 };
 
 /**
- * Create tweet text with proper formatting
+ * Create tweet text with optimized wrapping for square format
  */
 export const createTweetText = (text: string): FabricText => {
   return new FabricText(text, {
@@ -112,6 +112,6 @@ export const createTweetText = (text: string): FabricText => {
     lineHeight: TYPOGRAPHY.tweet.lineHeight,
     charSpacing: TYPOGRAPHY.tweet.charSpacing,
     splitByGrapheme: true, // Better text wrapping
-    width: 720, // Set max width to allow more text space
+    width: 880, // Almost full width for square format: 1080 - 200 (margins + padding)
   });
 };
