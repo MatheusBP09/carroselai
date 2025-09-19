@@ -108,9 +108,9 @@
     let fontSize = TYPOGRAPHY.tweet.fontSize;
 
     if (textLength > 200) {
-      fontSize = 32; // Smaller for long texts
+      fontSize = 32 as any; // Smaller for long texts
     } else if (textLength > 100) {
-      fontSize = 36; // Medium size
+      fontSize = 36 as any; // Medium size
     }
 
     const maxWidth = CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2) - 40; // Leave some padding

@@ -44,18 +44,18 @@ export const TYPOGRAPHY = {
 } as const;
 
 export const LAYOUT = {
-  margin: 80, // Better margins for square format
-  profileSize: 120, // Reduced for better proportion
+  margin: 60, // Optimized margins for better space utilization
+  profileSize: 100, // Better proportion for square format
   spacing: {
-    small: 24, 
-    medium: 48, 
-    large: 160, 
+    small: 16,
+    medium: 32,
+    large: 48,
   },
   positions: {
-    // Optimized for square 1080x1080 format
-    profile: { x: 100, y: 100 }, 
-    username: { x: 250, y: 80 }, 
-    handle: { x: 250, y: 140 }, 
-    tweet: { x: 100, y: 220 }, // More space for text
+    // Optimized positioning for Instagram 1080x1080 format
+    profile: { x: 110, y: 110 }, // Centered with margin
+    username: { x: 230, y: 90 }, // Aligned with profile
+    handle: { x: 230, y: 130 }, // Proper spacing below username
+    tweet: { x: 110, y: 200 }, // More space from profile section
   },
 } as const;
