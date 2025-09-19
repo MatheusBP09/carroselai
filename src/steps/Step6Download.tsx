@@ -272,9 +272,49 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
               </EnhancedButton>
             </div>
 
-            {/* Debug Options */}
-            <details className="bg-muted/30 p-4 rounded-lg">
-              <summary className="cursor-pointer font-medium text-sm mb-3">🔧 Opções de Debug (expandir se houver problemas)</summary>
+          {/* Auto Test Button - Destacado */}
+          <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+            <div className="flex items-center justify-between mb-3">
+              <h4 className="font-semibold text-blue-900 dark:text-blue-100">🧪 Teste Automático de Slides</h4>
+            </div>
+            <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
+              Teste cada slide individualmente para verificar se as imagens e renderização estão funcionando corretamente.
+            </p>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+              {data.slides?.map((slide, index) => (
+                <EnhancedButton
+                  key={index}
+                  variant="outline"
+                  size="sm"
+                  onClick={() => handleTestSlide(index)}
+                  disabled={isTestingSlide !== null}
+                  className="text-xs relative border-blue-300 hover:bg-blue-50 dark:border-blue-700 dark:hover:bg-blue-950/50"
+                  title={`Testar slide: "${slide.text.substring(0, 50)}..."`}
+                >
+                  {isTestingSlide === index ? (
+                    <>
+                      <div className="w-3 h-3 mr-2 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                      Testando...
+                    </>
+                  ) : (
+                    `Slide ${index + 1}`
+                  )}
+                  {(slide.profileImageUrl || slide.contentImageUrls?.[0]) && (
+                    <span className="absolute -top-1 -right-1 w-2 h-2 bg-green-500 rounded-full" title="Slide com imagem" />
+                  )}
+                </EnhancedButton>
+              ))}
+            </div>
+            <div className="text-xs text-blue-700 dark:text-blue-300 mt-3 space-y-1">
+              <p>• Cada teste baixa uma imagem individual para verificação</p>
+              <p>• Use o teste antes do download completo para identificar problemas</p>
+              <p>• Slides com ponto verde têm imagens personalizadas</p>
+            </div>
+          </div>
+
+          {/* Debug Options */}
+          <details className="bg-muted/30 p-4 rounded-lg">
+            <summary className="cursor-pointer font-medium text-sm mb-3">🔧 Opções Avançadas de Debug (expandir se houver problemas)</summary>
               <div className="space-y-4">
                 <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-lg">
                   <p className="text-xs text-amber-800 dark:text-amber-200 font-medium mb-2">
@@ -289,24 +329,22 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
                 
                 <div>
                   <p className="text-xs text-muted-foreground mb-2 font-medium">
-                    Teste slides individuais:
+                    Análise detalhada por slide:
                   </p>
-                  <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
+                  <div className="space-y-2">
                     {data.slides?.map((slide, index) => (
-                      <EnhancedButton
-                        key={index}
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleTestSlide(index)}
-                        disabled={isTestingSlide !== null}
-                        className="text-xs relative"
-                        title={`Testar renderização do slide: "${slide.text.substring(0, 50)}..."`}
-                      >
-                        {isTestingSlide === index ? 'Testando...' : `Slide ${index + 1}`}
-                        {(slide.profileImageUrl || slide.contentImageUrls?.[0]) && (
-                          <span className="absolute -top-1 -right-1 w-2 h-2 bg-blue-500 rounded-full" title="Slide com imagem" />
-                        )}
-                      </EnhancedButton>
+                      <div key={index} className="bg-muted/50 p-2 rounded text-xs">
+                        <div className="font-medium">Slide {index + 1}:</div>
+                        <div className="text-muted-foreground truncate">"{slide.text.substring(0, 80)}..."</div>
+                        <div className="flex gap-2 mt-1">
+                          <span className={`px-2 py-1 rounded text-xs ${slide.profileImageUrl ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                            {slide.profileImageUrl ? '✓ Profile' : '○ Profile'}
+                          </span>
+                          <span className={`px-2 py-1 rounded text-xs ${slide.contentImageUrls?.[0] ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}>
+                            {slide.contentImageUrls?.[0] ? '✓ Content' : '○ Content'}
+                          </span>
+                        </div>
+                      </div>
                     ))}
                   </div>
                 </div>

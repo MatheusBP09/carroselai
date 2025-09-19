@@ -9,6 +9,7 @@ import { useCarousel } from '@/context/CarouselContext';
 import { generateCarousel } from '@/utils/aiService';
 import { convertProfileImageToUrl } from '@/services/imageGenerationService';
 import { enhancedImageService } from '@/services/enhancedImageService';
+import { generateContextualImage } from '@/services/contextualImageService';
 import { monitoringService } from '@/services/monitoringService';
 
 // Helper functions for enhanced image generation (100% coverage)
@@ -182,16 +183,28 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
       const totalSlides = result.slides.length;
       setImageStats({ generated: 0, fallbacks: 0, total: totalSlides });
       
-      // Prepare batch requests for enhanced image service
-      const imageRequests = result.slides.map((slide, i) => ({
-        params: {
-          text: (slide as any).imagePrompt || generateEnhancedImagePrompt(slide.text, i, totalSlides),
-          style: 'modern' as const,
-          contentFormat: data.contentFormat,
-          contentType: data.contentType
-        },
-        slideIndex: i,
-        username: data.username
+      // Prepare batch requests for enhanced image service using contextual analysis
+      const imageRequests = await Promise.all(result.slides.map(async (slide, i) => {
+        console.log(`🎨 Generating contextual prompt for slide ${i + 1}/${totalSlides}`);
+        
+        // Use contextual image service for intelligent, content-aware prompts
+        const contextualPrompt = await generateContextualImage(
+          slide.text, 
+          i, 
+          totalSlides, 
+          data.username
+        );
+        
+        return {
+          params: {
+            text: contextualPrompt,
+            style: 'modern' as const,
+            contentFormat: data.contentFormat,
+            contentType: data.contentType
+          },
+          slideIndex: i,
+          username: data.username
+        };
       }));
 
       setCurrentStep('Gerando imagens com sistema adaptativo...');
@@ -260,7 +273,8 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
           profileImageUrl,
           profileImageDataUrl: i === 0 ? profileDataUrl : undefined,
           imageGenerated: imageResult?.generated || false,
-          fallbackUsed: imageResult?.fallbackUsed || false
+          fallbackUsed: imageResult?.fallbackUsed || false,
+          customImageUrl: imageResult?.imageUrl // Add this for consistent access
         };
       }));
 
