@@ -8,8 +8,11 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { StepProps } from '../types/carousel';
 import { testImagePreprocessing } from '@/utils/testImagePreprocessing';
 import { toast } from 'sonner';
+import { useCarousel } from '@/context/CarouselContext';
 
 export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
+  const { updateData, setCurrentStep } = useCarousel();
+  
   const [formData, setFormData] = useState({
     title: data.title || '',
     username: data.username || '',
@@ -82,6 +85,81 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
       console.error('Erro no teste automático:', error);
       toast.error('Erro no teste automático. Verifique o console para detalhes.');
     }
+  };
+
+  const handleFullCarouselTest = () => {
+    toast.info('Gerando carrossel de teste completo...');
+    
+    // Dados de teste básicos que funcionam com o tipo CarouselData
+    const testData = {
+      title: 'Teste de Carrossel Automático',
+      username: 'Teste User',
+      instagramHandle: '@testeuser',
+      isVerified: true,
+      content: 'Este é um carrossel de teste gerado automaticamente para verificar se todo o processo está funcionando corretamente. Inclui múltiplos slides com conteúdo educacional sobre empreendedorismo digital.',
+      slideCount: 5,
+      contentType: 'educational' as const,
+      contentFormat: 'feed' as const,
+      callToAction: 'follow' as const,
+      copywritingFramework: 'aida' as const,
+      slides: [
+        { 
+          id: 1, 
+          text: 'Slide 1: Introdução ao Empreendedorismo Digital', 
+          isEdited: false,
+          originalText: 'Slide 1: Introdução ao Empreendedorismo Digital',
+          hasImage: true,
+          needsImage: true,
+          imagePrompt: 'Person working on laptop in modern office, digital business concept'
+        },
+        { 
+          id: 2, 
+          text: 'Slide 2: Primeiro Passo - Defina seu Nicho', 
+          isEdited: false,
+          originalText: 'Slide 2: Primeiro Passo - Defina seu Nicho',
+          hasImage: true,
+          needsImage: true,
+          imagePrompt: 'Target audience analysis, market research concept'
+        },
+        { 
+          id: 3, 
+          text: 'Slide 3: Segundo Passo - Crie Conteúdo de Valor', 
+          isEdited: false,
+          originalText: 'Slide 3: Segundo Passo - Crie Conteúdo de Valor',
+          hasImage: true,
+          needsImage: true,
+          imagePrompt: 'Content creation, writing blog posts, video editing'
+        },
+        { 
+          id: 4, 
+          text: 'Slide 4: Terceiro Passo - Construa sua Audiência', 
+          isEdited: false,
+          originalText: 'Slide 4: Terceiro Passo - Construa sua Audiência',
+          hasImage: true,
+          needsImage: true,
+          imagePrompt: 'Social media growth, community building concept'
+        },
+        { 
+          id: 5, 
+          text: 'Slide 5: Comece Hoje! Siga @testeuser para mais dicas', 
+          isEdited: false,
+          originalText: 'Slide 5: Comece Hoje! Siga @testeuser para mais dicas',
+          hasImage: true,
+          needsImage: true,
+          imagePrompt: 'Call to action, follow button, social media engagement'
+        }
+      ],
+      caption: 'Aprenda os fundamentos do empreendedorismo digital em 5 slides! 🚀 Salve este post e comece sua jornada hoje mesmo. ✨',
+      hashtags: ['#empreendedorismo', '#digital', '#negociosonline', '#dicas', '#marketing']
+    };
+
+    // Atualizar dados do contexto
+    updateData(testData);
+    
+    // Navegar diretamente para a etapa 6 (download)
+    setCurrentStep(6);
+    
+    toast.success('Carrossel de teste gerado! Redirecionando para download...');
   };
 
   return (
@@ -177,15 +255,24 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
             </div>
           </div>
 
-          <div className="pt-4">
+          <div className="pt-4 space-y-3">
             <EnhancedButton
               variant="outline"
               size="lg"
               onClick={handleAutomaticTest}
-              className="w-full mb-4 border-dashed border-2 hover:border-primary text-muted-foreground hover:text-primary"
+              className="w-full border-dashed border-2 hover:border-primary text-muted-foreground hover:text-primary"
             >
               <TestTube className="w-5 h-5" />
               Teste Automático de Configurações
+            </EnhancedButton>
+
+            <EnhancedButton
+              variant="accent"
+              size="lg"
+              onClick={handleFullCarouselTest}
+              className="w-full"
+            >
+              🚀 Gerar Carrossel Completo de Teste
             </EnhancedButton>
           </div>
 
