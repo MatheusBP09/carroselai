@@ -27,6 +27,7 @@ export const nodeToPng = async (
       height,
       pixelRatio,
       cacheBust: true,
+      skipFonts: true, // Skip font embedding to avoid CORS issues
       style: {
         // Ensure consistent sizing and no transforms during capture
         width: `${width}px`,
