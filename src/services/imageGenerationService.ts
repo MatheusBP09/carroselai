@@ -59,12 +59,12 @@ export const generateContentImage = async (params: ImageGenerationParams): Promi
 const getFormatDimensions = (format: string): { width: number; height: number } => {
   switch (format) {
     case 'stories':
-      return { width: 1080, height: 1920 };
+      return { width: 1024, height: 1792 }; // OpenAI supported vertical
     case 'reels':
-      return { width: 1080, height: 1920 };
+      return { width: 1024, height: 1792 }; // OpenAI supported vertical
     case 'feed':
     default:
-      return { width: 1080, height: 1080 };
+      return { width: 1024, height: 1024 }; // OpenAI supported square
   }
 };
 
@@ -95,7 +95,7 @@ const createImagePrompt = (text: string, style: string, format: string, type: st
 
 const getFallbackImage = (contentType: string, format: string): string => {
   const baseUrl = 'https://images.unsplash.com';
-  const dimensions = format === 'stories' ? '1080x1920' : '1080x1080';
+  const dimensions = format === 'stories' ? '1024x1792' : '1024x1024';
   
   const fallbackCategories = {
     educational: 'study,learning,books',

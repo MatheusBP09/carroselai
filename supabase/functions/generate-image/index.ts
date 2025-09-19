@@ -33,6 +33,21 @@ serve(async (req) => {
 
     console.log('Generating image with prompt:', prompt);
 
+    // Validate and normalize size parameter to OpenAI supported values
+    const validSizes = ['1024x1024', '1024x1792', '1792x1024'];
+    let normalizedSize = size;
+    
+    // Convert common invalid sizes to valid ones
+    if (size === '1080x1080' || size === '1080x1080') {
+      normalizedSize = '1024x1024';
+    } else if (size === '1080x1920' || size === '1024x1920') {
+      normalizedSize = '1024x1792';
+    } else if (!validSizes.includes(size)) {
+      normalizedSize = '1024x1024'; // Default fallback
+    }
+
+    console.log('Using normalized size:', normalizedSize);
+
     const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
       headers: {
@@ -43,7 +58,7 @@ serve(async (req) => {
         model: 'dall-e-3',
         prompt: prompt,
         n: 1,
-        size: size,
+        size: normalizedSize,
         quality: 'standard',
         response_format: 'url'
       }),
