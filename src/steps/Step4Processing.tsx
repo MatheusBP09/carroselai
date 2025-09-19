@@ -141,6 +141,15 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
       setStatus('processing');
       setError('');
       
+      console.log('🎨 Starting ENHANCED carousel processing...');
+      console.log('📊 Input data:', { 
+        theme: data.content, 
+        contentType: data.contentType, 
+        slideCount: data.slideCount,
+        hasApiKey: !!import.meta.env.VITE_OPENAI_API_KEY,
+        username: data.username
+      });
+      
       // Passo 1: Gerar conteúdo com IA otimizada
       setCurrentStep('Gerando conteúdo com IA avançada...');
       setProgress(10);

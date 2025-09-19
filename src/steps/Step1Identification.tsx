@@ -7,6 +7,7 @@ import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { StepProps } from '../types/carousel';
 import { useCarousel } from '@/context/CarouselContext';
+import { ApiKeyStatus } from '@/components/ApiKeyStatus';
 
 export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
   const { updateData, setCurrentStep } = useCarousel();
@@ -110,6 +111,7 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
           <p className="text-muted-foreground">
             Vamos começar com as informações básicas do seu carrossel
           </p>
+          <ApiKeyStatus className="mt-4" />
         </CardHeader>
         
         <CardContent className="space-y-6">

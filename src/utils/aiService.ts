@@ -37,6 +37,13 @@ interface ModelConfig {
 export const generateCarousel = async (params: GenerateCarouselParams): Promise<GenerateCarouselResponse> => {
   const { title, username, content, instagramHandle, isVerified, slideCount = 10, contentType, contentFormat, callToAction, customCTA, copywritingFramework, targetAudience } = params;
 
+  // Enhanced logging for debugging
+  console.log('🤖 Starting ENHANCED carousel generation with OpenAI');
+  console.log('📝 Theme:', content);
+  console.log('🎯 Content Type:', contentType);
+  console.log('📊 Slide Count:', slideCount);
+  console.log('🔑 API Key available:', !!import.meta.env.VITE_OPENAI_API_KEY);
+
   // Model cascade with fallback - increased timeouts for better success
   const modelConfigs: ModelConfig[] = [
     { model: 'gpt-4.1-2025-04-14', timeout: 45000, maxTokens: 2000 },
