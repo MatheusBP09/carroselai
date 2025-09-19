@@ -52,10 +52,10 @@ export const LAYOUT = {
     large: 240, // 3x increase: 80 → 240
   },
   positions: {
-    // Vertically center elements around canvas center (1350/2 = 675)
-    profile: { x: 180, y: 600 }, // Moved further left for wider text
-    username: { x: 360, y: 560 }, // Moved further left for wider text
-    handle: { x: 360, y: 630 }, // Moved further left for wider text  
-    tweet: { x: 300, y: 720 }, // Moved further left to accommodate 720px text width
+    // Optimized positions for better content fit
+    profile: { x: 180, y: 450 }, // Moved up to create more space
+    username: { x: 360, y: 410 }, // Moved up to create more space
+    handle: { x: 360, y: 480 }, // Moved up to create more space  
+    tweet: { x: 300, y: 540 }, // Moved up significantly to fit content
   },
 } as const;

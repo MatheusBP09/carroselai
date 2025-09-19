@@ -59,10 +59,16 @@ export const generateTwitterImage = async (params: TwitterImageParams): Promise<
     canvas.add(handleAndTime);
     console.log('🏷️ Handle added:', handle);
 
-    // Add tweet text with proper wrapping (increased width for better text display)
+    // Add tweet text with automatic sizing based on content
     const maxWidth = 720; // Canvas width (1080) - left margin (300) - right padding (60)
     const wrappedText = wrapText(text, maxWidth, 56); // Use new font size
     const tweetText = createTweetText(wrappedText);
+    
+    // Calculate text height and adjust layout if needed
+    const textHeight = tweetText.height || 0;
+    const textLines = wrappedText.split('\n').length;
+    console.log('📏 Text metrics:', { textHeight, textLines, wrappedLength: wrappedText.length });
+    
     canvas.add(tweetText);
     console.log('💬 Tweet text added, length:', text.length);
 

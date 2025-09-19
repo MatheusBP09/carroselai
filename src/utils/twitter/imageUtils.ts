@@ -4,16 +4,23 @@ import { CANVAS_DIMENSIONS, LAYOUT } from './constants';
 /**
  * Create and position content image with proper aspect ratio and no distortion
  */
-export const createContentImage = async (imageUrl: string): Promise<FabricImage | null> => {
+export const createContentImage = async (imageUrl: string): Promise<any> => {
   try {
-    const contentImage = await FabricImage.fromURL(imageUrl, {
+    // Add timeout and better error handling
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      setTimeout(() => reject(new Error('Image load timeout')), 10000);
+    });
+
+    const imagePromise = FabricImage.fromURL(imageUrl, {
       crossOrigin: 'anonymous',
     });
 
-    // Calculate container dimensions (below tweet text)
+    const contentImage = await Promise.race([imagePromise, timeoutPromise]);
+
+    // Calculate container dimensions (below tweet text with better spacing)
     const containerWidth = CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2);
-    const containerHeight = 400; // Fixed height for image container
-    const containerTop = LAYOUT.positions.tweet.y + 200; // Position below tweet text
+    const containerHeight = 500; // Increased height for better image display
+    const containerTop = LAYOUT.positions.tweet.y + 300; // More space below text for better layout
     const containerLeft = LAYOUT.margin;
 
     // Calculate scale to fit while maintaining aspect ratio
@@ -49,7 +56,21 @@ export const createContentImage = async (imageUrl: string): Promise<FabricImage 
     return contentImage;
   } catch (error) {
     console.warn('Failed to load content image:', error);
-    return null;
+    
+    // Create a placeholder rectangle instead of returning null
+    const placeholder = new Rect({
+      left: LAYOUT.margin,
+      top: LAYOUT.positions.tweet.y + 300,
+      width: CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2),
+      height: 300,
+      fill: '#f0f0f0',
+      stroke: '#e0e0e0',
+      strokeWidth: 2,
+      rx: 12,
+      ry: 12,
+    });
+    
+    return placeholder as any; // Return placeholder instead of null
   }
 };
 
