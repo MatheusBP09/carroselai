@@ -1,12 +1,12 @@
 import { useState } from 'react';
-import { ArrowRight, ArrowLeft, Instagram, CheckCircle, TestTube } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Instagram, CheckCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { StepProps } from '../types/carousel';
-import { testImagePreprocessing } from '@/utils/testImagePreprocessing';
+
 import { toast } from 'sonner';
 import { useCarousel } from '@/context/CarouselContext';
 
@@ -76,16 +76,6 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
            formData.instagramHandle.length > 0;
   };
 
-  const handleAutomaticTest = async () => {
-    toast.info('Iniciando teste automático...');
-    try {
-      await testImagePreprocessing();
-      toast.success('Teste automático concluído! Verifique o console para detalhes.');
-    } catch (error) {
-      console.error('Erro no teste automático:', error);
-      toast.error('Erro no teste automático. Verifique o console para detalhes.');
-    }
-  };
 
   const handleFullCarouselTest = async () => {
     toast.info('Gerando carrossel de teste completo...');
@@ -213,15 +203,6 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
           </div>
 
           <div className="pt-4 space-y-3">
-            <EnhancedButton
-              variant="outline"
-              size="lg"
-              onClick={handleAutomaticTest}
-              className="w-full border-dashed border-2 hover:border-primary text-muted-foreground hover:text-primary"
-            >
-              <TestTube className="w-5 h-5" />
-              Teste Automático de Configurações
-            </EnhancedButton>
 
             <EnhancedButton
               variant="accent"
