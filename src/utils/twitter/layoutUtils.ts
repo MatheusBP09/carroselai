@@ -65,13 +65,13 @@
   export const createVerifiedBadge = (usernameText: FabricText): [Circle, FabricText] => {
     // Get username text width for proper positioning
     const usernameWidth = usernameText.width || 0;
-    const badgeX = usernameText.left + usernameWidth + LAYOUT.spacing.small;
-    const badgeY = usernameText.top + (TYPOGRAPHY.username.fontSize / 2) - 12; // Center vertically with username
+    const badgeX = usernameText.left + usernameWidth + 16; // Espaçamento adequado
+    const badgeY = usernameText.top + (TYPOGRAPHY.username.fontSize / 2) - 14; // Centralizado verticalmente
     
     const badge = new Circle({
       left: badgeX,
       top: badgeY,
-      radius: 12, // Smaller, more proportional size
+      radius: 14, // Tamanho como no Twitter real
       fill: TWITTER_COLORS.blue,
       originX: 'center',
       originY: 'center',
@@ -79,11 +79,11 @@
 
     const checkmark = new FabricText('✓', {
       left: badgeX,
-      top: badgeY,
-      fontSize: 16, // Proportional to badge size
+      top: badgeY - 2, // Pequeno ajuste vertical
+      fontSize: 18, // Proporcional ao badge
       fontFamily: TYPOGRAPHY.fontFamily,
       fill: '#ffffff',
-      fontWeight: 'bold',
+      fontWeight: '700',
       textAlign: 'center',
       originX: 'center',
       originY: 'center',
@@ -110,10 +110,10 @@
   };
 
   /**
-   * Create tweet text with centered and justified formatting
+   * Create tweet text with proper formatting like Twitter
    */
   export const createTweetText = (text: string): FabricText => {
-    const maxWidth = CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2);
+    const maxWidth = CANVAS_DIMENSIONS.width - (LAYOUT.margin * 2) - 40; // Margem adicional
     
     return new FabricText(text, {
       left: LAYOUT.positions.tweet.x,
@@ -122,10 +122,11 @@
       fontFamily: TYPOGRAPHY.fontFamily,
       fill: TWITTER_COLORS.text,
       lineHeight: TYPOGRAPHY.tweet.lineHeight,
-      charSpacing: 0,
+      charSpacing: TYPOGRAPHY.tweet.charSpacing,
       splitByGrapheme: false,
       width: maxWidth,
-      textAlign: 'justify', // Justified text like requested
+      textAlign: 'left', // Alinhamento à esquerda como no Twitter
+      fontWeight: '400',
       objectCaching: false,
     });
   };

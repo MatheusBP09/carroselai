@@ -23,19 +23,19 @@ export const DEFAULT_METRICS: TwitterMetrics = {
 } as const;
 
 export const TYPOGRAPHY = {
-  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
   username: {
-    fontSize: 52, // Slightly larger for better visibility
-    fontWeight: 'bold' as const,
+    fontSize: 56, // Mais próximo do Twitter real
+    fontWeight: '800' as const, // Mais pesado como no exemplo
   },
   handle: {
-    fontSize: 38, // Better proportion
-    fontWeight: 'normal' as const,
+    fontSize: 40, // Proporção melhor com o username
+    fontWeight: '400' as const,
   },
   tweet: {
-    fontSize: 42, // Better readable size for main content
-    lineHeight: 1.5, // Better line spacing for readability
-    charSpacing: 0,
+    fontSize: 44, // Tamanho mais legível
+    lineHeight: 1.3, // Espaçamento de linha como no Twitter
+    charSpacing: -0.5, // Ligeiramente mais apertado
   },
   metrics: {
     icon: { fontSize: 0 },
@@ -44,18 +44,18 @@ export const TYPOGRAPHY = {
 } as const;
 
 export const LAYOUT = {
-  margin: 80, // Increased margin for better centering
-  profileSize: 120, // Slightly larger profile
+  margin: 80, // Margem similar às referências
+  profileSize: 160, // Profile maior como nos exemplos
   spacing: {
     small: 12,
-    medium: 24,
-    large: 40,
+    medium: 20,
+    large: 32,
   },
   positions: {
-    // Better centered positioning for Instagram-like layout
-    profile: { x: 150, y: 150 }, // More centered
-    username: { x: 290, y: 120 }, // Aligned with profile center
-    handle: { x: 290, y: 165 }, // Better spacing from username
-    tweet: { x: 150, y: 260 }, // More space and centered alignment
+    // Posicionamento mais próximo do Twitter real
+    profile: { x: 140, y: 140 }, // Centralizado
+    username: { x: 320, y: 130 }, // Alinhado com o centro do profile
+    handle: { x: 320, y: 185 }, // Espaçamento adequado do username
+    tweet: { x: 140, y: 280 }, // Mais espaço para o texto
   },
 } as const;
