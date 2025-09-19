@@ -7,7 +7,7 @@ export const wrapText = (text: string, maxWidth: number, fontSize: number): stri
   let currentLine = '';
   
   // More accurate character width calculation
-  const avgCharWidth = fontSize * 0.55;
+  const avgCharWidth = fontSize * 0.4; // Adjusted for better wrapping with wider text area
   const maxCharsPerLine = Math.floor(maxWidth / avgCharWidth);
   
   for (const word of words) {

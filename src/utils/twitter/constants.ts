@@ -53,9 +53,9 @@ export const LAYOUT = {
   },
   positions: {
     // Vertically center elements around canvas center (1350/2 = 675)
-    profile: { x: 300, y: 600 }, // Moved left to fit within canvas
-    username: { x: 480, y: 560 }, // Moved left to fit within canvas
-    handle: { x: 480, y: 630 }, // Moved left to fit within canvas  
-    tweet: { x: 480, y: 720 }, // Moved left to fit within canvas
+    profile: { x: 180, y: 600 }, // Moved further left for wider text
+    username: { x: 360, y: 560 }, // Moved further left for wider text
+    handle: { x: 360, y: 630 }, // Moved further left for wider text  
+    tweet: { x: 300, y: 720 }, // Moved further left to accommodate 720px text width
   },
 } as const;

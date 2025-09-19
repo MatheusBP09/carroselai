@@ -112,6 +112,6 @@ export const createTweetText = (text: string): FabricText => {
     lineHeight: TYPOGRAPHY.tweet.lineHeight,
     charSpacing: TYPOGRAPHY.tweet.charSpacing,
     splitByGrapheme: true, // Better text wrapping
-    width: 480, // Set max width to prevent overflow
+    width: 720, // Set max width to allow more text space
   });
 };
