@@ -1,57 +1,48 @@
 /**
- * Enhanced text wrapping with improved formatting for posts
+ * Advanced text wrapping with better word break handling
  */
 export const wrapText = (text: string, maxWidth: number, fontSize: number): string => {
-  // Clean and normalize text
-  const cleanText = text.trim().replace(/\s+/g, ' ');
-  
-  const words = cleanText.split(' ');
+  const words = text.split(' ');
   const lines: string[] = [];
   let currentLine = '';
   
-  // Better character width calculation for justified text
-  const avgCharWidth = fontSize * 0.52; // Optimized for justified alignment
+  // More accurate character width calculation
+  const avgCharWidth = fontSize * 0.55;
   const maxCharsPerLine = Math.floor(maxWidth / avgCharWidth);
-  
-  console.log(`📝 Text wrapping - Max width: ${maxWidth}px, Font: ${fontSize}px, Max chars: ${maxCharsPerLine}`);
   
   for (const word of words) {
     const testLine = currentLine + (currentLine ? ' ' : '') + word;
     
-    // Handle very long words
+    // Handle long words that exceed line length
     if (word.length > maxCharsPerLine) {
       if (currentLine) {
         lines.push(currentLine);
         currentLine = '';
       }
-      
-      // Split long words more elegantly
-      let remainingWord = word;
-      while (remainingWord.length > maxCharsPerLine) {
-        const breakPoint = maxCharsPerLine - 1;
-        lines.push(remainingWord.substring(0, breakPoint) + '-');
-        remainingWord = remainingWord.substring(breakPoint);
-      }
-      currentLine = remainingWord;
-      
+      // Break long words
+      const chunks = word.match(new RegExp(`.{1,${maxCharsPerLine}}`, 'g')) || [word];
+      chunks.forEach((chunk, index) => {
+        if (index === chunks.length - 1) {
+          currentLine = chunk;
+        } else {
+          lines.push(chunk);
+        }
+      });
     } else if (testLine.length <= maxCharsPerLine) {
       currentLine = testLine;
     } else {
       if (currentLine) {
-        lines.push(currentLine.trim()); // Trim whitespace for better justified alignment
+        lines.push(currentLine);
       }
       currentLine = word;
     }
   }
   
   if (currentLine) {
-    lines.push(currentLine.trim());
+    lines.push(currentLine);
   }
   
-  const result = lines.join('\n');
-  console.log(`📝 Text wrapped into ${lines.length} lines for justified display`);
-  
-  return result;
+  return lines.join('\n');
 };
 
 /**

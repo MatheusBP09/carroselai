@@ -50,15 +50,13 @@ export const TwitterPostPreview: React.FC<TwitterPostPreviewProps> = ({
               {username}
             </span>
             {isVerified && (
-              <div className="w-4 h-4 bg-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
-                <svg 
-                  className="w-2.5 h-2.5 text-white" 
-                  fill="currentColor" 
-                  viewBox="0 0 16 16"
-                >
-                  <path d="M13.854 3.646a.5.5 0 0 1 0 .708l-7 7a.5.5 0 0 1-.708 0l-3.5-3.5a.5.5 0 1 1 .708-.708L6.5 10.293l6.646-6.647a.5.5 0 0 1 .708 0z"/>
-                </svg>
-              </div>
+              <svg 
+                className="w-3 h-3 text-twitter-blue flex-shrink-0" 
+                fill="currentColor" 
+                viewBox="0 0 24 24"
+              >
+                <path d="M22.5 12.5c0-1.58-.875-2.95-2.148-3.6.154-.435.238-.905.238-1.4 0-2.21-1.71-3.998-3.818-3.998-.47 0-.92.084-1.336.25C14.818 2.415 13.51 1.5 12 1.5s-2.816.917-3.437 2.25c-.415-.165-.866-.25-1.336-.25-2.11 0-3.818 1.79-3.818 4 0 .494.083.964.237 1.4-1.272.65-2.147 2.018-2.147 3.6 0 1.495.782 2.798 1.942 3.486-.02.17-.032.34-.032.514 0 2.21 1.708 4 3.818 4 .47 0 .92-.086 1.335-.25.62 1.334 1.926 2.25 3.437 2.25 1.512 0 2.818-.916 3.437-2.25.415.163.865.248 1.336.248 2.11 0 3.818-1.79 3.818-4 0-.174-.012-.344-.033-.513 1.158-.687 1.943-1.99 1.943-3.484zm-6.616-3.334l-4.334 6.5c-.145.217-.382.334-.625.334-.143 0-.288-.04-.416-.126l-2.5-1.668c-.448-.298-.573-.906-.277-1.354.297-.448.906-.573 1.354-.277l1.906 1.27 3.75-5.626c.298-.446.906-.573 1.354-.277.448.298.573.906.277 1.354z"/>
+              </svg>
             )}
           </div>
           {/* Handle on separate line */}
@@ -70,17 +68,10 @@ export const TwitterPostPreview: React.FC<TwitterPostPreviewProps> = ({
         </div>
       </div>
 
-      {/* Tweet Text - Preview com truncamento para melhor UI */}
+      {/* Tweet Text */}
       <div className={`text-foreground text-sm leading-relaxed ${shouldShowImage ? 'mb-3 line-clamp-4' : 'mb-0 line-clamp-10'}`}>
         {text}
       </div>
-      
-      {/* Mostrar indicador se o texto está truncado */}
-      {text.length > 200 && (
-        <p className="text-xs text-muted-foreground italic mt-1">
-          * Texto será exibido completo na imagem final
-        </p>
-      )}
 
       {/* Content Image */}
       {shouldShowImage && (

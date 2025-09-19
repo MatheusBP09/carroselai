@@ -1,28 +1,14 @@
 import JSZip from 'jszip';
-import { generateTwitterImage } from '@/utils/twitter';
+import { renderTwitterPostToImage } from './renderToImageService';
 import { CarouselData } from '@/types/carousel';
 import { createValidPngBlob, validatePngBlob } from './pngValidationService';
+import { preloadSlideImages } from './imagePreprocessingService';
 
 export interface ZipDownloadProgress {
   currentSlide: number;
   totalSlides: number;
   status: 'preparing' | 'rendering' | 'creating-zip' | 'complete';
 }
-
-/**
- * Convert Fabric.js dataURL to Blob
- */
-const dataUrlToBlob = (dataUrl: string): Blob => {
-  const arr = dataUrl.split(',');
-  const mime = arr[0].match(/:(.*?);/)?.[1] || 'image/png';
-  const bstr = atob(arr[1]);
-  let n = bstr.length;
-  const u8arr = new Uint8Array(n);
-  while (n--) {
-    u8arr[n] = bstr.charCodeAt(n);
-  }
-  return new Blob([u8arr], { type: mime });
-};
 
 /**
  * Download carousel as a ZIP file containing all slides and text content
@@ -70,14 +56,14 @@ export const downloadCarouselAsZip = async (
     });
 
     try {
-      // Use new Fabric.js rendering system with correct layout
-      console.log(`🎯 Rendering slide ${i + 1} with Fabric.js system...`);
+      // Use original URLs directly - let renderToImageService handle fallbacks
+      console.log(`🎯 Rendering slide ${i + 1} with original URLs...`);
       console.log('Image URLs:', {
         profileImageUrl: slide.profileImageUrl,
         contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
       });
 
-      const dataUrl = await generateTwitterImage({
+      const blob = await renderTwitterPostToImage({
         username: data.username || data.instagramHandle?.replace('@', '') || 'user',
         handle: data.instagramHandle?.replace('@', '') || 'user',
         isVerified: data.isVerified || false,
@@ -85,9 +71,6 @@ export const downloadCarouselAsZip = async (
         profileImageUrl: slide.profileImageUrl,
         contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
       });
-
-      // Convert dataURL to blob
-      const blob = dataUrlToBlob(dataUrl);
 
       // Validate and enhance PNG blob
       if (!blob || blob.size < 5000) {
@@ -396,17 +379,16 @@ export const testSlideRendering = async (
       contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
     });
 
-    const dataUrl = await generateTwitterImage({
+    const blob = await renderTwitterPostToImage({
       username: data.username || data.instagramHandle?.replace('@', '') || 'user',
       handle: data.instagramHandle?.replace('@', '') || 'user',
       isVerified: data.isVerified || false,
       text: slide.text,
       profileImageUrl: slide.profileImageUrl,
-      contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
+      contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0],
+      contentImageDataUrl: slide.contentImageDataUrls?.[0], // Use pre-processed data URL
+      profileImageDataUrl: slide.profileImageDataUrl // Use pre-processed profile data URL
     });
-
-    // Convert dataURL to blob
-    const blob = dataUrlToBlob(dataUrl);
 
     // Validate and create properly formatted PNG
     const validatedBlob = await createValidPngBlob(blob);

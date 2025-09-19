@@ -1,6 +1,4 @@
-import { OPENAI_CONFIG } from '../constants/config';
-
-console.log('🔧 Image Generation Service loaded with Supabase config');
+import { OPENAI_API_KEY } from '../constants/config';
 
 export interface ImageGenerationParams {
   text: string;
@@ -14,111 +12,59 @@ export interface ImageGenerationParams {
 
 interface ImageGenerationResponse {
   imageUrl: string;
-  success: boolean;
-  error?: string;
 }
 
 export const generateContentImage = async (params: ImageGenerationParams): Promise<ImageGenerationResponse> => {
   const { text, style = 'modern', aspectRatio = '1:1', contentFormat = 'feed', contentType = 'educational', width, height } = params;
 
-  console.log('🎨 Starting image generation with params:', {
-    contentType,
-    textLength: text?.length || 0,
-    contentFormat,
-    style
-  });
-
-  // No need to check API key since we're using Supabase Edge Functions
-  console.log('🎨 Using secure Supabase Edge Functions for image generation');
-
   // Get exact dimensions based on format
   const dimensions = width && height ? { width, height } : getFormatDimensions(contentFormat);
   
   const optimizedPrompt = createImagePrompt(text, style, contentFormat, contentType);
-  
-  console.log('📝 Generated prompt:', optimizedPrompt.substring(0, 150) + '...');
-  console.log('📏 Using dimensions:', dimensions);
 
   try {
-    const requestBody = {
-      model: 'gpt-image-1',
-      prompt: optimizedPrompt,
-      n: 1,
-      size: `${dimensions.width}x${dimensions.height}`,
-      quality: 'high',
-      output_format: 'png'
-    };
-
-    console.log('🚀 Making OpenAI API request via Supabase Edge Function...');
-    const response = await fetch(OPENAI_CONFIG.imageEndpoint, {
+    const response = await fetch('https://api.openai.com/v1/images/generations', {
       method: 'POST',
-      headers: OPENAI_CONFIG.headers,
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${OPENAI_API_KEY}`,
+      },
       body: JSON.stringify({
+        model: 'dall-e-3',
         prompt: optimizedPrompt,
-        model: 'gpt-image-1',
-        size: `${dimensions.width}x${dimensions.height}`,
-        quality: 'high',
+        n: 1,
+        size: `${dimensions.width}x${dimensions.height}` as any,
+        quality: 'hd',
+        response_format: 'url'
       }),
     });
 
-    console.log('📡 OpenAI response status:', response.status);
-
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: { message: 'Unknown error' } }));
-      console.error('❌ OpenAI API error:', errorData);
+      const errorData = await response.json();
       
       if (response.status === 401) {
-        throw new Error('OpenAI API key is invalid or missing. Please check your Supabase secrets configuration.');
+        throw new Error('Invalid OpenAI API key. Please check your API key.');
       } else if (response.status === 429) {
-        throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+        throw new Error('Rate limit exceeded. Please try again later.');
       } else if (response.status === 400) {
-        const errorMsg = errorData.error?.message || 'Invalid request parameters';
-        throw new Error(`Request error: ${errorMsg}`);
+        throw new Error(`Bad request: ${errorData.error?.message || 'Invalid request parameters'}`);
       } else {
-        throw new Error(`API failure: ${response.status} ${response.statusText}`);
+        throw new Error(`API request failed: ${response.status} ${response.statusText}`);
       }
     }
 
     const data = await response.json();
-    console.log('✅ OpenAI response received:', {
-      hasData: !!data.data,
-      dataLength: data.data?.length || 0
-    });
     
-    if (!data.data || data.data.length === 0) {
-      throw new Error('No image data returned from OpenAI API');
+    if (!data.data || !data.data[0] || !data.data[0].url) {
+      throw new Error('Invalid response format from OpenAI API');
     }
 
-    // For gpt-image-1, the response contains base64 data, not URLs
-    const imageData = data.data[0];
-    let imageUrl = '';
-    
-    if (imageData.b64_json) {
-      // Convert base64 to data URL
-      imageUrl = `data:image/png;base64,${imageData.b64_json}`;
-      console.log('🖼️ Image generated successfully (base64)');
-    } else if (imageData.url) {
-      imageUrl = imageData.url;
-      console.log('🖼️ Image generated successfully (URL)');
-    } else {
-      throw new Error('No image data found in OpenAI response');
-    }
-
-    console.log('✅ Image generation completed successfully');
-    
     return {
-      imageUrl,
-      success: true
+      imageUrl: data.data[0].url
     };
   } catch (error) {
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred during image generation';
-    console.error('❌ Error generating content image:', errorMessage);
-    
-    return {
-      imageUrl: '',
-      success: false,
-      error: errorMessage
-    };
+    console.error('Error generating content image:', error);
+    throw error;
   }
 };
 

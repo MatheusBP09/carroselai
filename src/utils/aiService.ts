@@ -1,8 +1,4 @@
-import { OPENAI_CONFIG } from '../constants/config';
-import { FallbackContentService } from '../services/fallbackContentService';
-import { CarouselData } from '../types/carousel';
-
-console.log('🔧 AI Service loaded with Supabase config');
+import { OPENAI_API_KEY } from '../constants/config';
 
 interface GenerateCarouselParams {
   title?: string;
@@ -38,13 +34,6 @@ interface ModelConfig {
 
 export const generateCarousel = async (params: GenerateCarouselParams): Promise<GenerateCarouselResponse> => {
   const { title, username, content, instagramHandle, isVerified, slideCount = 10, contentType, contentFormat, callToAction, customCTA, copywritingFramework, targetAudience } = params;
-
-  // Enhanced logging for debugging
-  console.log('🤖 Starting ENHANCED carousel generation with OpenAI');
-  console.log('📝 Theme:', content);
-  console.log('🎯 Content Type:', contentType);
-  console.log('📊 Slide Count:', slideCount);
-  console.log('🔑 Using secure Supabase Edge Functions for OpenAI API');
 
   // Model cascade with fallback - increased timeouts for better success
   const modelConfigs: ModelConfig[] = [
@@ -139,9 +128,12 @@ JSON:
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), config.timeout);
       
-      const response = await fetch(OPENAI_CONFIG.chatEndpoint, {
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
-        headers: OPENAI_CONFIG.headers,
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${OPENAI_API_KEY}`,
+        },
         body: JSON.stringify({
           model: config.model,
           messages: [
@@ -286,50 +278,25 @@ JSON:
     }
   }
 
-  // All models failed - use fallback content
-  console.warn('🚨 All AI models failed, using fallback content generation');
+  // All models failed
+  console.error('🚨 All models failed, throwing last error');
   
-  // Create fallback data structure with proper type casting
-  const fallbackData: CarouselData = {
-    username,
-    instagramHandle,
-    content,
-    slideCount,
-    contentType: contentType as any,
-    contentFormat: contentFormat as any,
-    callToAction: callToAction as any,
-    customCTA,
-    copywritingFramework: copywritingFramework as any,
-    targetAudience,
-    isVerified: false,
-    title: '',
-    profileImage: undefined,
-    slides: undefined,
-    caption: undefined,
-    hashtags: undefined
-  };
-  
-  // Enhanced error messages with fallback
+  // Enhanced error messages
   if (lastError?.message?.includes('401')) {
-    console.error('❌ API key invalid, using fallback content');
-    return FallbackContentService.generateFallbackContent(fallbackData);
+    throw new Error('Chave da API inválida. Verifique sua chave OpenAI.');
   }
   
   if (lastError?.message?.includes('insufficient_quota') || lastError?.message?.includes('billing')) {
-    console.error('❌ API quota exceeded, using fallback content');
-    return FallbackContentService.generateFallbackContent(fallbackData);
+    throw new Error('Cota da API esgotada. Verifique seu plano OpenAI ou tente novamente mais tarde.');
   }
   
   if (lastError?.message?.includes('rate_limit')) {
-    console.error('❌ Rate limit reached, using fallback content');
-    return FallbackContentService.generateFallbackContent(fallbackData);
+    throw new Error('Limite de requisições atingido. Aguarde alguns minutos e tente novamente.');
   }
 
   if (lastError?.message?.includes('timeout') || lastError?.name === 'AbortError') {
-    console.error('❌ Timeout occurred, using fallback content');
-    return FallbackContentService.generateFallbackContent(fallbackData as CarouselData);
+    throw new Error('Timeout na geração. A IA está sobrecarregada, tente novamente em alguns minutos.');
   }
 
-  console.error('❌ Unknown error, using fallback content');
-  return FallbackContentService.generateFallbackContent(fallbackData);
+  throw lastError || new Error('Erro desconhecido na geração do carrossel. Tente novamente.');
 };

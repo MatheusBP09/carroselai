@@ -2,7 +2,7 @@ import { TwitterColors, TwitterMetrics } from './types';
 
 export const CANVAS_DIMENSIONS = {
   width: 1080,
-  height: 1080, // Square format for Instagram posts
+  height: 1350,
 } as const;
 
 export const TWITTER_COLORS: TwitterColors = {
@@ -23,19 +23,19 @@ export const DEFAULT_METRICS: TwitterMetrics = {
 } as const;
 
 export const TYPOGRAPHY = {
-  fontFamily: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
+  fontFamily: 'Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif',
   username: {
-    fontSize: 56, // Mais próximo do Twitter real
-    fontWeight: '800' as const, // Mais pesado como no exemplo
+    fontSize: 22,
+    fontWeight: 'bold' as const,
   },
   handle: {
-    fontSize: 40, // Proporção melhor com o username
-    fontWeight: '400' as const,
+    fontSize: 18,
+    fontWeight: 'normal' as const,
   },
   tweet: {
-    fontSize: 44, // Tamanho mais legível
-    lineHeight: 1.3, // Espaçamento de linha como no Twitter
-    charSpacing: -0.5, // Ligeiramente mais apertado
+    fontSize: 28,
+    lineHeight: 1.4,
+    charSpacing: 0,
   },
   metrics: {
     icon: { fontSize: 0 },
@@ -44,18 +44,17 @@ export const TYPOGRAPHY = {
 } as const;
 
 export const LAYOUT = {
-  margin: 80, // Margem similar às referências
-  profileSize: 160, // Profile maior como nos exemplos
+  margin: 80,
+  profileSize: 48,
   spacing: {
     small: 12,
-    medium: 20,
-    large: 32,
+    medium: 24,
+    large: 80,
   },
   positions: {
-    // Posicionamento mais próximo do Twitter real
-    profile: { x: 140, y: 140 }, // Centralizado
-    username: { x: 320, y: 130 }, // Alinhado com o centro do profile
-    handle: { x: 320, y: 185 }, // Espaçamento adequado do username
-    tweet: { x: 140, y: 280 }, // Mais espaço para o texto
+    profile: { x: 120, y: 320 },
+    username: { x: 180, y: 304 },
+    handle: { x: 180, y: 330 },
+    tweet: { x: 180, y: 380 },
   },
 } as const;

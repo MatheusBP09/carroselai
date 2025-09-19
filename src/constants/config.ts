@@ -1,20 +1,5 @@
-import { supabase } from '@/integrations/supabase/client';
+// OpenAI API Configuration
+export const OPENAI_API_KEY = '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';
 
-// Configuration to use Supabase Edge Functions for OpenAI API calls
-const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
-const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
-
-const getApiEndpoint = (type: 'chat' | 'image') => {
-  return `${SUPABASE_URL}/functions/v1/generate-${type === 'chat' ? 'carousel' : 'image'}`;
-};
-
-export const OPENAI_CONFIG = {
-  chatEndpoint: getApiEndpoint('chat'),
-  imageEndpoint: getApiEndpoint('image'),
-  headers: {
-    'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
-    'Content-Type': 'application/json',
-  }
-};
-
-console.log('🔧 Config loaded - using Supabase Edge Functions for OpenAI API');
+// Note: This is a pre-configured API key for internal use only.
+// In production, ensure this key has appropriate rate limits and permissions.
