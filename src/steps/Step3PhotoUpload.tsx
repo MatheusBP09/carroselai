@@ -123,21 +123,21 @@ export const Step3PhotoUpload = ({ data, onNext, onBack }: StepProps) => {
             <div className="space-y-4">
               <div className="relative bg-muted/50 rounded-lg p-4">
                 <div className="flex items-center space-x-4">
-                  <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center overflow-hidden">
-                    {selectedFile && (
-                      <img
-                        src={URL.createObjectURL(selectedFile)}
-                        alt="Preview"
-                        className="w-full h-full object-cover"
-                      />
-                    )}
-                  </div>
-                  <div className="flex-1">
-                    <p className="font-medium">{selectedFile.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
-                    </p>
-                  </div>
+                   <div className="w-16 h-16 bg-gradient-to-br from-primary to-primary/80 rounded-lg flex items-center justify-center overflow-hidden">
+                     {selectedFile && selectedFile instanceof File && (
+                       <img
+                         src={URL.createObjectURL(selectedFile)}
+                         alt="Preview"
+                         className="w-full h-full object-cover"
+                       />
+                     )}
+                   </div>
+                   <div className="flex-1">
+                     <p className="font-medium">{selectedFile?.name || 'Arquivo selecionado'}</p>
+                     <p className="text-sm text-muted-foreground">
+                       {selectedFile?.size ? (selectedFile.size / 1024 / 1024).toFixed(2) + ' MB' : 'Tamanho desconhecido'}
+                     </p>
+                   </div>
                   <button
                     onClick={removeFile}
                     className="p-2 hover:bg-destructive/10 rounded-lg transition-colors"
