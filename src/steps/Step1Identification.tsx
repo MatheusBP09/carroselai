@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { ArrowRight, ArrowLeft, Instagram, CheckCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Instagram, CheckCircle, TestTube } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { StepProps } from '../types/carousel';
+import { testImagePreprocessing } from '@/utils/testImagePreprocessing';
+import { toast } from 'sonner';
 
 export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
   const [formData, setFormData] = useState({
@@ -69,6 +71,17 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
            formData.username.length >= 2 &&
            formData.username.length <= 50 &&
            formData.instagramHandle.length > 0;
+  };
+
+  const handleAutomaticTest = async () => {
+    toast.info('Iniciando teste automático...');
+    try {
+      await testImagePreprocessing();
+      toast.success('Teste automático concluído! Verifique o console para detalhes.');
+    } catch (error) {
+      console.error('Erro no teste automático:', error);
+      toast.error('Erro no teste automático. Verifique o console para detalhes.');
+    }
   };
 
   return (
@@ -162,6 +175,18 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
                 <CheckCircle className="w-4 h-4 text-accent-blue" />
               </Label>
             </div>
+          </div>
+
+          <div className="pt-4">
+            <EnhancedButton
+              variant="outline"
+              size="lg"
+              onClick={handleAutomaticTest}
+              className="w-full mb-4 border-dashed border-2 hover:border-primary text-muted-foreground hover:text-primary"
+            >
+              <TestTube className="w-5 h-5" />
+              Teste Automático de Configurações
+            </EnhancedButton>
           </div>
 
           <div className="pt-4 flex gap-4">
