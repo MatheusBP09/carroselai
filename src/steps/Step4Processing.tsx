@@ -201,7 +201,11 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
       
       // Use enhanced batch generation with smart rate limiting
       const imageResults = await enhancedImageService.generateBatch(
-        imageRequests,
+        imageRequests.map(req => ({
+          ...req.params,
+          slideIndex: req.slideIndex,
+          username: req.username
+        })),
         totalSlides,
         (progressPercent, currentIndex) => {
           setProgress(30 + (progressPercent / 100) * 60);

@@ -1,9 +1,13 @@
 // OpenAI API Configuration - Using Supabase secrets
 const getApiKey = () => {
-  // Use environment variable from Supabase secrets
-  return import.meta.env.VITE_OPENAI_API_KEY || 
-         localStorage.getItem('openai_api_key') || 
-         '';
+  const apiKey = import.meta.env.VITE_OPENAI_API_KEY;
+  
+  if (!apiKey) {
+    console.error('OpenAI API key not found. Please configure OPENAI_API_KEY in Supabase secrets.');
+    return '';
+  }
+  
+  return apiKey;
 };
 
 export const OPENAI_API_KEY = getApiKey();
