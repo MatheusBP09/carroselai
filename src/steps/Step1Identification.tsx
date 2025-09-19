@@ -1,13 +1,16 @@
 import { useState } from 'react';
-import { ArrowRight, ArrowLeft, Instagram, CheckCircle } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Instagram, CheckCircle, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { StepProps } from '../types/carousel';
+import { useCarousel } from '@/context/CarouselContext';
 
 export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
+  const { updateData, setCurrentStep } = useCarousel();
+  
   const [formData, setFormData] = useState({
     title: data.title || '',
     username: data.username || '',
@@ -69,6 +72,29 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
            formData.username.length >= 2 &&
            formData.username.length <= 50 &&
            formData.instagramHandle.length > 0;
+  };
+
+  const handleAutoTest = () => {
+    // Dados aleatórios para teste
+    const testData = {
+      title: 'Teste Automático - Empreendedorismo',
+      username: 'Teste Usuario',
+      instagramHandle: '@testeusuario',
+      isVerified: true,
+      content: 'Dicas essenciais sobre empreendedorismo digital e como começar seu negócio online com sucesso',
+      slideCount: 2,
+      contentType: 'educational' as const,
+      contentFormat: 'feed' as const,
+      callToAction: 'follow' as const,
+      copywritingFramework: 'aida' as const,
+      targetAudience: 'empreendedores iniciantes'
+    };
+
+    // Atualizar dados do contexto
+    updateData(testData);
+    
+    // Pular direto para o processamento (Step 4)
+    setCurrentStep(4);
   };
 
   return (
@@ -164,27 +190,45 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
             </div>
           </div>
 
-          <div className="pt-4 flex gap-4">
-            <EnhancedButton
-              variant="outline"
-              size="xl"
-              onClick={onBack}
-              className="flex-1"
-            >
-              <ArrowLeft className="w-5 h-5" />
-              Voltar
-            </EnhancedButton>
+          <div className="pt-4 space-y-4">
+            <div className="flex gap-4">
+              <EnhancedButton
+                variant="outline"
+                size="xl"
+                onClick={onBack}
+                className="flex-1"
+              >
+                <ArrowLeft className="w-5 h-5" />
+                Voltar
+              </EnhancedButton>
+              
+              <EnhancedButton
+                variant="instagram"
+                size="xl"
+                onClick={handleSubmit}
+                disabled={!isFormValid()}
+                className="flex-1"
+              >
+                Próximo Passo
+                <ArrowRight className="w-5 h-5" />
+              </EnhancedButton>
+            </div>
             
-            <EnhancedButton
-              variant="instagram"
-              size="xl"
-              onClick={handleSubmit}
-              disabled={!isFormValid()}
-              className="flex-1"
-            >
-              Próximo Passo
-              <ArrowRight className="w-5 h-5" />
-            </EnhancedButton>
+            {/* Botão de teste automático - temporário */}
+            <div className="border-t pt-4">
+              <EnhancedButton
+                variant="outline"
+                size="lg"
+                onClick={handleAutoTest}
+                className="w-full bg-yellow-50 border-yellow-200 hover:bg-yellow-100 text-yellow-800"
+              >
+                <Zap className="w-4 h-4 mr-2" />
+                🧪 Teste Automático (2 slides) - Desenvolvimento
+              </EnhancedButton>
+              <p className="text-xs text-muted-foreground mt-2 text-center">
+                Gera automaticamente um carrossel de teste para validar a funcionalidade
+              </p>
+            </div>
           </div>
         </CardContent>
       </Card>
