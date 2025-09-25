@@ -64,8 +64,8 @@ export const downloadCarouselAsZip = async (
       });
 
       const blob = await renderTwitterPostToImage({
-        username: data.username || data.instagramHandle?.replace('@', '') || 'user',
-        handle: data.instagramHandle?.replace('@', '') || 'user',
+        username: data.username || data.instagramHandle || 'user',
+        handle: data.instagramHandle || 'user',
         isVerified: data.isVerified || false,
         text: slide.text,
         profileImageUrl: slide.profileImageUrl,
@@ -380,8 +380,8 @@ export const testSlideRendering = async (
     });
 
     const blob = await renderTwitterPostToImage({
-      username: data.username || data.instagramHandle?.replace('@', '') || 'user',
-      handle: data.instagramHandle?.replace('@', '') || 'user',
+      username: data.username || data.instagramHandle || 'user',
+      handle: data.instagramHandle || 'user',
       isVerified: data.isVerified || false,
       text: slide.text,
       profileImageUrl: slide.profileImageUrl,

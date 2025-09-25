@@ -109,8 +109,8 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
         
         const blob = await renderTwitterPostToImage({
           text: slide.text,
-          username: data.username || data.instagramHandle.replace('@', ''),
-          handle: data.instagramHandle.replace('@', ''),
+          username: data.username || data.instagramHandle,
+          handle: data.instagramHandle,
           isVerified: data.isVerified,
           profileImageUrl: slide.profileImageUrl,
           contentImageUrl: slide.contentImageUrls?.[0]

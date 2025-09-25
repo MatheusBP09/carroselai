@@ -150,7 +150,7 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
       
       const result = await generateCarousel({
         title: data.title,
-        username: data.username || data.instagramHandle.replace('@', ''),
+        username: data.username || data.instagramHandle,
         content: data.content,
         instagramHandle: data.instagramHandle,
         isVerified: data.isVerified,

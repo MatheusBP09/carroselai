@@ -56,7 +56,7 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
       onNext({
         title: formData.title,
         username: formData.username,
-        instagramHandle: '@' + formData.instagramHandle.toLowerCase(), // Add @ when saving
+        instagramHandle: formData.instagramHandle.toLowerCase(), // Store without @ prefix
         isVerified: formData.isVerified
       });
     }
@@ -85,7 +85,7 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
       const testData = {
         title: 'Empreendedorismo Digital - Guia Completo',
         username: 'Teste User',
-        instagramHandle: '@testeuser',
+        instagramHandle: 'testeuser', // Store without @ prefix
         isVerified: true,
         content: 'Descubra como começar no empreendedorismo digital. Este guia completo vai te mostrar os primeiros passos essenciais para criar seu negócio online. Aprenda sobre planejamento, execução, marketing digital e como construir uma audiência engajada nas redes sociais. Tudo que você precisa saber para começar sua jornada empreendedora.',
         slideCount: 5,

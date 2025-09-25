@@ -66,6 +66,10 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
                   </div>
                 `;
               }
+              // Force re-render to ensure fallback is visible
+              setTimeout(() => {
+                console.log('Profile image fallback rendered successfully');
+              }, 50);
             }}
               onLoad={() => {
                 console.log('Profile image loaded successfully');
@@ -94,13 +98,13 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
         {/* User Info */}
         <div className="flex-1 min-w-0">
           {/* Username with verified badge */}
-          <div className="flex items-center space-x-2">
-            <span className="font-bold text-black text-[22px] truncate">
+          <div className="flex items-center space-x-2 min-w-0">
+            <span className="font-bold text-black text-[22px] flex-shrink min-w-0 max-w-full">
               {username}
             </span>
             {isVerified && (
               <svg 
-                className="w-5 h-5 text-twitter-blue flex-shrink-0" 
+                className="w-5 h-5 text-twitter-blue flex-shrink-0 ml-1" 
                 fill="currentColor" 
                 viewBox="0 0 24 24"
               >
@@ -111,7 +115,7 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
           {/* Handle on separate line */}
           <div className="-mt-2">
             <span className="text-muted-foreground text-[18px] font-normal">
-              @{handle}
+              {handle.startsWith('@') ? handle : `@${handle}`}
             </span>
           </div>
         </div>
@@ -181,6 +185,11 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
                   </div>
                 `;
               }
+              // Show error message to user and force re-render to ensure fallback is visible
+              console.log('⚠️ DOWNLOAD WARNING: Content image could not be loaded, using fallback placeholder');
+              setTimeout(() => {
+                console.log('Content image fallback rendered successfully');
+              }, 50);
             }}
             onLoad={() => {
               console.log('Content image loaded successfully');

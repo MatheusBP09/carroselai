@@ -352,10 +352,9 @@ const renderPostWithParams = async (params: RenderToImageParams, method: 'direct
         if (!imageValidation.isValid) {
           console.warn(`⚠️ Image validation incomplete: ${imageValidation.loadedImages}/${imageValidation.totalImages} images loaded`);
           
-          // If critical images failed, attempt to force fallbacks
-          if (imageValidation.loadedImages === 0) {
-            throw new Error('Critical error: No images loaded successfully. Cannot proceed with rendering.');
-          }
+          // Don't fail completely - proceed with partial images loaded
+          // This allows fallbacks to work properly in TwitterPost component
+          console.log('⚠️ Proceeding with partial image loading - fallbacks will handle missing images');
         } else {
           console.log('✅ All images validated successfully');
         }

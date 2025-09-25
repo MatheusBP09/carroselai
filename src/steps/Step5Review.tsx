@@ -186,8 +186,8 @@ const Step5Review = ({
                   {/* Preview do post */}
                   <div className="mb-3">
                     <TwitterPostPreview 
-                      username={data.username || data.instagramHandle.replace('@', '')} 
-                      handle={data.instagramHandle.replace('@', '')} 
+                       username={data.username || data.instagramHandle} 
+                       handle={data.instagramHandle}
                       isVerified={data.isVerified} 
                       text={slide.text} 
                       profileImageUrl={slide.profileImageUrl} 
