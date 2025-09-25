@@ -10,6 +10,7 @@ import { StepProps, Slide } from '@/types/carousel';
 import { generateContentImage } from '@/services/imageGenerationService';
 import { TwitterPostPreview } from '@/components/TwitterPostPreview';
 import { ImageControls } from '@/components/ImageControls';
+import { CarouselTestRunner } from '@/components/CarouselTestRunner';
 import { toast } from 'sonner';
 const Step5Review = ({
   data,
@@ -159,10 +160,11 @@ const Step5Review = ({
         </p>
 
         <Tabs defaultValue="slides" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="slides">Posts ({slides.length})</TabsTrigger>
             <TabsTrigger value="caption">Legenda</TabsTrigger>
             <TabsTrigger value="hashtags">Hashtags ({hashtags.length})</TabsTrigger>
+            <TabsTrigger value="tests">Testes</TabsTrigger>
           </TabsList>
 
           <TabsContent value="slides" className="space-y-4">
@@ -187,7 +189,7 @@ const Step5Review = ({
                   <div className="mb-3">
                     <TwitterPostPreview 
                        username={data.username || data.instagramHandle} 
-                       handle={data.instagramHandle}
+                        handle={data.instagramHandle}
                       isVerified={data.isVerified} 
                       text={slide.text} 
                       profileImageUrl={slide.profileImageUrl} 
@@ -277,6 +279,15 @@ const Step5Review = ({
                   </Badge>)}
               </div>
             </div>
+          </TabsContent>
+
+          <TabsContent value="tests" className="space-y-4">
+            <CarouselTestRunner
+              username={data.username || ''}
+              handle={data.instagramHandle || ''}
+              isVerified={data.isVerified || false}
+              slides={slides}
+            />
           </TabsContent>
         </Tabs>
       </Card>

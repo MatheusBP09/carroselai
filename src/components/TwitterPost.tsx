@@ -96,15 +96,27 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
         </div>
         
         {/* User Info */}
-        <div className="flex-1 min-w-0">
+        <div style={{ flex: '1', minWidth: '0' }}>
           {/* Username with verified badge */}
-          <div className="flex items-center space-x-2 min-w-0">
-            <span className="font-bold text-black text-[22px] flex-shrink min-w-0 max-w-full">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '0' }}>
+            <span style={{ 
+              fontWeight: 'bold', 
+              color: '#000000', 
+              fontSize: '22px', 
+              minWidth: '0',
+              wordWrap: 'break-word',
+              overflow: 'visible'
+            }}>
               {username}
             </span>
             {isVerified && (
               <svg 
-                className="w-5 h-5 text-twitter-blue flex-shrink-0 ml-1" 
+                style={{ 
+                  width: '20px', 
+                  height: '20px', 
+                  color: '#1d9bf0', 
+                  flexShrink: '0'
+                }}
                 fill="currentColor" 
                 viewBox="0 0 24 24"
               >
@@ -113,9 +125,13 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
             )}
           </div>
           {/* Handle on separate line */}
-          <div className="-mt-2">
-            <span className="text-muted-foreground text-[18px] font-normal">
-              {handle.startsWith('@') ? handle : `@${handle}`}
+          <div style={{ marginTop: '-8px' }}>
+            <span style={{ 
+              color: '#6b7280', 
+              fontSize: '18px', 
+              fontWeight: 'normal'
+            }}>
+              @{handle.replace(/^@+/, '')}
             </span>
           </div>
         </div>

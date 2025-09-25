@@ -62,7 +62,7 @@ export const TwitterPostPreview: React.FC<TwitterPostPreviewProps> = ({
           {/* Handle on separate line */}
           <div className="-mt-1.5">
             <span className="text-muted-foreground text-xs">
-              @{handle}
+              @{handle.replace(/^@+/, '')}
             </span>
           </div>
         </div>
