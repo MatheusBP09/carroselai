@@ -258,10 +258,12 @@ const preprocessImagesForDownload = async (params: RenderToImageParams): Promise
         processedParams.profileImageUrl = profileResult.localUrl;
         console.log('✅ Profile image downloaded and converted to local URL');
       } else {
-        console.log('⚠️ Profile image download failed, keeping original URL:', profileResult.error);
+        console.log('⚠️ Profile image download failed, removing image from export');
+        processedParams.profileImageUrl = undefined;
       }
     } catch (error) {
-      console.log('⚠️ Profile image download error:', error);
+      console.log('⚠️ Profile image download error, removing image:', error);
+      processedParams.profileImageUrl = undefined;
     }
   }
   
@@ -274,10 +276,12 @@ const preprocessImagesForDownload = async (params: RenderToImageParams): Promise
         processedParams.contentImageUrl = contentResult.localUrl;
         console.log('✅ Content image downloaded and converted to local URL');
       } else {
-        console.log('⚠️ Content image download failed, keeping original URL:', contentResult.error);
+        console.log('⚠️ Content image download failed, removing image from export');
+        processedParams.contentImageUrl = undefined;
       }
     } catch (error) {
-      console.log('⚠️ Content image download error:', error);
+      console.log('⚠️ Content image download error, removing image:', error);
+      processedParams.contentImageUrl = undefined;
     }
   }
   
