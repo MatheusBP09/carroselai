@@ -243,11 +243,67 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
 
 /**
  * Downloads and converts external images to local URLs for reliable rendering
- * Since images now come as base64 from the edge function, this just passes through
  */
 const preprocessImagesForDownload = async (params: RenderToImageParams): Promise<RenderToImageParams> => {
-  console.log('✅ Images already in base64 format from edge function, no preprocessing needed');
-  return params;
+  console.log('🔄 Starting image preprocessing...');
+  
+  const processedParams = { ...params };
+  
+  // Process content image
+  if (params.contentImageUrl) {
+    try {
+      console.log('📥 Processing content image:', params.contentImageUrl.substring(0, 50) + '...');
+      
+      // If it's already base64, just verify it's valid
+      if (params.contentImageUrl.startsWith('data:image/')) {
+        console.log('✅ Content image is already base64, using directly');
+        processedParams.contentImageUrl = params.contentImageUrl;
+      } else {
+        // External URL - download and convert
+        console.log('⬇️ Downloading external content image...');
+        const contentResult = await imageDownloadService.downloadAndConvertImage(params.contentImageUrl);
+        if (contentResult.success && contentResult.dataUrl) {
+          processedParams.contentImageUrl = contentResult.dataUrl;
+          console.log('✅ Content image downloaded and converted to base64');
+        } else {
+          console.warn('⚠️ Content image download failed, will use fallback');
+          processedParams.contentImageUrl = undefined;
+        }
+      }
+    } catch (error) {
+      console.error('❌ Content image processing error:', error);
+      processedParams.contentImageUrl = undefined;
+    }
+  }
+  
+  // Process profile image
+  if (params.profileImageUrl) {
+    try {
+      console.log('📥 Processing profile image:', params.profileImageUrl.substring(0, 50) + '...');
+      
+      // If it's already base64, just verify it's valid
+      if (params.profileImageUrl.startsWith('data:image/')) {
+        console.log('✅ Profile image is already base64, using directly');
+        processedParams.profileImageUrl = params.profileImageUrl;
+      } else {
+        // External URL - download and convert
+        console.log('⬇️ Downloading external profile image...');
+        const profileResult = await imageDownloadService.downloadAndConvertImage(params.profileImageUrl);
+        if (profileResult.success && profileResult.dataUrl) {
+          processedParams.profileImageUrl = profileResult.dataUrl;
+          console.log('✅ Profile image downloaded and converted to base64');
+        } else {
+          console.warn('⚠️ Profile image download failed, will use fallback');
+          processedParams.profileImageUrl = undefined;
+        }
+      }
+    } catch (error) {
+      console.error('❌ Profile image processing error:', error);
+      processedParams.profileImageUrl = undefined;
+    }
+  }
+  
+  return processedParams;
 };
 
 /**
