@@ -60,7 +60,8 @@ serve(async (req) => {
         n: 1,
         size: normalizedSize,
         quality: 'standard',
-        response_format: 'url'
+        // Request base64 directly to avoid any CORS or download issues on the client
+        response_format: 'b64_json'
       }),
     });
 
@@ -71,39 +72,23 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    const imageUrl = data.data[0].url;
+    const base64 = data?.data?.[0]?.b64_json as string | undefined;
 
-    console.log('Image generated successfully, downloading to convert to base64...');
-
-    // Download the image and convert to base64
-    try {
-      const imageResponse = await fetch(imageUrl);
-      if (!imageResponse.ok) {
-        throw new Error(`Failed to download image: ${imageResponse.status}`);
-      }
-      
-      const arrayBuffer = await imageResponse.arrayBuffer();
-      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
-      const dataUrl = `data:image/png;base64,${base64}`;
-      
-      console.log('Image converted to base64 successfully');
-
-      return new Response(JSON.stringify({ 
-        imageUrl: dataUrl,
-        success: true 
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
-    } catch (downloadError) {
-      console.error('Failed to download/convert image:', downloadError);
-      // Fallback to returning the URL if download fails
-      return new Response(JSON.stringify({ 
-        imageUrl,
-        success: true 
-      }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-      });
+    if (!base64) {
+      console.error('OpenAI response did not include b64_json field', data);
+      throw new Error('Invalid image response from OpenAI');
     }
+
+    const dataUrl = `data:image/png;base64,${base64}`;
+
+    console.log('Image generated successfully as base64');
+
+    return new Response(JSON.stringify({ 
+      imageUrl: dataUrl,
+      success: true 
+    }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
 
   } catch (error) {
     console.error('Error in generate-image function:', error);
