@@ -55,11 +55,15 @@ export default {
 					DEFAULT: 'hsl(var(--card))',
 					foreground: 'hsl(var(--card-foreground))'
 				},
-				// Instagram brand colors
+				// Brand colors - terracota
 				instagram: {
 					start: 'hsl(var(--instagram-start))',
 					middle: 'hsl(var(--instagram-middle))',
 					end: 'hsl(var(--instagram-end))'
+				},
+				brand: {
+					DEFAULT: 'hsl(var(--primary))',
+					foreground: 'hsl(var(--primary-foreground))'
 				},
 				// Status colors
 				success: {
