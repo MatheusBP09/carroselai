@@ -73,14 +73,37 @@ serve(async (req) => {
     const data = await response.json();
     const imageUrl = data.data[0].url;
 
-    console.log('Image generated successfully:', imageUrl);
+    console.log('Image generated successfully, downloading to convert to base64...');
 
-    return new Response(JSON.stringify({ 
-      imageUrl,
-      success: true 
-    }), {
-      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-    });
+    // Download the image and convert to base64
+    try {
+      const imageResponse = await fetch(imageUrl);
+      if (!imageResponse.ok) {
+        throw new Error(`Failed to download image: ${imageResponse.status}`);
+      }
+      
+      const arrayBuffer = await imageResponse.arrayBuffer();
+      const base64 = btoa(String.fromCharCode(...new Uint8Array(arrayBuffer)));
+      const dataUrl = `data:image/png;base64,${base64}`;
+      
+      console.log('Image converted to base64 successfully');
+
+      return new Response(JSON.stringify({ 
+        imageUrl: dataUrl,
+        success: true 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    } catch (downloadError) {
+      console.error('Failed to download/convert image:', downloadError);
+      // Fallback to returning the URL if download fails
+      return new Response(JSON.stringify({ 
+        imageUrl,
+        success: true 
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
+    }
 
   } catch (error) {
     console.error('Error in generate-image function:', error);

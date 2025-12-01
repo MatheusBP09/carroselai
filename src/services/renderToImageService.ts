@@ -243,49 +243,11 @@ export const renderTwitterPostToImage = async (params: RenderToImageParams): Pro
 
 /**
  * Downloads and converts external images to local URLs for reliable rendering
+ * Since images now come as base64 from the edge function, this just passes through
  */
 const preprocessImagesForDownload = async (params: RenderToImageParams): Promise<RenderToImageParams> => {
-  console.log('🔄 Starting robust image download preprocessing...');
-  
-  const processedParams = { ...params };
-  
-  // Download profile image
-  if (params.profileImageUrl && params.profileImageUrl.startsWith('http')) {
-    try {
-      console.log('📥 Downloading profile image:', params.profileImageUrl.substring(0, 50) + '...');
-      const profileResult = await imageDownloadService.downloadAndConvertImage(params.profileImageUrl);
-      if (profileResult.success && profileResult.localUrl) {
-        processedParams.profileImageUrl = profileResult.localUrl;
-        console.log('✅ Profile image downloaded and converted to local URL');
-      } else {
-        console.log('⚠️ Profile image download failed, removing image from export');
-        processedParams.profileImageUrl = undefined;
-      }
-    } catch (error) {
-      console.log('⚠️ Profile image download error, removing image:', error);
-      processedParams.profileImageUrl = undefined;
-    }
-  }
-  
-  // Download content image
-  if (params.contentImageUrl && params.contentImageUrl.startsWith('http')) {
-    try {
-      console.log('📥 Downloading content image:', params.contentImageUrl.substring(0, 50) + '...');
-      const contentResult = await imageDownloadService.downloadAndConvertImage(params.contentImageUrl);
-      if (contentResult.success && contentResult.localUrl) {
-        processedParams.contentImageUrl = contentResult.localUrl;
-        console.log('✅ Content image downloaded and converted to local URL');
-      } else {
-        console.log('⚠️ Content image download failed, removing image from export');
-        processedParams.contentImageUrl = undefined;
-      }
-    } catch (error) {
-      console.log('⚠️ Content image download error, removing image:', error);
-      processedParams.contentImageUrl = undefined;
-    }
-  }
-  
-  return processedParams;
+  console.log('✅ Images already in base64 format from edge function, no preprocessing needed');
+  return params;
 };
 
 /**

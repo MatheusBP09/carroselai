@@ -30,6 +30,17 @@ class ImageDownloadService {
       return { success: false, error: 'No image URL provided', method: 'failed' };
     }
 
+    // If it's already a data URL (base64), return it directly
+    if (imageUrl.startsWith('data:image/')) {
+      console.log('Image is already base64, skipping download');
+      return {
+        success: true,
+        localUrl: imageUrl,
+        dataUrl: imageUrl,
+        method: 'fetch'
+      };
+    }
+
     // Check cache first
     const cached = this.getFromCache(imageUrl);
     if (cached) {
