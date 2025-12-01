@@ -8,47 +8,47 @@ Inspirado no Instagram com gradientes modernos e profissionais
 
 @layer base {
   :root {
-    --background: 207 15% 25%;
-    --foreground: 0 0% 98%;
+    --background: 200 14% 14%;
+    --foreground: 0 0% 95%;
 
-    --card: 207 15% 28%;
-    --card-foreground: 0 0% 98%;
+    --card: 200 14% 18%;
+    --card-foreground: 0 0% 95%;
 
-    --popover: 207 15% 28%;
-    --popover-foreground: 0 0% 98%;
+    --popover: 200 14% 18%;
+    --popover-foreground: 0 0% 95%;
 
-    /* TUTORS terracota forte */
-    --primary: 15 65% 55%;
+    /* Cor de destaque terracota */
+    --primary: 10 33% 46%;
     --primary-foreground: 0 0% 100%;
     
-    /* Brand colors - terracota vibrante */
-    --instagram-start: 15 65% 55%;
-    --instagram-middle: 18 70% 58%;
-    --instagram-end: 20 75% 60%;
+    /* Brand colors - terracota */
+    --instagram-start: 10 33% 46%;
+    --instagram-middle: 12 35% 48%;
+    --instagram-end: 14 37% 50%;
     
     /* Twitter blue for verified badge */
     --twitter-blue: 203 89% 53%;
     --twitter-blue-foreground: 0 0% 100%;
     
-    /* Accent terracota forte */
-    --accent-blue: 15 65% 55%;
+    /* Accent terracota */
+    --accent-blue: 10 33% 46%;
     --accent-blue-foreground: 0 0% 100%;
 
-    --secondary: 207 15% 32%;
-    --secondary-foreground: 0 0% 98%;
+    --secondary: 200 14% 22%;
+    --secondary-foreground: 0 0% 95%;
 
-    --muted: 207 15% 35%;
-    --muted-foreground: 0 0% 80%;
+    --muted: 200 14% 25%;
+    --muted-foreground: 0 0% 70%;
 
-    --accent: 207 15% 32%;
-    --accent-foreground: 0 0% 98%;
+    --accent: 200 14% 22%;
+    --accent-foreground: 0 0% 95%;
 
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 207 15% 35%;
-    --input: 207 15% 32%;
-    --ring: 15 65% 55%;
+    --border: 200 14% 25%;
+    --input: 200 14% 22%;
+    --ring: 10 33% 46%;
 
     --radius: 0.75rem;
     
@@ -60,26 +60,26 @@ Inspirado no Instagram com gradientes modernos e profissionais
     
     /* Gradients */
     --gradient-instagram: linear-gradient(135deg, hsl(var(--instagram-start)), hsl(var(--instagram-middle)), hsl(var(--instagram-end)));
-    --gradient-subtle: linear-gradient(180deg, hsl(207 15% 28%), hsl(207 15% 25%));
-    --gradient-card: linear-gradient(145deg, hsl(207 15% 28%), hsl(207 15% 32%));
+    --gradient-subtle: linear-gradient(180deg, hsl(200 14% 18%), hsl(200 14% 14%));
+    --gradient-card: linear-gradient(145deg, hsl(200 14% 18%), hsl(200 14% 22%));
     
     /* Shadows */
     --shadow-instagram: 0 10px 40px -10px hsl(var(--instagram-start) / 0.3);
-    --shadow-card: 0 4px 20px -2px hsl(207 15% 15% / 0.3);
+    --shadow-card: 0 4px 20px -2px hsl(200 14% 10% / 0.3);
     --shadow-button: 0 2px 10px -2px hsl(var(--primary) / 0.3);
     
     /* Transitions */
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
 
-    --sidebar-background: 207 15% 25%;
-    --sidebar-foreground: 0 0% 98%;
-    --sidebar-primary: 15 65% 55%;
+    --sidebar-background: 200 14% 14%;
+    --sidebar-foreground: 0 0% 95%;
+    --sidebar-primary: 10 33% 46%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 207 15% 32%;
-    --sidebar-accent-foreground: 0 0% 98%;
-    --sidebar-border: 207 15% 35%;
-    --sidebar-ring: 15 65% 55%;
+    --sidebar-accent: 200 14% 22%;
+    --sidebar-accent-foreground: 0 0% 95%;
+    --sidebar-border: 200 14% 25%;
+    --sidebar-ring: 10 33% 46%;
   }
 
   .dark {
