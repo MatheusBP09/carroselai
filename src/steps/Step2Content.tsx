@@ -1,12 +1,12 @@
 import { useState, useRef } from 'react';
-import { ArrowRight, ArrowLeft, Upload, FileText, Trash2, Sliders, Target, Megaphone, PenTool, Zap } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Upload, FileText, Trash2, Sliders, Target, Megaphone, PenTool, Zap, Image } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Input } from '@/components/ui/input';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
-import { StepProps, ContentType, ContentFormat, CallToAction, CopywritingFramework } from '../types/carousel';
+import { StepProps, ContentType, ContentFormat, CallToAction, CopywritingFramework, ImageStyle } from '../types/carousel';
 import { toast } from 'sonner';
 
 export const Step2Content = ({ data, onNext, onBack }: StepProps) => {
@@ -17,6 +17,8 @@ export const Step2Content = ({ data, onNext, onBack }: StepProps) => {
   const [callToAction, setCallToAction] = useState<CallToAction>(data.callToAction || 'follow');
   const [customCTA, setCustomCTA] = useState(data.customCTA || '');
   const [copywritingFramework, setCopywritingFramework] = useState<CopywritingFramework>(data.copywritingFramework || 'aida');
+  const [imageStyle, setImageStyle] = useState<ImageStyle>(data.imageStyle || 'photography');
+  const [customImagePrompt, setCustomImagePrompt] = useState(data.customImagePrompt || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -60,7 +62,9 @@ export const Step2Content = ({ data, onNext, onBack }: StepProps) => {
       contentFormat, 
       callToAction, 
       customCTA: callToAction === 'custom' ? customCTA : undefined,
-      copywritingFramework 
+      copywritingFramework,
+      imageStyle,
+      customImagePrompt: customImagePrompt.trim() || undefined
     });
   };
 
@@ -110,6 +114,16 @@ export const Step2Content = ({ data, onNext, onBack }: StepProps) => {
     { value: 'dm', label: 'Enviar DM' },
     { value: 'tag_friends', label: 'Marcar amigos' },
     { value: 'custom', label: 'Personalizado' }
+  ];
+
+  const imageStyleOptions = [
+    { value: 'photography', label: 'Fotografia Profissional', icon: '📷', description: 'Imagens realistas e de alta qualidade' },
+    { value: 'illustration', label: 'Ilustração Digital', icon: '🎨', description: 'Desenhos digitais modernos e vibrantes' },
+    { value: 'minimalist', label: 'Minimalista', icon: '◻️', description: 'Design limpo e simples' },
+    { value: 'infographic', label: 'Infográfico', icon: '📊', description: 'Ícones e visualização de dados' },
+    { value: 'abstract_3d', label: 'Arte 3D Abstrata', icon: '🔮', description: 'Formas geométricas e gradientes' },
+    { value: 'watercolor', label: 'Aquarela', icon: '🎭', description: 'Estilo artístico pintado' },
+    { value: 'custom', label: 'Totalmente Personalizado', icon: '✏️', description: 'Use suas próprias instruções' }
   ];
 
   return (
@@ -265,6 +279,52 @@ export const Step2Content = ({ data, onNext, onBack }: StepProps) => {
             <p className="text-xs text-muted-foreground">
               Recomendado: 6-10 slides para máximo engagement
             </p>
+          </div>
+
+          {/* Image Style Section */}
+          <div className="space-y-4 p-4 bg-muted/30 rounded-lg border border-border/50">
+            <div className="space-y-2">
+              <Label htmlFor="imageStyle" className="text-sm font-medium flex items-center gap-2">
+                <Image className="w-4 h-4" />
+                Estilo das Imagens
+              </Label>
+              <Select value={imageStyle} onValueChange={(value: ImageStyle) => setImageStyle(value)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {imageStyleOptions.map((option) => (
+                    <SelectItem key={option.value} value={option.value}>
+                      <div className="flex items-center gap-2">
+                        <span>{option.icon}</span>
+                        <div>
+                          <div className="font-medium">{option.label}</div>
+                          <div className="text-xs text-muted-foreground">{option.description}</div>
+                        </div>
+                      </div>
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customImagePrompt" className="text-sm font-medium flex items-center gap-2">
+                ✨ Instruções Adicionais
+                <span className="text-xs font-normal text-muted-foreground">(opcional)</span>
+              </Label>
+              <Textarea
+                id="customImagePrompt"
+                placeholder="Ex: Cores vibrantes, fundo degradê azul e roxo, pessoas sorrindo, ambiente corporativo..."
+                value={customImagePrompt}
+                onChange={(e) => setCustomImagePrompt(e.target.value)}
+                className="min-h-[80px] resize-none"
+                maxLength={500}
+              />
+              <p className="text-xs text-muted-foreground">
+                💡 O estilo base será combinado com suas instruções para gerar imagens personalizadas
+              </p>
+            </div>
           </div>
 
           {/* Content Input */}

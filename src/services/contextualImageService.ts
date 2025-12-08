@@ -3,6 +3,8 @@
  * Creates relevant images based on slide content using intelligent prompt generation
  */
 
+import { ImageStyle } from '@/types/carousel';
+
 interface ContentAnalysis {
   themes: string[];
   sentiment: 'positive' | 'negative' | 'neutral';
@@ -16,6 +18,8 @@ interface ContextualImageOptions {
   totalSlides: number;
   username: string;
   slidePosition: 'intro' | 'development' | 'conclusion';
+  imageStyle?: ImageStyle;
+  customPrompt?: string;
 }
 
 /**
@@ -104,6 +108,17 @@ export const analyzeSlideContent = (text: string): ContentAnalysis => {
   };
 };
 
+// Style prompts for predefined image styles
+const stylePrompts: Record<ImageStyle, string> = {
+  photography: 'Professional photography, high resolution, realistic lighting, cinematic composition, natural colors',
+  illustration: 'Digital illustration, vibrant colors, modern design, clean vector lines, artistic style',
+  minimalist: 'Minimalist design, white space, simple geometric shapes, subtle colors, clean aesthetic',
+  infographic: 'Infographic style, icons, data visualization, modern flat design, structured layout',
+  abstract_3d: '3D abstract art, geometric shapes, gradient colors, modern render, glass morphism, futuristic',
+  watercolor: 'Watercolor painting style, soft brushstrokes, artistic, hand-painted aesthetic, organic textures',
+  custom: ''
+};
+
 /**
  * Generate contextual image prompt based on content analysis
  */
@@ -112,12 +127,24 @@ export const generateContextualImagePrompt = (
   options: ContextualImageOptions
 ): string => {
   const analysis = analyzeSlideContent(text);
-  const { slideIndex, totalSlides, slidePosition } = options;
+  const { slideIndex, totalSlides, slidePosition, imageStyle, customPrompt } = options;
   
   console.log('🎨 Content analysis for slide', slideIndex + 1, ':', analysis);
   
-  // Base style and quality settings
-  const baseStyle = "Ultra high resolution, professional digital illustration, clean modern design, vibrant colors, high contrast, detailed";
+  // Get base style from user selection or default
+  let baseStyle = stylePrompts[imageStyle || 'photography'];
+  
+  // If custom style or user has additional instructions, incorporate them
+  if (customPrompt && customPrompt.trim()) {
+    baseStyle = baseStyle 
+      ? `${baseStyle}. ${customPrompt.trim()}` 
+      : customPrompt.trim();
+  }
+  
+  // Fallback if no style defined
+  if (!baseStyle) {
+    baseStyle = "Ultra high resolution, professional digital illustration, clean modern design, vibrant colors, high contrast, detailed";
+  }
   
   // Position-specific elements
   let positionElements = "";
@@ -235,7 +262,9 @@ export const generateContextualImage = async (
   text: string,
   slideIndex: number,
   totalSlides: number,
-  username: string
+  username: string,
+  imageStyle?: ImageStyle,
+  customPrompt?: string
 ): Promise<string> => {
   const slidePosition = getSlidePosition(slideIndex, totalSlides);
   
@@ -243,12 +272,14 @@ export const generateContextualImage = async (
     slideIndex,
     totalSlides,
     username,
-    slidePosition
+    slidePosition,
+    imageStyle,
+    customPrompt
   };
   
   const prompt = generateContextualImagePrompt(text, options);
   
-  console.log(`🎨 Generating contextual image for slide ${slideIndex + 1}/${totalSlides} (${slidePosition})`);
+  console.log(`🎨 Generating contextual image for slide ${slideIndex + 1}/${totalSlides} (${slidePosition}) with style: ${imageStyle || 'photography'}`);
   
   // Return the prompt - the actual image generation will be handled by the image generation service
   return prompt;
