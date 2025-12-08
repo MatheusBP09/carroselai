@@ -138,7 +138,6 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
       {/* Tweet Text - Aumentado para text-4xl com leading-snug */}
       <div 
         className={`text-black text-4xl leading-snug font-normal ${hasImage ? '' : 'flex-1 flex items-center'}`}
-        style={{ flexGrow: hasImage ? 1 : undefined }}
       >
         {hasImage ? (
           <div>{text}</div>
@@ -147,9 +146,9 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
         )}
       </div>
 
-      {/* Content Image - Menor e posicionado embaixo */}
+      {/* Content Image - Posicionado logo após o texto */}
       {contentImageUrl && (
-        <div className="rounded-2xl overflow-hidden bg-muted mt-auto">
+        <div className="rounded-2xl overflow-hidden bg-muted mt-8">
           <img 
             src={contentImageUrl} 
             alt="Tweet content" 
