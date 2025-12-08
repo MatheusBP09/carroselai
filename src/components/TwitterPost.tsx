@@ -1,5 +1,4 @@
 import React from 'react';
-import { Card } from './ui/card';
 
 interface TwitterPostProps {
   username: string;
@@ -47,9 +46,9 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
       }}
     >
       {/* Twitter Post Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '16px', marginBottom: '32px' }}>
-        {/* Profile Image */}
-        <div className="w-12 h-12 rounded-full overflow-hidden bg-muted flex-shrink-0">
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', marginBottom: '32px' }}>
+        {/* Profile Image - Aumentado para 64px */}
+        <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex-shrink-0">
           {profileImageUrl ? (
             <img 
               src={profileImageUrl} 
@@ -61,12 +60,11 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
               const container = target.parentElement;
               if (container) {
                 container.innerHTML = `
-                  <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #1d9bf0, #0c7abf); display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 18px; font-family: Inter, system-ui, sans-serif;">
+                  <div style="width: 100%; height: 100%; background: linear-gradient(135deg, #1d9bf0, #0c7abf); display: flex; align-items: center; justify-content: center; border-radius: 50%; color: white; font-weight: bold; font-size: 24px; font-family: Inter, system-ui, sans-serif;">
                     ${username.substring(0, 2).toUpperCase()}
                   </div>
                 `;
               }
-              // Force re-render to ensure fallback is visible
               setTimeout(() => {
                 console.log('Profile image fallback rendered successfully');
               }, 50);
@@ -87,7 +85,7 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
               borderRadius: '50%',
               color: 'white',
               fontWeight: 'bold',
-              fontSize: '18px',
+              fontSize: '24px',
               fontFamily: 'Inter, system-ui, sans-serif'
             }}>
               {username.substring(0, 2).toUpperCase()}
@@ -97,12 +95,12 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
         
         {/* User Info */}
         <div style={{ flex: '1', minWidth: '0' }}>
-          {/* Username with verified badge */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', minWidth: '0' }}>
+          {/* Username with verified badge - Aumentado para 28px */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px', minWidth: '0' }}>
             <span style={{ 
               fontWeight: 'bold', 
               color: '#000000', 
-              fontSize: '22px', 
+              fontSize: '28px', 
               minWidth: '0',
               wordWrap: 'break-word',
               overflow: 'visible'
@@ -112,8 +110,8 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
             {isVerified && (
               <svg 
                 style={{ 
-                  width: '20px', 
-                  height: '20px', 
+                  width: '24px', 
+                  height: '24px', 
                   color: '#1d9bf0', 
                   flexShrink: '0'
                 }}
@@ -124,11 +122,11 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
               </svg>
             )}
           </div>
-          {/* Handle on separate line */}
-          <div style={{ marginTop: '-8px' }}>
+          {/* Handle on separate line - Aumentado para 22px */}
+          <div style={{ marginTop: '-4px' }}>
             <span style={{ 
               color: '#6b7280', 
-              fontSize: '18px', 
+              fontSize: '22px', 
               fontWeight: 'normal'
             }}>
               @{handle.replace(/^@+/, '')}
@@ -137,8 +135,11 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
         </div>
       </div>
 
-      {/* Tweet Text */}
-      <div className={`text-black text-3xl leading-relaxed font-normal ${hasImage ? 'mb-12' : 'flex-1 flex items-center'}`}>
+      {/* Tweet Text - Aumentado para text-4xl com leading-snug */}
+      <div 
+        className={`text-black text-4xl leading-snug font-normal ${hasImage ? '' : 'flex-1 flex items-center'}`}
+        style={{ flexGrow: hasImage ? 1 : undefined }}
+      >
         {hasImage ? (
           <div>{text}</div>
         ) : (
@@ -146,13 +147,13 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
         )}
       </div>
 
-      {/* Content Image */}
+      {/* Content Image - Menor e posicionado embaixo */}
       {contentImageUrl && (
-        <div className="rounded-2xl overflow-hidden bg-muted">
+        <div className="rounded-2xl overflow-hidden bg-muted mt-auto">
           <img 
             src={contentImageUrl} 
             alt="Tweet content" 
-            className="w-full max-h-[700px] object-cover"
+            className="w-full max-h-[400px] object-cover"
             onError={(e) => {
               console.error('Content image failed to load, showing elegant placeholder');
               const target = e.target as HTMLImageElement;
@@ -161,7 +162,7 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
                 container.innerHTML = `
                   <div style="
                     width: 100%; 
-                    height: 400px; 
+                    height: 300px; 
                     background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 30%, #cbd5e1 70%, #94a3b8 100%); 
                     display: flex; 
                     align-items: center; 
@@ -201,7 +202,6 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
                   </div>
                 `;
               }
-              // Show error message to user and force re-render to ensure fallback is visible
               console.log('⚠️ DOWNLOAD WARNING: Content image could not be loaded, using fallback placeholder');
               setTimeout(() => {
                 console.log('Content image fallback rendered successfully');

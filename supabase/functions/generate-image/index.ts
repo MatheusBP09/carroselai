@@ -13,16 +13,16 @@ serve(async (req) => {
   }
 
   try {
-    const openAIApiKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIApiKey) {
-      console.error('OPENAI_API_KEY not found in environment variables');
-      return new Response(JSON.stringify({ error: 'OpenAI API key not configured' }), {
+    const NANO_BANANA_KEY = Deno.env.get('NANO_BANANA');
+    if (!NANO_BANANA_KEY) {
+      console.error('NANO_BANANA key not found in environment variables');
+      return new Response(JSON.stringify({ error: 'Nano Banana API key not configured' }), {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    const { prompt, size = "1024x1024" } = await req.json();
+    const { prompt } = await req.json();
 
     if (!prompt) {
       return new Response(JSON.stringify({ error: 'Prompt is required' }), {
@@ -31,57 +31,50 @@ serve(async (req) => {
       });
     }
 
-    console.log('Generating image with prompt:', prompt);
+    console.log('🎨 Generating image with Nano Banana (Gemini Preview):', prompt);
 
-    // Validate and normalize size parameter to OpenAI supported values
-    const validSizes = ['1024x1024', '1024x1792', '1792x1024'];
-    let normalizedSize = size;
-    
-    // Convert common invalid sizes to valid ones
-    if (size === '1080x1080' || size === '1080x1080') {
-      normalizedSize = '1024x1024';
-    } else if (size === '1080x1920' || size === '1024x1920') {
-      normalizedSize = '1024x1792';
-    } else if (!validSizes.includes(size)) {
-      normalizedSize = '1024x1024'; // Default fallback
-    }
-
-    console.log('Using normalized size:', normalizedSize);
-
-    const response = await fetch('https://api.openai.com/v1/images/generations', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'dall-e-3',
-        prompt: prompt,
-        n: 1,
-        size: normalizedSize,
-        quality: 'standard',
-        // Request base64 directly to avoid any CORS or download issues on the client
-        response_format: 'b64_json'
-      }),
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-preview-image-generation:generateContent?key=${NANO_BANANA_KEY}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{ 
+            parts: [{ text: prompt }] 
+          }],
+          generationConfig: {
+            responseModalities: ["TEXT", "IMAGE"]
+          }
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      throw new Error(`OpenAI API error: ${response.status}`);
+      console.error('Gemini API error:', response.status, errorText);
+      throw new Error(`Gemini API error: ${response.status}`);
     }
 
     const data = await response.json();
-    const base64 = data?.data?.[0]?.b64_json as string | undefined;
+    console.log('Gemini response received');
 
-    if (!base64) {
-      console.error('OpenAI response did not include b64_json field', data);
-      throw new Error('Invalid image response from OpenAI');
+    // Extract image from Gemini response
+    const imagePart = data.candidates?.[0]?.content?.parts?.find(
+      (part: any) => part.inlineData
+    );
+
+    if (!imagePart?.inlineData?.data) {
+      console.error('Gemini response did not include image data', JSON.stringify(data, null, 2));
+      throw new Error('Invalid image response from Gemini');
     }
 
-    const dataUrl = `data:image/png;base64,${base64}`;
+    const base64 = imagePart.inlineData.data;
+    const mimeType = imagePart.inlineData.mimeType || 'image/png';
+    const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    console.log('Image generated successfully as base64');
+    console.log('✅ Image generated successfully with Nano Banana');
 
     return new Response(JSON.stringify({ 
       imageUrl: dataUrl,
