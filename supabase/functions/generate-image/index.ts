@@ -31,21 +31,21 @@ serve(async (req) => {
       });
     }
 
-    console.log('🎨 Generating image with Imagen 4.0:', prompt);
+    console.log('🎨 Generating image with Gemini 2.5 Flash Image:', prompt);
 
-    // Use Imagen 4.0 model with :predict endpoint
     const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/imagen-4.0-generate-001:predict?key=${NANO_BANANA_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${NANO_BANANA_KEY}`,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          instances: [{ prompt }],
-          parameters: {
-            sampleCount: 1,
-            aspectRatio: "1:1"
+          contents: [{ 
+            parts: [{ text: prompt }] 
+          }],
+          generationConfig: {
+            responseModalities: ["TEXT", "IMAGE"]
           }
         }),
       }
@@ -53,24 +53,28 @@ serve(async (req) => {
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Imagen API error:', response.status, errorText);
-      throw new Error(`Imagen API error: ${response.status}`);
+      console.error('Gemini API error:', response.status, errorText);
+      throw new Error(`Gemini API error: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log('Imagen response received');
+    console.log('Gemini response received');
 
-    // Extract image from Imagen response
-    const base64 = data.predictions?.[0]?.bytesBase64Encoded;
+    // Extract image from Gemini response
+    const imagePart = data.candidates?.[0]?.content?.parts?.find(
+      (part: any) => part.inlineData
+    );
 
-    if (!base64) {
-      console.error('Imagen response did not include image data', JSON.stringify(data, null, 2));
-      throw new Error('Invalid image response from Imagen');
+    if (!imagePart?.inlineData?.data) {
+      console.error('Gemini response did not include image data', JSON.stringify(data, null, 2));
+      throw new Error('Invalid image response from Gemini');
     }
 
-    const dataUrl = `data:image/png;base64,${base64}`;
+    const base64 = imagePart.inlineData.data;
+    const mimeType = imagePart.inlineData.mimeType || 'image/png';
+    const dataUrl = `data:${mimeType};base64,${base64}`;
 
-    console.log('✅ Image generated successfully with Imagen 4.0');
+    console.log('✅ Image generated successfully with Gemini 2.5 Flash Image');
 
     return new Response(JSON.stringify({ 
       imageUrl: dataUrl,
