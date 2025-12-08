@@ -53,6 +53,41 @@ export type Database = {
         }
         Relationships: []
       }
+      bu_managers: {
+        Row: {
+          assigned_at: string | null
+          assigned_by: string | null
+          business_unit_id: string
+          id: string
+          is_active: boolean | null
+          user_id: string
+        }
+        Insert: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          business_unit_id: string
+          id?: string
+          is_active?: boolean | null
+          user_id: string
+        }
+        Update: {
+          assigned_at?: string | null
+          assigned_by?: string | null
+          business_unit_id?: string
+          id?: string
+          is_active?: boolean | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bu_managers_bu_fkey"
+            columns: ["business_unit_id"]
+            isOneToOne: false
+            referencedRelation: "teams_business_units"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       business_unit_agents: {
         Row: {
           bu_id: string
@@ -637,6 +672,54 @@ export type Database = {
           created_at?: string | null
           id?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      importacao_produtos_log: {
+        Row: {
+          acao: string
+          bu_definida: string | null
+          campo_alterado: string | null
+          cliente_cpf: string | null
+          cliente_nome: string | null
+          created_at: string | null
+          created_by: string | null
+          empresa: string | null
+          id: string
+          importacao_id: string
+          match_tipo: string | null
+          valor_anterior: string | null
+          valor_novo: string | null
+        }
+        Insert: {
+          acao: string
+          bu_definida?: string | null
+          campo_alterado?: string | null
+          cliente_cpf?: string | null
+          cliente_nome?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          empresa?: string | null
+          id?: string
+          importacao_id: string
+          match_tipo?: string | null
+          valor_anterior?: string | null
+          valor_novo?: string | null
+        }
+        Update: {
+          acao?: string
+          bu_definida?: string | null
+          campo_alterado?: string | null
+          cliente_cpf?: string | null
+          cliente_nome?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          empresa?: string | null
+          id?: string
+          importacao_id?: string
+          match_tipo?: string | null
+          valor_anterior?: string | null
+          valor_novo?: string | null
         }
         Relationships: []
       }
@@ -1354,6 +1437,8 @@ export type Database = {
           business_unit: string
           created_at: string
           created_by: string | null
+          created_by_role: string | null
+          created_by_user_id: string | null
           description: string | null
           evaluation_criteria: Json | null
           id: string
@@ -1364,12 +1449,15 @@ export type Database = {
           prompt_instructions: string
           required_topics: Json | null
           updated_at: string
+          visibility: string | null
         }
         Insert: {
           best_practices?: Json | null
           business_unit: string
           created_at?: string
           created_by?: string | null
+          created_by_role?: string | null
+          created_by_user_id?: string | null
           description?: string | null
           evaluation_criteria?: Json | null
           id?: string
@@ -1380,12 +1468,15 @@ export type Database = {
           prompt_instructions: string
           required_topics?: Json | null
           updated_at?: string
+          visibility?: string | null
         }
         Update: {
           best_practices?: Json | null
           business_unit?: string
           created_at?: string
           created_by?: string | null
+          created_by_role?: string | null
+          created_by_user_id?: string | null
           description?: string | null
           evaluation_criteria?: Json | null
           id?: string
@@ -1396,12 +1487,16 @@ export type Database = {
           prompt_instructions?: string
           required_topics?: Json | null
           updated_at?: string
+          visibility?: string | null
         }
         Relationships: []
       }
       profiles: {
         Row: {
           avatar_url: string | null
+          azure_ad_email: string | null
+          azure_ad_tenant_id: string | null
+          azure_ad_user_id: string | null
           business_unit: string | null
           created_at: string
           department: string | null
@@ -1417,6 +1512,9 @@ export type Database = {
         }
         Insert: {
           avatar_url?: string | null
+          azure_ad_email?: string | null
+          azure_ad_tenant_id?: string | null
+          azure_ad_user_id?: string | null
           business_unit?: string | null
           created_at?: string
           department?: string | null
@@ -1432,6 +1530,9 @@ export type Database = {
         }
         Update: {
           avatar_url?: string | null
+          azure_ad_email?: string | null
+          azure_ad_tenant_id?: string | null
+          azure_ad_user_id?: string | null
           business_unit?: string | null
           created_at?: string
           department?: string | null
@@ -2308,6 +2409,7 @@ export type Database = {
           title: string
           total_participant_count: number | null
           updated_at: string | null
+          user_id: string | null
         }
         Insert: {
           business_unit_id?: string | null
@@ -2327,6 +2429,7 @@ export type Database = {
           title: string
           total_participant_count?: number | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Update: {
           business_unit_id?: string | null
@@ -2346,6 +2449,7 @@ export type Database = {
           title?: string
           total_participant_count?: number | null
           updated_at?: string | null
+          user_id?: string | null
         }
         Relationships: [
           {
@@ -2478,6 +2582,8 @@ export type Database = {
       }
       teams_users: {
         Row: {
+          auth_user_id: string | null
+          azure_ad_user_id: string | null
           business_unit_id: string | null
           created_at: string | null
           email: string
@@ -2490,6 +2596,8 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          auth_user_id?: string | null
+          azure_ad_user_id?: string | null
           business_unit_id?: string | null
           created_at?: string | null
           email: string
@@ -2502,6 +2610,8 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          auth_user_id?: string | null
+          azure_ad_user_id?: string | null
           business_unit_id?: string | null
           created_at?: string | null
           email?: string
@@ -3053,6 +3163,7 @@ export type Database = {
           responsavel: string
         }[]
       }
+      get_managed_bu_ids: { Args: never; Returns: string[] }
       get_opportunity_matches_paginated:
         | {
             Args: {
@@ -3179,6 +3290,7 @@ export type Database = {
           workflow_score: number
         }[]
       }
+      get_user_role: { Args: never; Returns: string }
       get_workflow_leaderboard: {
         Args: never
         Returns: {
@@ -3195,10 +3307,12 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_admin: { Args: never; Returns: boolean }
       is_gestor_of: {
         Args: { _responsavel: string; _user_id: string }
         Returns: boolean
       }
+      is_manager_of_bu: { Args: { bu_id: string }; Returns: boolean }
       is_own_responsavel_mapping: {
         Args: { _nome_responsavel: string; _user_id: string }
         Returns: boolean
