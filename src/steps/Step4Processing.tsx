@@ -188,11 +188,14 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
         console.log(`🎨 Generating contextual prompt for slide ${i + 1}/${totalSlides}`);
         
         // Use contextual image service for intelligent, content-aware prompts
+        // Pass user-selected image style and custom prompt
         const contextualPrompt = await generateContextualImage(
           slide.text, 
           i, 
           totalSlides, 
-          data.username
+          data.username,
+          data.imageStyle,
+          data.customImagePrompt
         );
         
         return {

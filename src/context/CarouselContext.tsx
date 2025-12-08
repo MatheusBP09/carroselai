@@ -24,6 +24,8 @@ const initialData: CarouselData = {
   contentFormat: 'feed',
   callToAction: 'follow',
   copywritingFramework: 'aida',
+  imageStyle: 'photography',
+  customImagePrompt: '',
   profileImage: undefined,
   slides: undefined,
   caption: undefined,
