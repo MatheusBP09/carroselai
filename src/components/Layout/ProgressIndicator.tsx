@@ -21,7 +21,7 @@ export const ProgressIndicator = ({ currentStep, totalSteps, stepLabels, onStepC
         />
 
         {/* Steps Container */}
-        <div className="grid gap-4 sm:gap-0" style={{ gridTemplateColumns: `repeat(${stepLabels.length}, 1fr)` }}>
+        <div className="hidden sm:grid gap-0" style={{ gridTemplateColumns: `repeat(${stepLabels.length}, 1fr)` }}>
           {stepLabels.map((label, index) => {
             const stepNumber = index + 1;
             const isCompleted = stepNumber < currentStep;
@@ -75,16 +75,21 @@ export const ProgressIndicator = ({ currentStep, totalSteps, stepLabels, onStepC
         </div>
 
         {/* Mobile Progress Bar */}
-        <div className="mt-6 sm:hidden">
-          <div className="w-full bg-muted/30 rounded-full h-2">
+        <div className="sm:hidden">
+          <div className="text-center mb-3">
+            <span className="text-sm font-semibold text-foreground">
+              {stepLabels[currentStep - 1]}
+            </span>
+          </div>
+          <div className="w-full bg-muted/30 rounded-full h-2.5">
             <div 
-              className="bg-gradient-to-r from-success to-instagram-middle h-2 rounded-full transition-all duration-500 ease-out"
+              className="bg-gradient-to-r from-success to-instagram-middle h-2.5 rounded-full transition-all duration-500 ease-out"
               style={{ width: `${(currentStep / totalSteps) * 100}%` }}
             />
           </div>
           <div className="flex justify-between mt-2 text-xs text-muted-foreground">
-            <span>Etapa {currentStep}</span>
-            <span>{totalSteps} etapas</span>
+            <span>Etapa {currentStep} de {totalSteps}</span>
+            <span>{Math.round((currentStep / totalSteps) * 100)}%</span>
           </div>
         </div>
       </div>
