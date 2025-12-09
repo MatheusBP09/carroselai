@@ -214,12 +214,12 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
             </EnhancedButton>
           </div>
 
-          <div className="pt-4 flex gap-4">
+          <div className="pt-4 flex flex-col-reverse sm:flex-row gap-3 sm:gap-4">
             <EnhancedButton
               variant="outline"
               size="xl"
               onClick={onBack}
-              className="flex-1"
+              className="w-full sm:flex-1"
             >
               <ArrowLeft className="w-5 h-5" />
               Voltar
@@ -230,7 +230,7 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
               size="xl"
               onClick={handleSubmit}
               disabled={!isFormValid()}
-              className="flex-1"
+              className="w-full sm:flex-1"
             >
               Próximo Passo
               <ArrowRight className="w-5 h-5" />
