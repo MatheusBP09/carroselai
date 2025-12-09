@@ -160,15 +160,15 @@ const Step5Review = ({
         </p>
 
         <Tabs defaultValue="slides" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="slides">Posts ({slides.length})</TabsTrigger>
-            <TabsTrigger value="caption">Legenda</TabsTrigger>
-            <TabsTrigger value="hashtags">Hashtags ({hashtags.length})</TabsTrigger>
-            <TabsTrigger value="tests">Testes</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-2 sm:grid-cols-4 h-auto gap-1">
+            <TabsTrigger value="slides" className="text-xs sm:text-sm py-2">Posts ({slides.length})</TabsTrigger>
+            <TabsTrigger value="caption" className="text-xs sm:text-sm py-2">Legenda</TabsTrigger>
+            <TabsTrigger value="hashtags" className="text-xs sm:text-sm py-2">Hashtags ({hashtags.length})</TabsTrigger>
+            <TabsTrigger value="tests" className="text-xs sm:text-sm py-2">Testes</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="slides" className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <TabsContent value="slides" className="space-y-4 mt-4">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
               {slides.map((slide, index) => <Card key={slide.id} className="p-4">
                   <div className="flex items-center justify-between mb-3">
                     <div className="flex items-center gap-2">
@@ -292,11 +292,11 @@ const Step5Review = ({
         </Tabs>
       </Card>
 
-      <div className="flex justify-between">
-        <Button variant="outline" onClick={onBack}>
+      <div className="flex flex-col-reverse sm:flex-row justify-between gap-3 sm:gap-4">
+        <Button variant="outline" onClick={onBack} className="w-full sm:w-auto">
           Voltar
         </Button>
-        <Button onClick={handleNext}>
+        <Button onClick={handleNext} className="w-full sm:w-auto">
           Finalizar Carrossel
         </Button>
       </div>

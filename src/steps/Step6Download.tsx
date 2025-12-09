@@ -190,18 +190,18 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
               </div>
             </div>
             
-            <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="grid grid-cols-3 gap-2 sm:gap-4 text-center">
               <div>
-                <div className="text-2xl font-bold text-primary">{data.slides?.length || 0}</div>
-                <div className="text-sm text-muted-foreground">Tweets</div>
+                <div className="text-xl sm:text-2xl font-bold text-primary">{data.slides?.length || 0}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Tweets</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-accent">{data.caption?.length || 0}</div>
-                <div className="text-sm text-muted-foreground">Caracteres na legenda</div>
+                <div className="text-xl sm:text-2xl font-bold text-accent">{data.caption?.length || 0}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Caracteres</div>
               </div>
               <div>
-                <div className="text-2xl font-bold text-secondary">{data.hashtags?.length || 0}</div>
-                <div className="text-sm text-muted-foreground">Hashtags</div>
+                <div className="text-xl sm:text-2xl font-bold text-secondary">{data.hashtags?.length || 0}</div>
+                <div className="text-xs sm:text-sm text-muted-foreground">Hashtags</div>
               </div>
             </div>
           </div>
@@ -236,7 +236,7 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
 
           {/* Ações */}
           <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-3 sm:gap-4">
               <EnhancedButton
                 variant="instagram"
                 size="xl"
@@ -280,7 +280,7 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
             <p className="text-sm text-blue-800 dark:text-blue-200 mb-3">
               Teste cada slide individualmente para verificar se as imagens e renderização estão funcionando corretamente.
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4">
               {data.slides?.map((slide, index) => (
                 <EnhancedButton
                   key={index}
@@ -374,12 +374,12 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
             </ul>
           </div>
 
-          <div className="flex gap-4 pt-4">
+          <div className="pt-4">
             <EnhancedButton
               variant="outline"
               size="xl"
               onClick={onBack}
-              className="flex-1"
+              className="w-full"
             >
               <ArrowLeft className="w-5 h-5" />
               Voltar para Revisão

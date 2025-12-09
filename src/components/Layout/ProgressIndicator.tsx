@@ -34,7 +34,7 @@ export const ProgressIndicator = ({ currentStep, totalSteps, stepLabels, onStepC
                 {/* Step Circle */}
                 <div
                   className={`
-                    w-12 h-12 rounded-full flex items-center justify-center text-sm font-bold
+                    w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center text-xs sm:text-sm font-bold
                     transition-all duration-300 ease-out transform border-2
                     ${isCompleted 
                       ? "bg-success border-success text-success-foreground shadow-lg shadow-success/20 scale-100" 
