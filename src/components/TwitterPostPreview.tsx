@@ -26,11 +26,11 @@ export const TwitterPostPreview: React.FC<TwitterPostPreviewProps> = ({
 }) => {
   const shouldShowImage = hasImage && contentImageUrl;
   return (
-    <Card className="w-full max-w-md bg-background text-foreground border p-4 mx-auto">
+    <Card className="w-full max-w-md bg-background text-foreground border p-3 sm:p-4 mx-auto">
       {/* Twitter Post Header */}
-      <div className="flex items-start space-x-3 mb-3">
+      <div className="flex items-start space-x-2 sm:space-x-3 mb-2 sm:mb-3">
         {/* Profile Image */}
-        <div className="w-8 h-8 rounded-full overflow-hidden bg-muted flex-shrink-0">
+        <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full overflow-hidden bg-muted flex-shrink-0">
           {profileImageUrl ? (
             <img 
               src={profileImageUrl} 
@@ -46,7 +46,7 @@ export const TwitterPostPreview: React.FC<TwitterPostPreviewProps> = ({
         <div className="flex-1 min-w-0">
           {/* Username with verified badge */}
           <div className="flex items-center space-x-1">
-            <span className="font-semibold text-sm truncate">
+            <span className="font-semibold text-xs sm:text-sm truncate">
               {username}
             </span>
             {isVerified && (
@@ -60,8 +60,8 @@ export const TwitterPostPreview: React.FC<TwitterPostPreviewProps> = ({
             )}
           </div>
           {/* Handle on separate line */}
-          <div className="-mt-1.5">
-            <span className="text-muted-foreground text-xs">
+          <div className="-mt-1 sm:-mt-1.5">
+            <span className="text-muted-foreground text-[10px] sm:text-xs">
               @{handle.replace(/^@+/, '')}
             </span>
           </div>
@@ -69,7 +69,7 @@ export const TwitterPostPreview: React.FC<TwitterPostPreviewProps> = ({
       </div>
 
       {/* Tweet Text */}
-      <div className={`text-foreground text-sm leading-relaxed ${shouldShowImage ? 'mb-3 line-clamp-4' : 'mb-0 line-clamp-10'}`}>
+      <div className={`text-foreground text-xs sm:text-sm leading-relaxed ${shouldShowImage ? 'mb-2 sm:mb-3 line-clamp-4' : 'mb-0 line-clamp-10'}`}>
         {text}
       </div>
 
@@ -83,7 +83,7 @@ export const TwitterPostPreview: React.FC<TwitterPostPreviewProps> = ({
           <img 
             src={contentImageUrl} 
             alt="Tweet content" 
-            className="w-full h-32 object-cover"
+            className="w-full h-24 sm:h-32 object-cover"
             style={{
               transform: `scale(${imageScale})`,
               transformOrigin: imagePosition === 'top' ? 'top center' : 
