@@ -4,7 +4,7 @@ export interface NodeToPngOptions {
   width?: number;
   height?: number;
   backgroundColor?: string;
-  pixelRatio?: number; // devicePixelRatio-like scaling
+  pixelRatio?: number;
 }
 
 // Convert a DOM node to a PNG Blob using html-to-image, with html2canvas fallback
@@ -12,12 +12,24 @@ export const nodeToPng = async (
   node: HTMLElement,
   opts: NodeToPngOptions = {}
 ): Promise<Blob> => {
+  // ALWAYS use exact dimensions - never rely on clientWidth/clientHeight
   const {
-    width = node.clientWidth || 1080,
-    height = node.clientHeight || 1350,
+    width = 1080,
+    height = 1350,
     backgroundColor = '#ffffff',
     pixelRatio = 1,
   } = opts;
+
+  // Force exact dimensions on the node BEFORE capture
+  node.style.width = `${width}px`;
+  node.style.height = `${height}px`;
+  node.style.minWidth = `${width}px`;
+  node.style.minHeight = `${height}px`;
+  node.style.maxWidth = `${width}px`;
+  node.style.maxHeight = `${height}px`;
+  node.style.overflow = 'hidden';
+
+  console.log('📐 nodeToPng: Forcing exact dimensions:', { width, height, pixelRatio });
 
   // First attempt: html-to-image
   try {
@@ -25,20 +37,26 @@ export const nodeToPng = async (
       backgroundColor,
       width,
       height,
+      canvasWidth: width,
+      canvasHeight: height,
       pixelRatio,
       cacheBust: true,
-      skipFonts: true, // Skip font embedding to avoid CORS issues
+      skipFonts: true,
       style: {
-        // Ensure consistent sizing and no transforms during capture
         width: `${width}px`,
         height: `${height}px`,
+        minWidth: `${width}px`,
+        minHeight: `${height}px`,
+        maxWidth: `${width}px`,
+        maxHeight: `${height}px`,
         transform: 'none',
+        overflow: 'hidden',
       },
     } as any;
 
     const blob = await toBlob(node, options);
     if (blob && blob.size > 5000) {
-      console.log('✅ html-to-image produced valid PNG blob:', { size: blob.size });
+      console.log('✅ html-to-image produced valid PNG blob:', { size: blob.size, width, height });
       return blob;
     }
     console.warn('⚠️ html-to-image produced a small/invalid blob, falling back', {
@@ -64,6 +82,15 @@ export const nodeToPng = async (
     scrollY: 0,
     windowWidth: width,
     windowHeight: height,
+    onclone: (_clonedDoc: Document, element: HTMLElement) => {
+      element.style.width = `${width}px`;
+      element.style.height = `${height}px`;
+      element.style.minWidth = `${width}px`;
+      element.style.minHeight = `${height}px`;
+      element.style.maxWidth = `${width}px`;
+      element.style.maxHeight = `${height}px`;
+      element.style.overflow = 'hidden';
+    },
   });
 
   const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(b => resolve(b), 'image/png', 1.0));
@@ -73,6 +100,6 @@ export const nodeToPng = async (
     console.warn('⚠️ Fallback blob appears too small; capture may be blank', { size: blob.size });
   }
 
-  console.log('✅ html2canvas fallback produced PNG blob:', { size: blob.size });
+  console.log('✅ html2canvas fallback produced PNG blob:', { size: blob.size, width, height });
   return blob;
 };
