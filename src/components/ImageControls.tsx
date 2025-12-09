@@ -51,31 +51,31 @@ export const ImageControls: React.FC<ImageControlsProps> = ({
   };
 
   return (
-    <Card className="p-4 space-y-4">
-      <h4 className="font-semibold text-sm">Controles de Imagem</h4>
+    <Card className="p-3 sm:p-4 space-y-3 sm:space-y-4">
+      <h4 className="font-semibold text-xs sm:text-sm">Controles de Imagem</h4>
       
       {/* Remove Image / Upload Image */}
-      <div className="flex gap-2">
+      <div className="flex flex-col sm:flex-row gap-2">
         {hasImage ? (
           <>
             <Button
               variant="destructive"
               size="sm"
               onClick={onRemoveImage}
-              className="flex-1"
+              className="flex-1 text-xs sm:text-sm"
             >
-              <X className="w-4 h-4 mr-2" />
-              Remover Imagem
+              <X className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              Remover
             </Button>
             {hasGeneratedImage && customImageUrl && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onResetToGenerated}
-                className="flex-1"
+                className="flex-1 text-xs sm:text-sm"
               >
-                <RotateCcw className="w-4 h-4 mr-2" />
-                Voltar para IA
+                <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                Voltar IA
               </Button>
             )}
           </>
@@ -84,9 +84,9 @@ export const ImageControls: React.FC<ImageControlsProps> = ({
             variant="outline"
             size="sm"
             onClick={triggerFileUpload}
-            className="w-full"
+            className="w-full text-xs sm:text-sm"
           >
-            <Upload className="w-4 h-4 mr-2" />
+            <Upload className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
             Adicionar Imagem
           </Button>
         )}
@@ -98,10 +98,10 @@ export const ImageControls: React.FC<ImageControlsProps> = ({
           variant="outline"
           size="sm"
           onClick={triggerFileUpload}
-          className="w-full"
+          className="w-full text-xs sm:text-sm"
         >
-          <Upload className="w-4 h-4 mr-2" />
-          {customImageUrl ? 'Trocar Imagem' : 'Enviar Imagem Personalizada'}
+          <Upload className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+          {customImageUrl ? 'Trocar' : 'Enviar Personalizada'}
         </Button>
       )}
 
@@ -116,22 +116,22 @@ export const ImageControls: React.FC<ImageControlsProps> = ({
       {/* Image Position and Scale Controls - only show when image is present */}
       {hasImage && (
         <>
-          <div className="space-y-2">
-            <Label className="text-xs">Posição da Imagem</Label>
+          <div className="space-y-1 sm:space-y-2">
+            <Label className="text-[10px] sm:text-xs">Posição</Label>
             <Select value={imagePosition} onValueChange={onPositionChange}>
-              <SelectTrigger className="h-8">
+              <SelectTrigger className="h-7 sm:h-8 text-xs sm:text-sm">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="top">Superior</SelectItem>
-                <SelectItem value="center">Centro</SelectItem>
-                <SelectItem value="bottom">Inferior</SelectItem>
+                <SelectItem value="top" className="text-xs sm:text-sm">Superior</SelectItem>
+                <SelectItem value="center" className="text-xs sm:text-sm">Centro</SelectItem>
+                <SelectItem value="bottom" className="text-xs sm:text-sm">Inferior</SelectItem>
               </SelectContent>
             </Select>
           </div>
 
-          <div className="space-y-2">
-            <Label className="text-xs">Escala da Imagem: {imageScale.toFixed(1)}x</Label>
+          <div className="space-y-1 sm:space-y-2">
+            <Label className="text-[10px] sm:text-xs">Escala: {imageScale.toFixed(1)}x</Label>
             <Slider
               value={[imageScale]}
               onValueChange={(value) => onScaleChange(value[0])}

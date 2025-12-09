@@ -169,18 +169,20 @@ const Step5Review = ({
 
           <TabsContent value="slides" className="space-y-4 mt-4">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4">
-              {slides.map((slide, index) => <Card key={slide.id} className="p-4">
-                  <div className="flex items-center justify-between mb-3">
+              {slides.map((slide, index) => <Card key={slide.id} className="p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-3">
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline">Tweet {index + 1}</Badge>
-                      {slide.isEdited && <Badge variant="secondary">Editado</Badge>}
+                      <Badge variant="outline" className="text-xs">Tweet {index + 1}</Badge>
+                      {slide.isEdited && <Badge variant="secondary" className="text-xs">Editado</Badge>}
                     </div>
                     <div className="flex gap-2">
-                      <Button variant="outline" size="sm" onClick={() => startEdit(slide)} disabled={editingSlide === slide.id}>
-                        <Edit3 className="w-4 h-4" />
+                      <Button variant="outline" size="sm" onClick={() => startEdit(slide)} disabled={editingSlide === slide.id} className="flex-1 sm:flex-none">
+                        <Edit3 className="w-4 h-4 mr-1 sm:mr-0" />
+                        <span className="sm:hidden text-xs">Editar</span>
                       </Button>
-                      {slide.isEdited && <Button variant="outline" size="sm" onClick={() => handleSlideReset(slide.id)}>
-                          <RotateCcw className="w-4 h-4" />
+                      {slide.isEdited && <Button variant="outline" size="sm" onClick={() => handleSlideReset(slide.id)} className="flex-1 sm:flex-none">
+                          <RotateCcw className="w-4 h-4 mr-1 sm:mr-0" />
+                          <span className="sm:hidden text-xs">Reset</span>
                         </Button>}
                     </div>
                   </div>
@@ -218,26 +220,26 @@ const Step5Review = ({
                     {regeneratingImage === slide.id ? 'Regenerando...' : 'Regenerar Imagem'}
                   </Button>
 
-                  {editingSlide === slide.id ? <div className="space-y-3">
+                  {editingSlide === slide.id ? <div className="space-y-2 sm:space-y-3">
                       <Textarea 
                         value={editingText} 
                         onChange={e => setEditingText(e.target.value)} 
-                        className="min-h-[120px]" 
+                        className="min-h-[100px] sm:min-h-[120px] text-sm" 
                         placeholder="Edite o texto do tweet..." 
                         maxLength={350} 
                       />
-                      <div className="text-sm text-muted-foreground">
+                      <div className="text-xs sm:text-sm text-muted-foreground">
                         {editingText.length}/350 caracteres
                       </div>
-                      <div className="flex gap-2">
-                        <Button size="sm" onClick={saveEdit}>
+                      <div className="flex flex-col sm:flex-row gap-2">
+                        <Button size="sm" onClick={saveEdit} className="w-full sm:w-auto order-1 sm:order-none">
                           Salvar
                         </Button>
-                        <Button size="sm" variant="outline" onClick={cancelEdit}>
+                        <Button size="sm" variant="outline" onClick={cancelEdit} className="w-full sm:w-auto">
                           Cancelar
                         </Button>
                       </div>
-                    </div> : <div className="text-sm whitespace-pre-wrap bg-muted p-3 rounded-lg">
+                    </div> : <div className="text-xs sm:text-sm whitespace-pre-wrap bg-muted p-2 sm:p-3 rounded-lg">
                       {slide.text}
                     </div>}
                 </Card>)}
