@@ -30,6 +30,10 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
       style={{
         width: '1080px',
         height: '1350px',
+        minWidth: '1080px',
+        minHeight: '1350px',
+        maxWidth: '1080px',
+        maxHeight: '1350px',
         backgroundColor: '#ffffff',
         color: '#000000',
         fontFamily: 'Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
@@ -42,7 +46,8 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
         borderRadius: '0px',
         boxSizing: 'border-box',
         margin: '0',
-        position: 'relative'
+        position: 'relative',
+        overflow: 'hidden'
       }}
     >
       {/* Twitter Post Header */}

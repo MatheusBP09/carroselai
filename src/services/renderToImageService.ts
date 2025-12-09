@@ -363,17 +363,21 @@ const renderPostWithParams = async (params: RenderToImageParams, method: 'direct
     try {
       console.log(`🚀 Starting rendering with ${method} URLs...`);
 
-      // Create a temporary container with optimal positioning for rendering
+      // Create a temporary container with EXACT fixed dimensions
       container = document.createElement('div');
       container.style.position = 'absolute';
-      container.style.top = '10px'; // Slightly visible for better rendering
-      container.style.left = '10px';
+      container.style.top = '-9999px';
+      container.style.left = '-9999px';
       container.style.width = '1080px';
       container.style.height = '1350px';
+      container.style.minWidth = '1080px';
+      container.style.minHeight = '1350px';
+      container.style.maxWidth = '1080px';
+      container.style.maxHeight = '1350px';
       container.style.pointerEvents = 'none';
-      container.style.visibility = 'visible'; // Make visible during rendering
-      container.style.zIndex = '10000'; // Bring to front temporarily
-      container.style.overflow = 'visible';
+      container.style.visibility = 'visible';
+      container.style.zIndex = '-1';
+      container.style.overflow = 'hidden';
       container.style.backgroundColor = '#ffffff';
       document.body.appendChild(container);
 
