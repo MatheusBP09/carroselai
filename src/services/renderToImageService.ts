@@ -364,10 +364,11 @@ const renderPostWithParams = async (params: RenderToImageParams, method: 'direct
       console.log(`🚀 Starting rendering with ${method} URLs...`);
 
       // Create a temporary container with EXACT fixed dimensions
+      // IMPORTANT: Use opacity:0 instead of off-screen positioning for html-to-image compatibility
       container = document.createElement('div');
-      container.style.position = 'absolute';
-      container.style.top = '-9999px';
-      container.style.left = '-9999px';
+      container.style.position = 'fixed';
+      container.style.top = '0';
+      container.style.left = '0';
       container.style.width = '1080px';
       container.style.height = '1350px';
       container.style.minWidth = '1080px';
@@ -375,8 +376,8 @@ const renderPostWithParams = async (params: RenderToImageParams, method: 'direct
       container.style.maxWidth = '1080px';
       container.style.maxHeight = '1350px';
       container.style.pointerEvents = 'none';
-      container.style.visibility = 'visible';
-      container.style.zIndex = '-1';
+      container.style.opacity = '0'; // Hidden but still rendered
+      container.style.zIndex = '99999'; // High z-index to ensure it's in rendering tree
       container.style.overflow = 'hidden';
       container.style.backgroundColor = '#ffffff';
       document.body.appendChild(container);
