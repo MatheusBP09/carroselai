@@ -17,7 +17,7 @@ export const nodeToPng = async (
     width = 1080,
     height = 1350,
     backgroundColor = '#ffffff',
-    pixelRatio = 2, // Increased for better quality
+    pixelRatio = 1, // Keep at 1 to avoid dimension mismatch
   } = opts;
 
   // Force exact dimensions on the node BEFORE capture
@@ -42,8 +42,8 @@ export const nodeToPng = async (
       backgroundColor,
       width,
       height,
-      canvasWidth: width * pixelRatio,
-      canvasHeight: height * pixelRatio,
+      canvasWidth: width,
+      canvasHeight: height,
       pixelRatio,
       cacheBust: true,
       skipFonts: true,
