@@ -55,12 +55,19 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
       {/* Twitter Post Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px', marginBottom: '32px' }}>
         {/* Profile Image - Aumentado para 64px */}
-        <div className="w-16 h-16 rounded-full overflow-hidden bg-muted flex-shrink-0">
+        <div style={{
+          width: '64px',
+          height: '64px',
+          borderRadius: '50%',
+          overflow: 'hidden',
+          backgroundColor: '#f1f5f9',
+          flexShrink: 0,
+        }}>
           {profileImageUrl ? (
             <img 
               src={profileImageUrl} 
               alt="Profile" 
-              className="w-full h-full object-cover"
+              style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={(e) => {
               console.error('Profile image failed to load, showing initials fallback');
               const target = e.target as HTMLImageElement;
@@ -144,22 +151,40 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
 
       {/* Tweet Text - Aumentado para text-4xl com leading-snug */}
       <div 
-        className={`text-black text-4xl leading-snug font-normal ${hasImage ? '' : 'flex-1 flex items-center'}`}
+        style={{
+          color: '#000000',
+          fontSize: '36px',
+          lineHeight: '1.25',
+          fontWeight: '400',
+          flex: hasImage ? 'none' : '1',
+          display: hasImage ? 'block' : 'flex',
+          alignItems: hasImage ? 'flex-start' : 'center',
+        }}
       >
         {hasImage ? (
           <div>{text}</div>
         ) : (
-          <div className="w-full text-center leading-normal">{text}</div>
+          <div style={{ width: '100%', textAlign: 'center', lineHeight: '1.5' }}>{text}</div>
         )}
       </div>
 
       {/* Content Image - Posicionado logo após o texto */}
       {contentImageUrl && (
-        <div className="rounded-2xl overflow-hidden bg-muted mt-8">
+        <div style={{
+          borderRadius: '16px',
+          overflow: 'hidden',
+          backgroundColor: '#f1f5f9',
+          marginTop: '32px',
+        }}>
           <img 
             src={contentImageUrl} 
             alt="Tweet content" 
-            className="w-full max-h-[400px] object-cover"
+            style={{
+              width: '100%',
+              maxHeight: '400px',
+              objectFit: 'cover',
+              display: 'block',
+            }}
             onError={(e) => {
               console.error('Content image failed to load, showing elegant placeholder');
               const target = e.target as HTMLImageElement;
