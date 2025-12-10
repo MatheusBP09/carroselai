@@ -47,7 +47,9 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
         boxSizing: 'border-box',
         margin: '0',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'hidden',
+        // Ensure white background is explicitly set
+        background: '#ffffff',
       }}
     >
       {/* Twitter Post Header */}

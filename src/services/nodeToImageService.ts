@@ -17,7 +17,7 @@ export const nodeToPng = async (
     width = 1080,
     height = 1350,
     backgroundColor = '#ffffff',
-    pixelRatio = 1,
+    pixelRatio = 2, // Increased for better quality
   } = opts;
 
   // Force exact dimensions on the node BEFORE capture
@@ -28,8 +28,13 @@ export const nodeToPng = async (
   node.style.maxWidth = `${width}px`;
   node.style.maxHeight = `${height}px`;
   node.style.overflow = 'hidden';
+  node.style.backgroundColor = backgroundColor;
+  node.style.position = 'relative';
 
   console.log('📐 nodeToPng: Forcing exact dimensions:', { width, height, pixelRatio });
+
+  // Wait for any pending styles/layouts
+  await new Promise(resolve => setTimeout(resolve, 100));
 
   // First attempt: html-to-image
   try {
@@ -37,11 +42,12 @@ export const nodeToPng = async (
       backgroundColor,
       width,
       height,
-      canvasWidth: width,
-      canvasHeight: height,
+      canvasWidth: width * pixelRatio,
+      canvasHeight: height * pixelRatio,
       pixelRatio,
       cacheBust: true,
       skipFonts: true,
+      includeQueryParams: true,
       style: {
         width: `${width}px`,
         height: `${height}px`,
@@ -51,11 +57,12 @@ export const nodeToPng = async (
         maxHeight: `${height}px`,
         transform: 'none',
         overflow: 'hidden',
+        backgroundColor,
       },
     } as any;
 
     const blob = await toBlob(node, options);
-    if (blob && blob.size > 5000) {
+    if (blob && blob.size > 10000) {
       console.log('✅ html-to-image produced valid PNG blob:', { size: blob.size, width, height });
       return blob;
     }
@@ -82,6 +89,8 @@ export const nodeToPng = async (
     scrollY: 0,
     windowWidth: width,
     windowHeight: height,
+    x: 0,
+    y: 0,
     onclone: (_clonedDoc: Document, element: HTMLElement) => {
       element.style.width = `${width}px`;
       element.style.height = `${height}px`;
@@ -90,13 +99,15 @@ export const nodeToPng = async (
       element.style.maxWidth = `${width}px`;
       element.style.maxHeight = `${height}px`;
       element.style.overflow = 'hidden';
+      element.style.backgroundColor = backgroundColor;
+      element.style.position = 'relative';
     },
   });
 
   const blob: Blob | null = await new Promise((resolve) => canvas.toBlob(b => resolve(b), 'image/png', 1.0));
   if (!blob) throw new Error('Fallback html2canvas returned null blob');
 
-  if (blob.size <= 5000) {
+  if (blob.size <= 10000) {
     console.warn('⚠️ Fallback blob appears too small; capture may be blank', { size: blob.size });
   }
 
