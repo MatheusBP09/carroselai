@@ -168,20 +168,22 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
         )}
       </div>
 
-      {/* Content Image - Posicionado logo após o texto */}
+      {/* Content Image - Preenche o espaço restante */}
       {contentImageUrl && (
         <div style={{
           borderRadius: '16px',
           overflow: 'hidden',
           backgroundColor: '#f1f5f9',
           marginTop: '32px',
+          flex: '1',
+          minHeight: '0',
         }}>
           <img 
             src={contentImageUrl} 
             alt="Tweet content" 
             style={{
               width: '100%',
-              maxHeight: '400px',
+              height: '100%',
               objectFit: 'cover',
               display: 'block',
             }}
@@ -193,7 +195,7 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
                 container.innerHTML = `
                   <div style="
                     width: 100%; 
-                    height: 300px; 
+                    height: 100%; 
                     background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 30%, #cbd5e1 70%, #94a3b8 100%); 
                     display: flex; 
                     align-items: center; 
