@@ -397,8 +397,13 @@ const renderPostWithParams = async (params: RenderToImageParams, method: 'direct
         React.createElement(TwitterPost, params)
       );
 
-      // Wait for DOM to be updated
-      await new Promise(resolve => setTimeout(resolve, 100));
+      // Detect Safari/iOS for extra delay
+      const isSafariBrowser = /^((?!chrome|android).)*safari/i.test(navigator.userAgent);
+      const isIOSDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+        (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      
+      // Wait for DOM to be updated (longer for Safari/iOS)
+      await new Promise(resolve => setTimeout(resolve, isSafariBrowser || isIOSDevice ? 300 : 100));
 
       // Synchronous image loading with guaranteed fallbacks
       console.log('🔍 Starting synchronous image validation with fallback rendering...');
@@ -414,9 +419,10 @@ const renderPostWithParams = async (params: RenderToImageParams, method: 'direct
         }
       }
 
-      // Extended wait for rendering stability and font loading
-      console.log('⏳ Waiting for rendering stability...');
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Increased to 2 seconds for better stability
+      // Extended wait for rendering stability and font loading (longer for Safari/iOS)
+      const stabilityDelay = isSafariBrowser || isIOSDevice ? 3000 : 2000;
+      console.log(`⏳ Waiting ${stabilityDelay}ms for rendering stability (Safari/iOS: ${isSafariBrowser || isIOSDevice})...`);
+      await new Promise(resolve => setTimeout(resolve, stabilityDelay));
       
       // Pre-validate the DOM structure
       const imgs = container.querySelectorAll('img');
