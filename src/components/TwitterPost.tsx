@@ -67,6 +67,7 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
             <img 
               src={profileImageUrl} 
               alt="Profile" 
+              crossOrigin="anonymous"
               style={{ width: '100%', height: '100%', objectFit: 'cover' }}
             onError={(e) => {
               console.error('Profile image failed to load, showing initials fallback');
@@ -181,6 +182,7 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
           <img 
             src={contentImageUrl} 
             alt="Tweet content" 
+            crossOrigin="anonymous"
             style={{
               width: '100%',
               height: '100%',
