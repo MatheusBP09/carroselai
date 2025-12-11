@@ -442,6 +442,14 @@ const renderPostWithParams = async (params: RenderToImageParams, method: 'direct
         height: 1350,
         backgroundColor: '#ffffff',
         pixelRatio: 1,
+        // Provide fallback data for iOS native canvas rendering
+        fallbackData: {
+          username: params.username,
+          handle: params.handle,
+          text: params.text,
+          profileImageUrl: params.profileImageUrl,
+          contentImageUrl: params.contentImageUrl,
+        },
       });
       
       // NEVER return empty - always return blob or create fallback
