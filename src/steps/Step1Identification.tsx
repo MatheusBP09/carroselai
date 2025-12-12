@@ -43,8 +43,8 @@ export const Step1Identification = ({ data, onNext, onBack }: StepProps) => {
       newErrors.instagramHandle = 'Digite apenas o nome de usuário, sem o @';
     } else if (formData.instagramHandle.length < 1) {
       newErrors.instagramHandle = 'Handle deve ter pelo menos 1 caractere';
-    } else if (!/^[a-zA-Z0-9_]+$/.test(formData.instagramHandle)) {
-      newErrors.instagramHandle = 'Handle deve conter apenas letras, números e underscore';
+    } else if (!/^[a-zA-Z0-9._]+$/.test(formData.instagramHandle)) {
+      newErrors.instagramHandle = 'Handle deve conter apenas letras, números, pontos e underscore';
     }
     
     setErrors(newErrors);
