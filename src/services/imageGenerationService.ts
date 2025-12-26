@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { withRetry, classifyError, formatErrorForUser } from './edgeFunctionRetryService';
 
 export interface ImageGenerationParams {
   text: string;
@@ -27,34 +28,48 @@ export const generateContentImage = async (params: ImageGenerationParams): Promi
     : createImagePrompt(text || 'professional modern content', style, contentFormat, contentType);
 
   try {
-    console.log('🎨 Generating image via Supabase edge function...');
-    console.log('📝 Using prompt:', optimizedPrompt.substring(0, 150) + '...');
+    console.log('🎨 [generate-image] Starting image generation...');
+    console.log('📝 [generate-image] Prompt preview:', optimizedPrompt.substring(0, 100) + '...');
     
-    const { data, error } = await supabase.functions.invoke('generate-image', {
-      body: {
-        prompt: optimizedPrompt,
-        size: `${dimensions.width}x${dimensions.height}`
-      }
-    });
+    // Use retry wrapper for automatic retries with exponential backoff
+    const result = await withRetry(
+      'generate-image',
+      async () => {
+        const { data, error } = await supabase.functions.invoke('generate-image', {
+          body: {
+            prompt: optimizedPrompt,
+            size: `${dimensions.width}x${dimensions.height}`
+          }
+        });
 
-    if (error) {
-      console.error('❌ Supabase function error:', error);
-      throw new Error(error.message || 'Erro na geração da imagem');
-    }
+        if (error) {
+          console.error('❌ [generate-image] Supabase function error:', error);
+          throw error;
+        }
 
-    if (!data?.success) {
-      throw new Error(data?.error || 'Falha na geração da imagem');
-    }
+        if (!data?.success) {
+          throw new Error(data?.error || 'Falha na geração da imagem');
+        }
 
-    console.log('✅ Image generated successfully');
-    return { imageUrl: data.imageUrl };
+        return data;
+      },
+      { maxRetries: 2, baseDelayMs: 1500 }
+    );
+
+    console.log('✅ [generate-image] Image generated successfully');
+    return { imageUrl: result.imageUrl };
 
   } catch (error: any) {
-    console.error('🚨 Image generation error:', error);
+    const classifiedError = classifyError(error, 'generate-image');
+    console.error('🚨 [generate-image] Final error:', {
+      type: classifiedError.errorType,
+      message: classifiedError.message,
+      userMessage: formatErrorForUser(classifiedError)
+    });
     
     // Return fallback image for better UX
     const fallbackUrl = getFallbackImage(contentType, contentFormat);
-    console.log('🔄 Using fallback image:', fallbackUrl);
+    console.log('🔄 [generate-image] Using fallback image');
     
     return { imageUrl: fallbackUrl };
   }
