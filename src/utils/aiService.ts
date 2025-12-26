@@ -1,4 +1,5 @@
 import { supabase } from '@/integrations/supabase/client';
+import { withRetry, classifyError, formatErrorForUser } from '@/services/edgeFunctionRetryService';
 
 interface GenerateCarouselParams {
   title?: string;
@@ -29,27 +30,48 @@ interface GenerateCarouselResponse {
 }
 
 export const generateCarousel = async (params: GenerateCarouselParams): Promise<GenerateCarouselResponse> => {
-  console.log('🚀 Calling Supabase edge function for carousel generation...');
+  console.log('🚀 [generate-carousel] Starting carousel generation...');
+  console.log('📊 [generate-carousel] Params:', {
+    username: params.username,
+    slideCount: params.slideCount,
+    contentType: params.contentType
+  });
   
   try {
-    const { data, error } = await supabase.functions.invoke('generate-carousel', {
-      body: params
-    });
+    // Use retry wrapper for automatic retries with exponential backoff
+    const result = await withRetry(
+      'generate-carousel',
+      async () => {
+        const { data, error } = await supabase.functions.invoke('generate-carousel', {
+          body: params
+        });
 
-    if (error) {
-      console.error('❌ Supabase function error:', error);
-      throw new Error(error.message || 'Erro na geração do carrossel');
-    }
+        if (error) {
+          console.error('❌ [generate-carousel] Supabase function error:', error);
+          throw error;
+        }
 
-    if (!data) {
-      throw new Error('Nenhum dado retornado pela função');
-    }
+        if (!data) {
+          throw new Error('Nenhum dado retornado pela função');
+        }
 
-    console.log('✅ Carousel generated successfully');
-    return data;
+        return data;
+      },
+      { maxRetries: 2, baseDelayMs: 2000 }
+    );
+
+    console.log('✅ [generate-carousel] Carousel generated successfully');
+    return result;
     
   } catch (error: any) {
-    console.error('🚨 Error in generateCarousel:', error);
-    throw new Error(error.message || 'Erro desconhecido na geração do carrossel');
+    const classifiedError = classifyError(error, 'generate-carousel');
+    console.error('🚨 [generate-carousel] Final error:', {
+      type: classifiedError.errorType,
+      message: classifiedError.message,
+      userMessage: formatErrorForUser(classifiedError)
+    });
+    
+    // Re-throw with user-friendly message
+    throw new Error(formatErrorForUser(classifiedError));
   }
 };
