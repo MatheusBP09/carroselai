@@ -445,6 +445,638 @@ export type Database = {
         }
         Relationships: []
       }
+      contexto_vida_chat_mensagens: {
+        Row: {
+          assessor_id: string
+          cliente_id: string
+          content: string
+          criado_em: string | null
+          id: string
+          role: string
+        }
+        Insert: {
+          assessor_id: string
+          cliente_id: string
+          content: string
+          criado_em?: string | null
+          id?: string
+          role: string
+        }
+        Update: {
+          assessor_id?: string
+          cliente_id?: string
+          content?: string
+          criado_em?: string | null
+          id?: string
+          role?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_chat_mensagens_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contexto_vida_clientes: {
+        Row: {
+          assessor_id: string
+          atualizado_em: string
+          criado_em: string
+          id: string
+          nome: string
+          status: string
+        }
+        Insert: {
+          assessor_id: string
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          nome: string
+          status?: string
+        }
+        Update: {
+          assessor_id?: string
+          atualizado_em?: string
+          criado_em?: string
+          id?: string
+          nome?: string
+          status?: string
+        }
+        Relationships: []
+      }
+      contexto_vida_configuracoes: {
+        Row: {
+          cdi: number | null
+          cliente_id: string
+          despesa_familiar_sem_educacao: number | null
+          educacao_ciclos: Json | null
+          id: string
+          inflacao: number | null
+          ir_considerado: string | null
+          juro_real: number | null
+          necessidade_liquidez_imediata: number | null
+          objetivo_investimentos: string | null
+          outras_receitas: Json | null
+          pct_contribuicao: number | null
+          rentabilidade_aposentadoria: number | null
+        }
+        Insert: {
+          cdi?: number | null
+          cliente_id: string
+          despesa_familiar_sem_educacao?: number | null
+          educacao_ciclos?: Json | null
+          id?: string
+          inflacao?: number | null
+          ir_considerado?: string | null
+          juro_real?: number | null
+          necessidade_liquidez_imediata?: number | null
+          objetivo_investimentos?: string | null
+          outras_receitas?: Json | null
+          pct_contribuicao?: number | null
+          rentabilidade_aposentadoria?: number | null
+        }
+        Update: {
+          cdi?: number | null
+          cliente_id?: string
+          despesa_familiar_sem_educacao?: number | null
+          educacao_ciclos?: Json | null
+          id?: string
+          inflacao?: number | null
+          ir_considerado?: string | null
+          juro_real?: number | null
+          necessidade_liquidez_imediata?: number | null
+          objetivo_investimentos?: string | null
+          outras_receitas?: Json | null
+          pct_contribuicao?: number | null
+          rentabilidade_aposentadoria?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_configuracoes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contexto_vida_dados_pessoais: {
+        Row: {
+          aposentadoria_idade: number | null
+          cliente_id: string
+          declaracao_ir: string | null
+          estado_civil: string | null
+          expectativa_vida: number | null
+          id: string
+          idade: number | null
+          perfil_risco: string | null
+          profissao: string | null
+          receitas_previstas_aposentadoria: number | null
+          regime_trabalho: string | null
+          renda_desejada_aposentadoria: number | null
+          renda_outras_fontes: number | null
+          tem_seguro_saude: boolean | null
+        }
+        Insert: {
+          aposentadoria_idade?: number | null
+          cliente_id: string
+          declaracao_ir?: string | null
+          estado_civil?: string | null
+          expectativa_vida?: number | null
+          id?: string
+          idade?: number | null
+          perfil_risco?: string | null
+          profissao?: string | null
+          receitas_previstas_aposentadoria?: number | null
+          regime_trabalho?: string | null
+          renda_desejada_aposentadoria?: number | null
+          renda_outras_fontes?: number | null
+          tem_seguro_saude?: boolean | null
+        }
+        Update: {
+          aposentadoria_idade?: number | null
+          cliente_id?: string
+          declaracao_ir?: string | null
+          estado_civil?: string | null
+          expectativa_vida?: number | null
+          id?: string
+          idade?: number | null
+          perfil_risco?: string | null
+          profissao?: string | null
+          receitas_previstas_aposentadoria?: number | null
+          regime_trabalho?: string | null
+          renda_desejada_aposentadoria?: number | null
+          renda_outras_fontes?: number | null
+          tem_seguro_saude?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_dados_pessoais_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contexto_vida_dependentes: {
+        Row: {
+          cliente_id: string
+          id: string
+          idade: number | null
+          nome: string | null
+          observacao: string | null
+          tipo: string | null
+        }
+        Insert: {
+          cliente_id: string
+          id?: string
+          idade?: number | null
+          nome?: string | null
+          observacao?: string | null
+          tipo?: string | null
+        }
+        Update: {
+          cliente_id?: string
+          id?: string
+          idade?: number | null
+          nome?: string | null
+          observacao?: string | null
+          tipo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_dependentes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contexto_vida_financiamentos: {
+        Row: {
+          cliente_id: string
+          com_seguro: boolean | null
+          id: string
+          parcela_mensal: number | null
+          prazo_anos: number | null
+          saldo_devedor: number | null
+          taxa_juros_anual: number | null
+          tipo: string | null
+        }
+        Insert: {
+          cliente_id: string
+          com_seguro?: boolean | null
+          id?: string
+          parcela_mensal?: number | null
+          prazo_anos?: number | null
+          saldo_devedor?: number | null
+          taxa_juros_anual?: number | null
+          tipo?: string | null
+        }
+        Update: {
+          cliente_id?: string
+          com_seguro?: boolean | null
+          id?: string
+          parcela_mensal?: number | null
+          prazo_anos?: number | null
+          saldo_devedor?: number | null
+          taxa_juros_anual?: number | null
+          tipo?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_financiamentos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contexto_vida_fluxo_caixa: {
+        Row: {
+          capacidade_poupanca_mensal: number | null
+          cliente_id: string
+          gastos_mensais: number | null
+          id: string
+          renda_conjuge: number | null
+          renda_mensal_bruta: number | null
+          renda_mensal_liquida: number | null
+        }
+        Insert: {
+          capacidade_poupanca_mensal?: number | null
+          cliente_id: string
+          gastos_mensais?: number | null
+          id?: string
+          renda_conjuge?: number | null
+          renda_mensal_bruta?: number | null
+          renda_mensal_liquida?: number | null
+        }
+        Update: {
+          capacidade_poupanca_mensal?: number | null
+          cliente_id?: string
+          gastos_mensais?: number | null
+          id?: string
+          renda_conjuge?: number | null
+          renda_mensal_bruta?: number | null
+          renda_mensal_liquida?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_fluxo_caixa_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contexto_vida_patrimonio_financeiro: {
+        Row: {
+          classe: string | null
+          cliente_id: string
+          id: string
+          instituicao: string | null
+          liquidez: string | null
+          observacao: string | null
+          pct_cdi_bruto: number | null
+          produto: string | null
+          valor: number | null
+        }
+        Insert: {
+          classe?: string | null
+          cliente_id: string
+          id?: string
+          instituicao?: string | null
+          liquidez?: string | null
+          observacao?: string | null
+          pct_cdi_bruto?: number | null
+          produto?: string | null
+          valor?: number | null
+        }
+        Update: {
+          classe?: string | null
+          cliente_id?: string
+          id?: string
+          instituicao?: string | null
+          liquidez?: string | null
+          observacao?: string | null
+          pct_cdi_bruto?: number | null
+          produto?: string | null
+          valor?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_patrimonio_financeiro_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contexto_vida_patrimonio_nao_financeiro: {
+        Row: {
+          cliente_id: string
+          descricao: string | null
+          id: string
+          renda_aluguel_mensal: number | null
+          tipo: string | null
+          valor: number | null
+          vendavel: boolean | null
+        }
+        Insert: {
+          cliente_id: string
+          descricao?: string | null
+          id?: string
+          renda_aluguel_mensal?: number | null
+          tipo?: string | null
+          valor?: number | null
+          vendavel?: boolean | null
+        }
+        Update: {
+          cliente_id?: string
+          descricao?: string | null
+          id?: string
+          renda_aluguel_mensal?: number | null
+          tipo?: string | null
+          valor?: number | null
+          vendavel?: boolean | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_patrimonio_nao_financeiro_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contexto_vida_produtos: {
+        Row: {
+          assessor_id: string | null
+          ativo: boolean | null
+          criado_em: string | null
+          descricao: string | null
+          id: string
+          nome: string
+          opcional: boolean | null
+          ordem: number | null
+          pote: string
+          prioridade_padrao: string | null
+          quando_usar: string | null
+        }
+        Insert: {
+          assessor_id?: string | null
+          ativo?: boolean | null
+          criado_em?: string | null
+          descricao?: string | null
+          id?: string
+          nome: string
+          opcional?: boolean | null
+          ordem?: number | null
+          pote: string
+          prioridade_padrao?: string | null
+          quando_usar?: string | null
+        }
+        Update: {
+          assessor_id?: string | null
+          ativo?: boolean | null
+          criado_em?: string | null
+          descricao?: string | null
+          id?: string
+          nome?: string
+          opcional?: boolean | null
+          ordem?: number | null
+          pote?: string
+          prioridade_padrao?: string | null
+          quando_usar?: string | null
+        }
+        Relationships: []
+      }
+      contexto_vida_projetos: {
+        Row: {
+          cliente_id: string
+          id: string
+          nome: string | null
+          pessoal_familiar: string | null
+          prazo_anos: number | null
+          tipo: string | null
+          valor_alvo: number | null
+        }
+        Insert: {
+          cliente_id: string
+          id?: string
+          nome?: string | null
+          pessoal_familiar?: string | null
+          prazo_anos?: number | null
+          tipo?: string | null
+          valor_alvo?: number | null
+        }
+        Update: {
+          cliente_id?: string
+          id?: string
+          nome?: string | null
+          pessoal_familiar?: string | null
+          prazo_anos?: number | null
+          tipo?: string | null
+          valor_alvo?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_projetos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contexto_vida_proximos_passos: {
+        Row: {
+          cliente_id: string
+          concluido: boolean
+          concluido_em: string | null
+          criado_em: string
+          descricao: string | null
+          id: string
+          ordem: number
+          origem: string
+          pote: string | null
+          prioridade: string
+          titulo: string
+        }
+        Insert: {
+          cliente_id: string
+          concluido?: boolean
+          concluido_em?: string | null
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          ordem?: number
+          origem?: string
+          pote?: string | null
+          prioridade?: string
+          titulo: string
+        }
+        Update: {
+          cliente_id?: string
+          concluido?: boolean
+          concluido_em?: string | null
+          criado_em?: string
+          descricao?: string | null
+          id?: string
+          ordem?: number
+          origem?: string
+          pote?: string | null
+          prioridade?: string
+          titulo?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_proximos_passos_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contexto_vida_recomendacoes: {
+        Row: {
+          bloqueado_por: string | null
+          cliente_id: string
+          criado_em: string
+          id: string
+          justificativa: string | null
+          pote: string | null
+          prioridade: string | null
+          produto: string | null
+          status: string | null
+          valor_sugerido: number | null
+        }
+        Insert: {
+          bloqueado_por?: string | null
+          cliente_id: string
+          criado_em?: string
+          id?: string
+          justificativa?: string | null
+          pote?: string | null
+          prioridade?: string | null
+          produto?: string | null
+          status?: string | null
+          valor_sugerido?: number | null
+        }
+        Update: {
+          bloqueado_por?: string | null
+          cliente_id?: string
+          criado_em?: string
+          id?: string
+          justificativa?: string | null
+          pote?: string | null
+          prioridade?: string | null
+          produto?: string | null
+          status?: string | null
+          valor_sugerido?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_recomendacoes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contexto_vida_regras_recomendacao: {
+        Row: {
+          ativo: boolean | null
+          bloqueado_por_reserva: boolean | null
+          condicao_tipo: string
+          condicao_valor: Json | null
+          formula_valor: string | null
+          id: string
+          ordem: number | null
+          produto_id: string
+          template_justificativa: string | null
+          valor_fixo: number | null
+        }
+        Insert: {
+          ativo?: boolean | null
+          bloqueado_por_reserva?: boolean | null
+          condicao_tipo: string
+          condicao_valor?: Json | null
+          formula_valor?: string | null
+          id?: string
+          ordem?: number | null
+          produto_id: string
+          template_justificativa?: string | null
+          valor_fixo?: number | null
+        }
+        Update: {
+          ativo?: boolean | null
+          bloqueado_por_reserva?: boolean | null
+          condicao_tipo?: string
+          condicao_valor?: Json | null
+          formula_valor?: string | null
+          id?: string
+          ordem?: number | null
+          produto_id?: string
+          template_justificativa?: string | null
+          valor_fixo?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_regras_recomendacao_produto_id_fkey"
+            columns: ["produto_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_produtos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contexto_vida_seguros_vigentes: {
+        Row: {
+          capital_segurado: number | null
+          cliente_id: string
+          id: string
+          seguradora: string | null
+          tipo: string | null
+          vencimento: string | null
+        }
+        Insert: {
+          capital_segurado?: number | null
+          cliente_id: string
+          id?: string
+          seguradora?: string | null
+          tipo?: string | null
+          vencimento?: string | null
+        }
+        Update: {
+          capital_segurado?: number | null
+          cliente_id?: string
+          id?: string
+          seguradora?: string | null
+          tipo?: string | null
+          vencimento?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_seguros_vigentes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       course_progress: {
         Row: {
           completed_at: string
@@ -2400,6 +3032,8 @@ export type Database = {
           has_recording: boolean | null
           has_transcript: boolean | null
           id: string
+          organizer_email: string | null
+          organizer_name: string | null
           start_time: string | null
           status: string | null
           teams_join_url: string | null
@@ -2420,6 +3054,8 @@ export type Database = {
           has_recording?: boolean | null
           has_transcript?: boolean | null
           id?: string
+          organizer_email?: string | null
+          organizer_name?: string | null
           start_time?: string | null
           status?: string | null
           teams_join_url?: string | null
@@ -2440,6 +3076,8 @@ export type Database = {
           has_recording?: boolean | null
           has_transcript?: boolean | null
           id?: string
+          organizer_email?: string | null
+          organizer_name?: string | null
           start_time?: string | null
           status?: string | null
           teams_join_url?: string | null
@@ -2769,6 +3407,321 @@ export type Database = {
           },
         ]
       }
+      tutorsai_agent_documents: {
+        Row: {
+          agent_id: string
+          created_at: string
+          extracted_text: string | null
+          file_name: string
+          file_size: number | null
+          file_url: string
+          id: string
+          status: string | null
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          extracted_text?: string | null
+          file_name: string
+          file_size?: number | null
+          file_url: string
+          id?: string
+          status?: string | null
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          extracted_text?: string | null
+          file_name?: string
+          file_size?: number | null
+          file_url?: string
+          id?: string
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutorsai_agent_documents_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "tutorsai_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tutorsai_agents: {
+        Row: {
+          created_at: string
+          created_by: string
+          default_model: string | null
+          description: string | null
+          emoji: string | null
+          id: string
+          is_active: boolean | null
+          is_public: boolean | null
+          name: string
+          system_prompt: string | null
+          temperature: number | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          default_model?: string | null
+          description?: string | null
+          emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_public?: boolean | null
+          name: string
+          system_prompt?: string | null
+          temperature?: number | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          default_model?: string | null
+          description?: string | null
+          emoji?: string | null
+          id?: string
+          is_active?: boolean | null
+          is_public?: boolean | null
+          name?: string
+          system_prompt?: string | null
+          temperature?: number | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      tutorsai_conversations: {
+        Row: {
+          agent_id: string | null
+          created_at: string
+          id: string
+          model: string
+          title: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          agent_id?: string | null
+          created_at?: string
+          id?: string
+          model?: string
+          title?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string | null
+          created_at?: string
+          id?: string
+          model?: string
+          title?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutorsai_conversations_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "tutorsai_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tutorsai_document_chunks: {
+        Row: {
+          agent_id: string
+          chunk_index: number
+          content: string
+          created_at: string
+          document_id: string
+          embedding: string | null
+          id: string
+        }
+        Insert: {
+          agent_id: string
+          chunk_index?: number
+          content: string
+          created_at?: string
+          document_id: string
+          embedding?: string | null
+          id?: string
+        }
+        Update: {
+          agent_id?: string
+          chunk_index?: number
+          content?: string
+          created_at?: string
+          document_id?: string
+          embedding?: string | null
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutorsai_document_chunks_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "tutorsai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tutorsai_document_chunks_document_id_fkey"
+            columns: ["document_id"]
+            isOneToOne: false
+            referencedRelation: "tutorsai_agent_documents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tutorsai_message_files: {
+        Row: {
+          created_at: string
+          extracted_text: string | null
+          file_name: string
+          file_type: string | null
+          file_url: string
+          id: string
+          message_id: string
+        }
+        Insert: {
+          created_at?: string
+          extracted_text?: string | null
+          file_name: string
+          file_type?: string | null
+          file_url: string
+          id?: string
+          message_id: string
+        }
+        Update: {
+          created_at?: string
+          extracted_text?: string | null
+          file_name?: string
+          file_type?: string | null
+          file_url?: string
+          id?: string
+          message_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutorsai_message_files_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "tutorsai_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tutorsai_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          cost_usd: number | null
+          created_at: string
+          feedback: string | null
+          id: string
+          model: string | null
+          role: string
+          tokens_input: number | null
+          tokens_output: number | null
+        }
+        Insert: {
+          content: string
+          conversation_id: string
+          cost_usd?: number | null
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          model?: string | null
+          role: string
+          tokens_input?: number | null
+          tokens_output?: number | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          cost_usd?: number | null
+          created_at?: string
+          feedback?: string | null
+          id?: string
+          model?: string | null
+          role?: string
+          tokens_input?: number | null
+          tokens_output?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutorsai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "tutorsai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tutorsai_usage_logs: {
+        Row: {
+          agent_id: string | null
+          conversation_id: string | null
+          cost_usd: number | null
+          created_at: string
+          id: string
+          message_id: string | null
+          model: string
+          tokens_input: number | null
+          tokens_output: number | null
+          user_id: string
+        }
+        Insert: {
+          agent_id?: string | null
+          conversation_id?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          model: string
+          tokens_input?: number | null
+          tokens_output?: number | null
+          user_id: string
+        }
+        Update: {
+          agent_id?: string | null
+          conversation_id?: string | null
+          cost_usd?: number | null
+          created_at?: string
+          id?: string
+          message_id?: string | null
+          model?: string
+          tokens_input?: number | null
+          tokens_output?: number | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutorsai_usage_logs_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "tutorsai_agents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tutorsai_usage_logs_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "tutorsai_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tutorsai_usage_logs_message_id_fkey"
+            columns: ["message_id"]
+            isOneToOne: false
+            referencedRelation: "tutorsai_messages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -2859,6 +3812,183 @@ export type Database = {
           video_id?: string
           workflow_json?: Json | null
           workflows_count?: number
+        }
+        Relationships: []
+      }
+      vertex_simulator: {
+        Row: {
+          adjustment_rate: number | null
+          admin_fee: number | null
+          annual_returns_rate: number | null
+          asset_kind: string | null
+          before_reward_installments: number | null
+          builtin_bid_amount: number | null
+          contracted_credit_amount: number | null
+          created_at: string
+          email_consultor: string | null
+          enrollment_fee: number | null
+          enrollment_fee_installments: number | null
+          fgts: number | null
+          financing_entry: number | null
+          id: string
+          inflation_rate: number | null
+          life_insurance_fee: number | null
+          loan_real_state_annual_rate: number | null
+          loan_term: number | null
+          loan_total_amount: number | null
+          loan_vehicle_monthly_rate: number | null
+          nome_cliente: string | null
+          nome_consultor: string | null
+          operation_sale_amount: number | null
+          operations: string | null
+          plan_kind: number | null
+          property_value_amount: number | null
+          reserve_fund_fee: number | null
+          self_resources_amount: number | null
+          selic_rate: number | null
+          study_kind: string | null
+          telefone_cliente: string | null
+          telefone_consultor: string | null
+          total_installments_quantity: number | null
+        }
+        Insert: {
+          adjustment_rate?: number | null
+          admin_fee?: number | null
+          annual_returns_rate?: number | null
+          asset_kind?: string | null
+          before_reward_installments?: number | null
+          builtin_bid_amount?: number | null
+          contracted_credit_amount?: number | null
+          created_at?: string
+          email_consultor?: string | null
+          enrollment_fee?: number | null
+          enrollment_fee_installments?: number | null
+          fgts?: number | null
+          financing_entry?: number | null
+          id?: string
+          inflation_rate?: number | null
+          life_insurance_fee?: number | null
+          loan_real_state_annual_rate?: number | null
+          loan_term?: number | null
+          loan_total_amount?: number | null
+          loan_vehicle_monthly_rate?: number | null
+          nome_cliente?: string | null
+          nome_consultor?: string | null
+          operation_sale_amount?: number | null
+          operations?: string | null
+          plan_kind?: number | null
+          property_value_amount?: number | null
+          reserve_fund_fee?: number | null
+          self_resources_amount?: number | null
+          selic_rate?: number | null
+          study_kind?: string | null
+          telefone_cliente?: string | null
+          telefone_consultor?: string | null
+          total_installments_quantity?: number | null
+        }
+        Update: {
+          adjustment_rate?: number | null
+          admin_fee?: number | null
+          annual_returns_rate?: number | null
+          asset_kind?: string | null
+          before_reward_installments?: number | null
+          builtin_bid_amount?: number | null
+          contracted_credit_amount?: number | null
+          created_at?: string
+          email_consultor?: string | null
+          enrollment_fee?: number | null
+          enrollment_fee_installments?: number | null
+          fgts?: number | null
+          financing_entry?: number | null
+          id?: string
+          inflation_rate?: number | null
+          life_insurance_fee?: number | null
+          loan_real_state_annual_rate?: number | null
+          loan_term?: number | null
+          loan_total_amount?: number | null
+          loan_vehicle_monthly_rate?: number | null
+          nome_cliente?: string | null
+          nome_consultor?: string | null
+          operation_sale_amount?: number | null
+          operations?: string | null
+          plan_kind?: number | null
+          property_value_amount?: number | null
+          reserve_fund_fee?: number | null
+          self_resources_amount?: number | null
+          selic_rate?: number | null
+          study_kind?: string | null
+          telefone_cliente?: string | null
+          telefone_consultor?: string | null
+          total_installments_quantity?: number | null
+        }
+        Relationships: []
+      }
+      wealth_performance_metas: {
+        Row: {
+          assessor_xp_code: string
+          meta_captacao_liquida: number | null
+          meta_crosssell: number | null
+          meta_nps: number | null
+          meta_receita_total: number | null
+          periodo: string
+        }
+        Insert: {
+          assessor_xp_code: string
+          meta_captacao_liquida?: number | null
+          meta_crosssell?: number | null
+          meta_nps?: number | null
+          meta_receita_total?: number | null
+          periodo: string
+        }
+        Update: {
+          assessor_xp_code?: string
+          meta_captacao_liquida?: number | null
+          meta_crosssell?: number | null
+          meta_nps?: number | null
+          meta_receita_total?: number | null
+          periodo?: string
+        }
+        Relationships: []
+      }
+      wealth_performance_metricas: {
+        Row: {
+          assessor_nome: string
+          assessor_xp_code: string
+          captacao_liquida: number | null
+          clientes_ativos: number | null
+          crosssell_negocios: number | null
+          crosssell_receita: number | null
+          id: number
+          periodo: string
+          receita_total: number | null
+          record_key: string
+          updated_at: string | null
+        }
+        Insert: {
+          assessor_nome: string
+          assessor_xp_code: string
+          captacao_liquida?: number | null
+          clientes_ativos?: number | null
+          crosssell_negocios?: number | null
+          crosssell_receita?: number | null
+          id?: number
+          periodo: string
+          receita_total?: number | null
+          record_key: string
+          updated_at?: string | null
+        }
+        Update: {
+          assessor_nome?: string
+          assessor_xp_code?: string
+          captacao_liquida?: number | null
+          clientes_ativos?: number | null
+          crosssell_negocios?: number | null
+          crosssell_receita?: number | null
+          id?: number
+          periodo?: string
+          receita_total?: number | null
+          record_key?: string
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -3106,6 +4236,10 @@ export type Database = {
           project_id: string
         }[]
       }
+      contexto_vida_owns_client: {
+        Args: { _cliente_id: string; _user_id: string }
+        Returns: boolean
+      }
       count_opportunity_matches:
         | {
             Args: { p_has_responsavel: boolean; p_list_id: string }
@@ -3320,6 +4454,19 @@ export type Database = {
       log_security_event: {
         Args: { details?: Json; event_type: string; user_id?: string }
         Returns: undefined
+      }
+      match_agent_documents: {
+        Args: {
+          p_agent_id: string
+          p_match_count?: number
+          p_query_embedding: string
+        }
+        Returns: {
+          content: string
+          document_id: string
+          id: string
+          similarity: number
+        }[]
       }
       process_opportunity_list_matches: {
         Args: { criteria_json: Json; list_id_param: string }
