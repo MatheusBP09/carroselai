@@ -73,6 +73,17 @@ async function generateWithGateway(
     }
   }
 
+  // Check message.images array (Gemini via Gateway returns images here)
+  const images = data.choices?.[0]?.message?.images;
+  if (Array.isArray(images)) {
+    const imgEntry = images.find((img: any) => img.image_url?.url || img.url);
+    const imgUrl = imgEntry?.image_url?.url || imgEntry?.url;
+    if (imgUrl) {
+      console.log(`✅ [Gateway] Imagem gerada com ${model} (message.images)`);
+      return { imageUrl: imgUrl, provider: model };
+    }
+  }
+
   // Check raw response structure for inline images
   const parts = data.choices?.[0]?.message?.parts;
   if (Array.isArray(parts)) {
