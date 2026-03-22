@@ -3,54 +3,98 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-// Tenta gerar imagem com Gemini (Nano Banana)
-async function generateWithGemini(prompt: string, apiKey: string): Promise<{ imageUrl: string; provider: string }> {
-  console.log('🎨 [Gemini] Tentando gerar imagem com Gemini 2.5 Flash Image...');
-  
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image-preview:generateContent?key=${apiKey}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: { responseModalities: ["TEXT", "IMAGE"] }
-      }),
-    }
-  );
+const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
+
+async function generateWithGateway(
+  prompt: string,
+  apiKey: string,
+  model: string
+): Promise<{ imageUrl: string; provider: string }> {
+  console.log(`🎨 [Gateway] Gerando imagem com modelo: ${model}...`);
+
+  const response = await fetch(GATEWAY_URL, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: "user", content: prompt }],
+    }),
+  });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('❌ [Gemini] API error:', response.status, errorText);
-    throw new Error(`Gemini API error: ${response.status} - ${errorText}`);
+    console.error(`❌ [Gateway] Erro ${response.status} com ${model}:`, errorText);
+    if (response.status === 429) {
+      throw new Error(`Rate limit excedido (429). Tente novamente em instantes.`);
+    }
+    if (response.status === 402) {
+      throw new Error(`Créditos insuficientes (402). Adicione fundos no workspace Lovable.`);
+    }
+    throw new Error(`Gateway error ${response.status}: ${errorText}`);
   }
 
   const data = await response.json();
-  const imagePart = data.candidates?.[0]?.content?.parts?.find((part: any) => part.inlineData);
 
-  if (!imagePart?.inlineData?.data) {
-    console.error('❌ [Gemini] Resposta sem imagem:', JSON.stringify(data, null, 2));
-    throw new Error('Gemini não retornou uma imagem');
+  // Extract image from response - Gateway returns base64 inline in content parts
+  const content = data.choices?.[0]?.message?.content;
+
+  // Content can be a string or an array of parts
+  if (Array.isArray(content)) {
+    const imagePart = content.find(
+      (part: any) => part.type === "image_url" || part.inline_data || part.type === "image"
+    );
+    if (imagePart?.image_url?.url) {
+      console.log(`✅ [Gateway] Imagem gerada com ${model} (image_url)`);
+      return { imageUrl: imagePart.image_url.url, provider: model };
+    }
+    if (imagePart?.inline_data) {
+      const { data: b64, mime_type } = imagePart.inline_data;
+      console.log(`✅ [Gateway] Imagem gerada com ${model} (inline_data)`);
+      return { imageUrl: `data:${mime_type || "image/png"};base64,${b64}`, provider: model };
+    }
   }
 
-  const base64 = imagePart.inlineData.data;
-  const mimeType = imagePart.inlineData.mimeType || 'image/png';
-  
-  console.log('✅ [Gemini] Imagem gerada com sucesso');
-  return { imageUrl: `data:${mimeType};base64,${base64}`, provider: 'gemini' };
+  // Try parsing as a single base64 string or data URL
+  if (typeof content === "string") {
+    if (content.startsWith("data:image")) {
+      console.log(`✅ [Gateway] Imagem gerada com ${model} (data URL string)`);
+      return { imageUrl: content, provider: model };
+    }
+    // Check if it's raw base64
+    if (content.length > 1000 && !content.includes(" ")) {
+      console.log(`✅ [Gateway] Imagem gerada com ${model} (raw base64)`);
+      return { imageUrl: `data:image/png;base64,${content}`, provider: model };
+    }
+  }
+
+  // Check raw response structure for inline images
+  const parts = data.choices?.[0]?.message?.parts;
+  if (Array.isArray(parts)) {
+    const imgPart = parts.find((p: any) => p.inlineData || p.inline_data);
+    if (imgPart) {
+      const inlineData = imgPart.inlineData || imgPart.inline_data;
+      const b64 = inlineData.data;
+      const mime = inlineData.mimeType || inlineData.mime_type || "image/png";
+      console.log(`✅ [Gateway] Imagem gerada com ${model} (parts inline)`);
+      return { imageUrl: `data:${mime};base64,${b64}`, provider: model };
+    }
+  }
+
+  console.error(`❌ [Gateway] Resposta sem imagem de ${model}:`, JSON.stringify(data).substring(0, 500));
+  throw new Error(`Modelo ${model} não retornou imagem`);
 }
 
-// Fallback: gera imagem com OpenAI DALL-E
+// Fallback: DALL-E 3 via OpenAI direta
 async function generateWithOpenAI(prompt: string, apiKey: string): Promise<{ imageUrl: string; provider: string }> {
   console.log('🎨 [OpenAI] Usando fallback DALL-E 3...');
-  
-  // Simplifica o prompt para DALL-E (max 4000 chars)
-  const simplifiedPrompt = prompt.length > 3800 
-    ? prompt.substring(0, 3800) + '...' 
-    : prompt;
+
+  const simplifiedPrompt = prompt.length > 3800 ? prompt.substring(0, 3800) + '...' : prompt;
 
   const response = await fetch('https://api.openai.com/v1/images/generations', {
     method: 'POST',
@@ -64,7 +108,7 @@ async function generateWithOpenAI(prompt: string, apiKey: string): Promise<{ ima
       n: 1,
       size: '1024x1024',
       response_format: 'b64_json',
-      quality: 'standard'
+      quality: 'standard',
     }),
   });
 
@@ -78,12 +122,11 @@ async function generateWithOpenAI(prompt: string, apiKey: string): Promise<{ ima
   const base64 = data.data?.[0]?.b64_json;
 
   if (!base64) {
-    console.error('❌ [OpenAI] Resposta sem imagem:', JSON.stringify(data, null, 2));
     throw new Error('OpenAI não retornou uma imagem');
   }
 
   console.log('✅ [OpenAI] Imagem gerada com sucesso via fallback');
-  return { imageUrl: `data:image/png;base64,${base64}`, provider: 'openai' };
+  return { imageUrl: `data:image/png;base64,${base64}`, provider: 'openai-dall-e-3' };
 }
 
 serve(async (req) => {
@@ -92,10 +135,10 @@ serve(async (req) => {
   }
 
   try {
-    const NANO_BANANA_KEY = Deno.env.get('NANO_BANANA');
+    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-    
-    if (!NANO_BANANA_KEY && !OPENAI_API_KEY) {
+
+    if (!LOVABLE_API_KEY && !OPENAI_API_KEY) {
       console.error('Nenhuma API key configurada');
       return new Response(JSON.stringify({ error: 'Nenhuma API de imagem configurada' }), {
         status: 500,
@@ -115,46 +158,48 @@ serve(async (req) => {
     console.log('📝 Prompt recebido:', prompt.substring(0, 100) + '...');
 
     let result: { imageUrl: string; provider: string };
-    let geminiError: string | null = null;
+    let fallbackUsed = false;
 
-    // Tenta Gemini primeiro (se disponível)
-    if (NANO_BANANA_KEY) {
+    // Chain: Gemini via Gateway → DALL-E 3 via OpenAI
+    if (LOVABLE_API_KEY) {
       try {
-        result = await generateWithGemini(prompt, NANO_BANANA_KEY);
+        result = await generateWithGateway(prompt, LOVABLE_API_KEY, 'google/gemini-2.5-flash-image');
       } catch (error: any) {
-        geminiError = error.message;
-        console.warn('⚠️ Gemini falhou, tentando fallback...', geminiError);
-        
-        // Tenta OpenAI como fallback
+        console.warn('⚠️ Gemini Flash Image falhou:', error.message);
+        fallbackUsed = true;
+
         if (OPENAI_API_KEY) {
-          result = await generateWithOpenAI(prompt, OPENAI_API_KEY);
+          try {
+            result = await generateWithOpenAI(prompt, OPENAI_API_KEY);
+          } catch (openaiError: any) {
+            throw new Error(`Todos os provedores falharam. Gemini: ${error.message} | OpenAI: ${openaiError.message}`);
+          }
         } else {
-          throw new Error(`Gemini falhou e OpenAI não está configurada: ${geminiError}`);
+          throw error;
         }
       }
     } else if (OPENAI_API_KEY) {
-      // Se só tem OpenAI, usa direto
       result = await generateWithOpenAI(prompt, OPENAI_API_KEY);
     } else {
       throw new Error('Nenhum provedor de imagem disponível');
     }
 
-    console.log(`✅ Imagem gerada via ${result.provider}${geminiError ? ' (fallback)' : ''}`);
+    console.log(`✅ Imagem gerada via ${result.provider}${fallbackUsed ? ' (fallback)' : ''}`);
 
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       imageUrl: result.imageUrl,
       success: true,
       provider: result.provider,
-      fallbackUsed: !!geminiError
+      fallbackUsed,
     }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
     });
 
   } catch (error: any) {
     console.error('❌ Erro final em generate-image:', error);
-    return new Response(JSON.stringify({ 
+    return new Response(JSON.stringify({
       error: error.message || 'Erro interno do servidor',
-      success: false
+      success: false,
     }), {
       status: 500,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
