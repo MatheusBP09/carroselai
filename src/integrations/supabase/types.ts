@@ -563,6 +563,41 @@ export type Database = {
           },
         ]
       }
+      contexto_vida_consorcios: {
+        Row: {
+          cliente_id: string
+          id: string
+          prazo_restante_anos: number | null
+          tipo: string | null
+          valor_carta: number | null
+          valor_lance_disponivel: number | null
+        }
+        Insert: {
+          cliente_id: string
+          id?: string
+          prazo_restante_anos?: number | null
+          tipo?: string | null
+          valor_carta?: number | null
+          valor_lance_disponivel?: number | null
+        }
+        Update: {
+          cliente_id?: string
+          id?: string
+          prazo_restante_anos?: number | null
+          tipo?: string | null
+          valor_carta?: number | null
+          valor_lance_disponivel?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_consorcios_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       contexto_vida_dados_pessoais: {
         Row: {
           aposentadoria_idade: number | null
@@ -906,10 +941,12 @@ export type Database = {
           criado_em: string
           descricao: string | null
           id: string
+          motivo_descarte: string | null
           ordem: number
           origem: string
           pote: string | null
           prioridade: string
+          status: string
           titulo: string
         }
         Insert: {
@@ -919,10 +956,12 @@ export type Database = {
           criado_em?: string
           descricao?: string | null
           id?: string
+          motivo_descarte?: string | null
           ordem?: number
           origem?: string
           pote?: string | null
           prioridade?: string
+          status?: string
           titulo: string
         }
         Update: {
@@ -932,10 +971,12 @@ export type Database = {
           criado_em?: string
           descricao?: string | null
           id?: string
+          motivo_descarte?: string | null
           ordem?: number
           origem?: string
           pote?: string | null
           prioridade?: string
+          status?: string
           titulo?: string
         }
         Relationships: [
@@ -1070,6 +1111,44 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "contexto_vida_seguros_vigentes_cliente_id_fkey"
+            columns: ["cliente_id"]
+            isOneToOne: false
+            referencedRelation: "contexto_vida_clientes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      contexto_vida_share_tokens: {
+        Row: {
+          ativo: boolean
+          cliente_id: string
+          criado_em: string
+          criado_por: string
+          expira_em: string | null
+          id: string
+          token: string
+        }
+        Insert: {
+          ativo?: boolean
+          cliente_id: string
+          criado_em?: string
+          criado_por: string
+          expira_em?: string | null
+          id?: string
+          token?: string
+        }
+        Update: {
+          ativo?: boolean
+          cliente_id?: string
+          criado_em?: string
+          criado_por?: string
+          expira_em?: string | null
+          id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contexto_vida_share_tokens_cliente_id_fkey"
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "contexto_vida_clientes"
@@ -3841,11 +3920,13 @@ export type Database = {
           nome_consultor: string | null
           operation_sale_amount: number | null
           operations: string | null
+          params_json: Json | null
           plan_kind: number | null
           property_value_amount: number | null
           reserve_fund_fee: number | null
           self_resources_amount: number | null
           selic_rate: number | null
+          share_token: string | null
           study_kind: string | null
           telefone_cliente: string | null
           telefone_consultor: string | null
@@ -3876,11 +3957,13 @@ export type Database = {
           nome_consultor?: string | null
           operation_sale_amount?: number | null
           operations?: string | null
+          params_json?: Json | null
           plan_kind?: number | null
           property_value_amount?: number | null
           reserve_fund_fee?: number | null
           self_resources_amount?: number | null
           selic_rate?: number | null
+          share_token?: string | null
           study_kind?: string | null
           telefone_cliente?: string | null
           telefone_consultor?: string | null
@@ -3911,11 +3994,13 @@ export type Database = {
           nome_consultor?: string | null
           operation_sale_amount?: number | null
           operations?: string | null
+          params_json?: Json | null
           plan_kind?: number | null
           property_value_amount?: number | null
           reserve_fund_fee?: number | null
           self_resources_amount?: number | null
           selic_rate?: number | null
+          share_token?: string | null
           study_kind?: string | null
           telefone_cliente?: string | null
           telefone_consultor?: string | null
@@ -4260,6 +4345,230 @@ export type Database = {
         }
         Returns: boolean
       }
+      fetch_cliente_by_share_token: {
+        Args: { _token: string }
+        Returns: {
+          cliente_id: string
+          nome: string
+        }[]
+      }
+      fetch_configuracoes_by_token: {
+        Args: { _token: string }
+        Returns: {
+          cdi: number | null
+          cliente_id: string
+          despesa_familiar_sem_educacao: number | null
+          educacao_ciclos: Json | null
+          id: string
+          inflacao: number | null
+          ir_considerado: string | null
+          juro_real: number | null
+          necessidade_liquidez_imediata: number | null
+          objetivo_investimentos: string | null
+          outras_receitas: Json | null
+          pct_contribuicao: number | null
+          rentabilidade_aposentadoria: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "contexto_vida_configuracoes"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      fetch_consorcios_by_token: {
+        Args: { _token: string }
+        Returns: {
+          cliente_id: string
+          id: string
+          prazo_restante_anos: number | null
+          tipo: string | null
+          valor_carta: number | null
+          valor_lance_disponivel: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "contexto_vida_consorcios"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      fetch_dados_pessoais_by_token: {
+        Args: { _token: string }
+        Returns: {
+          aposentadoria_idade: number | null
+          cliente_id: string
+          declaracao_ir: string | null
+          estado_civil: string | null
+          expectativa_vida: number | null
+          id: string
+          idade: number | null
+          perfil_risco: string | null
+          profissao: string | null
+          receitas_previstas_aposentadoria: number | null
+          regime_trabalho: string | null
+          renda_desejada_aposentadoria: number | null
+          renda_outras_fontes: number | null
+          tem_seguro_saude: boolean | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "contexto_vida_dados_pessoais"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      fetch_dependentes_by_token: {
+        Args: { _token: string }
+        Returns: {
+          cliente_id: string
+          id: string
+          idade: number | null
+          nome: string | null
+          observacao: string | null
+          tipo: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "contexto_vida_dependentes"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      fetch_financiamentos_by_token: {
+        Args: { _token: string }
+        Returns: {
+          cliente_id: string
+          com_seguro: boolean | null
+          id: string
+          parcela_mensal: number | null
+          prazo_anos: number | null
+          saldo_devedor: number | null
+          taxa_juros_anual: number | null
+          tipo: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "contexto_vida_financiamentos"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      fetch_fluxo_caixa_by_token: {
+        Args: { _token: string }
+        Returns: {
+          capacidade_poupanca_mensal: number | null
+          cliente_id: string
+          gastos_mensais: number | null
+          id: string
+          renda_conjuge: number | null
+          renda_mensal_bruta: number | null
+          renda_mensal_liquida: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "contexto_vida_fluxo_caixa"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      fetch_patrimonio_financeiro_by_token: {
+        Args: { _token: string }
+        Returns: {
+          classe: string | null
+          cliente_id: string
+          id: string
+          instituicao: string | null
+          liquidez: string | null
+          observacao: string | null
+          pct_cdi_bruto: number | null
+          produto: string | null
+          valor: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "contexto_vida_patrimonio_financeiro"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      fetch_patrimonio_nao_financeiro_by_token: {
+        Args: { _token: string }
+        Returns: {
+          cliente_id: string
+          descricao: string | null
+          id: string
+          renda_aluguel_mensal: number | null
+          tipo: string | null
+          valor: number | null
+          vendavel: boolean | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "contexto_vida_patrimonio_nao_financeiro"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      fetch_projetos_by_token: {
+        Args: { _token: string }
+        Returns: {
+          cliente_id: string
+          id: string
+          nome: string | null
+          pessoal_familiar: string | null
+          prazo_anos: number | null
+          tipo: string | null
+          valor_alvo: number | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "contexto_vida_projetos"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      fetch_proximos_passos_by_token: {
+        Args: { _token: string }
+        Returns: {
+          cliente_id: string
+          concluido: boolean
+          concluido_em: string | null
+          criado_em: string
+          descricao: string | null
+          id: string
+          motivo_descarte: string | null
+          ordem: number
+          origem: string
+          pote: string | null
+          prioridade: string
+          status: string
+          titulo: string
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "contexto_vida_proximos_passos"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
+      fetch_seguros_vigentes_by_token: {
+        Args: { _token: string }
+        Returns: {
+          capital_segurado: number | null
+          cliente_id: string
+          id: string
+          seguradora: string | null
+          tipo: string | null
+          vencimento: string | null
+        }[]
+        SetofOptions: {
+          from: "*"
+          to: "contexto_vida_seguros_vigentes"
+          isOneToOne: false
+          isSetofReturn: true
+        }
+      }
       find_matching_clients: {
         Args: { criteria_json: Json; list_id_param: string }
         Returns: {
@@ -4269,6 +4578,10 @@ export type Database = {
       }
       generate_workflow_documentation: {
         Args: { workflow_content: Json }
+        Returns: string
+      }
+      get_cliente_id_by_share_token: {
+        Args: { _token: string }
         Returns: string
       }
       get_clientes_sem_responsavel: {
