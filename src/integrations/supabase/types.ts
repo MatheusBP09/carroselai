@@ -3527,6 +3527,35 @@ export type Database = {
           },
         ]
       }
+      tutorsai_agent_shares: {
+        Row: {
+          agent_id: string
+          created_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          agent_id: string
+          created_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          agent_id?: string
+          created_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tutorsai_agent_shares_agent_id_fkey"
+            columns: ["agent_id"]
+            isOneToOne: false
+            referencedRelation: "tutorsai_agents"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tutorsai_agents: {
         Row: {
           created_at: string
@@ -4755,6 +4784,14 @@ export type Database = {
         Returns: boolean
       }
       is_admin: { Args: never; Returns: boolean }
+      is_agent_owner: {
+        Args: { _agent_id: string; _user_id: string }
+        Returns: boolean
+      }
+      is_agent_shared_with: {
+        Args: { _agent_id: string; _user_id: string }
+        Returns: boolean
+      }
       is_gestor_of: {
         Args: { _responsavel: string; _user_id: string }
         Returns: boolean

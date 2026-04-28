@@ -44,6 +44,11 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
       
       const slide = data.slides[slideIndex];
       
+      // Respect user's "remove image" choice from Step 5 (hasImage === false)
+      const resolvedContentImageUrl = slide.hasImage === false
+        ? undefined
+        : (slide.customImageUrl || slide.contentImageUrls?.[0]);
+      
       // Use the exact same rendering logic as simpleDownloadService
       const blob = await renderTwitterPostToImage({
         text: slide.text,
@@ -51,7 +56,7 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
         handle: data.instagramHandle,
         isVerified: data.isVerified,
         profileImageUrl: slide.profileImageUrl,
-        contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
+        contentImageUrl: resolvedContentImageUrl
       });
 
       if (!blob || blob.size < 1000) {
@@ -107,13 +112,18 @@ export const Step6Download = ({ data, onBack }: StepProps) => {
       for (let i = 0; i < data.slides.length; i++) {
         const slide = data.slides[i];
         
+        // Respect user's "remove image" choice from Step 5 (hasImage === false)
+        const resolvedContentImageUrl = slide.hasImage === false
+          ? undefined
+          : (slide.customImageUrl || slide.contentImageUrls?.[0]);
+        
         const blob = await renderTwitterPostToImage({
           text: slide.text,
           username: data.username || data.instagramHandle,
           handle: data.instagramHandle,
           isVerified: data.isVerified,
           profileImageUrl: slide.profileImageUrl,
-          contentImageUrl: slide.contentImageUrls?.[0]
+          contentImageUrl: resolvedContentImageUrl
         });
 
         // Create valid PNG with proper headers

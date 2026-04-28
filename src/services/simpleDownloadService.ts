@@ -35,6 +35,11 @@ export class SimpleDownloadService {
 
       console.log(`🎯 Rendering slide ${slideIndex + 1} for download`);
       
+      // Respect user's "remove image" choice from Step 5 (hasImage === false)
+      const resolvedContentImageUrl = slide.hasImage === false
+        ? undefined
+        : (slide.customImageUrl || slide.contentImageUrls?.[0]);
+      
       // Use the same rendering logic that works in preview
       const blob = await renderTwitterPostToImage({
         text: slide.text,
@@ -42,7 +47,7 @@ export class SimpleDownloadService {
         handle: data.instagramHandle,
         isVerified: data.isVerified,
         profileImageUrl: slide.profileImageUrl,
-        contentImageUrl: slide.customImageUrl || slide.contentImageUrls?.[0]
+        contentImageUrl: resolvedContentImageUrl
       });
 
       if (!blob || blob.size < 1000) {
