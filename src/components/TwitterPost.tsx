@@ -24,7 +24,17 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
   contentImageUrl
 }) => {
   const hasImage = !!contentImageUrl;
-  
+
+  // Adaptive font sizing for text-only slides — uses available vertical space
+  const getTextFontSize = (): string => {
+    if (hasImage) return '36px';
+    const len = text.length;
+    if (len <= 100) return '64px';
+    if (len <= 200) return '56px';
+    if (len <= 350) return '48px';
+    return '40px';
+  };
+
   return (
     <div 
       style={{
@@ -154,19 +164,15 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
       <div 
         style={{
           color: '#000000',
-          fontSize: '36px',
-          lineHeight: '1.25',
+          fontSize: getTextFontSize(),
+          lineHeight: '1.3',
           fontWeight: '400',
           flex: hasImage ? 'none' : '1',
-          display: hasImage ? 'block' : 'flex',
-          alignItems: hasImage ? 'flex-start' : 'center',
+          display: 'block',
+          textAlign: 'left',
         }}
       >
-        {hasImage ? (
-          <div>{text}</div>
-        ) : (
-          <div style={{ width: '100%', textAlign: 'center', lineHeight: '1.5' }}>{text}</div>
-        )}
+        <div>{text}</div>
       </div>
 
       {/* Content Image - Preenche o espaço restante */}

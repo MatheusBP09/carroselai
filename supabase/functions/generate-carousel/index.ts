@@ -169,6 +169,54 @@ JSON:
           continue; // Try next model
         }
 
+        // Apply mandatory image rules:
+        //  - Slide 1: ALWAYS has image
+        //  - Last slide: NEVER has image
+        //  - Middle slides: exactly 1 random slide has image
+        if (parsedResponse?.slides && Array.isArray(parsedResponse.slides)) {
+          const slides = parsedResponse.slides;
+          const total = slides.length;
+
+          if (total > 0) {
+            // First slide
+            slides[0].needsImage = true;
+            if (!slides[0].imagePrompt) {
+              slides[0].imagePrompt = `Foto realista relacionada ao tema: ${slides[0].text?.substring(0, 100) || ''}`;
+            }
+          }
+
+          if (total > 1) {
+            // Last slide — no image
+            slides[total - 1].needsImage = false;
+            slides[total - 1].imagePrompt = '';
+          }
+
+          if (total > 2) {
+            // Middle slides: indices 1..total-2
+            const middleIndices = [];
+            for (let i = 1; i <= total - 2; i++) middleIndices.push(i);
+
+            // Pick exactly one random middle slide to have an image
+            const chosen = middleIndices[Math.floor(Math.random() * middleIndices.length)];
+
+            for (const i of middleIndices) {
+              if (i === chosen) {
+                slides[i].needsImage = true;
+                if (!slides[i].imagePrompt) {
+                  slides[i].imagePrompt = `Foto realista relacionada ao tema: ${slides[i].text?.substring(0, 100) || ''}`;
+                }
+              } else {
+                slides[i].needsImage = false;
+                slides[i].imagePrompt = '';
+              }
+            }
+          }
+
+          console.log('Image rules applied. Distribution:',
+            slides.map((s: any, i: number) => `slide ${i + 1}: ${s.needsImage ? 'IMG' : 'text'}`).join(' | ')
+          );
+        }
+
         return new Response(JSON.stringify(parsedResponse), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         });
