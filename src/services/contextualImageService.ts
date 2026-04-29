@@ -20,6 +20,7 @@ interface ContextualImageOptions {
   slidePosition: 'intro' | 'development' | 'conclusion';
   imageStyle?: ImageStyle;
   customPrompt?: string;
+  gptImagePrompt?: string;
 }
 
 /**
@@ -108,15 +109,22 @@ export const analyzeSlideContent = (text: string): ContentAnalysis => {
   };
 };
 
-// Style prompts for predefined image styles
+// Style prompts for predefined image styles (in English for best model performance)
 const stylePrompts: Record<ImageStyle, string> = {
-  photography: 'Professional photography, high resolution, realistic lighting, cinematic composition, natural colors',
-  illustration: 'Digital illustration, vibrant colors, modern design, clean vector lines, artistic style',
-  minimalist: 'Minimalist design, white space, simple geometric shapes, subtle colors, clean aesthetic',
-  infographic: 'Infographic style, icons, data visualization, modern flat design, structured layout',
-  abstract_3d: '3D abstract art, geometric shapes, gradient colors, modern render, glass morphism, futuristic',
-  watercolor: 'Watercolor painting style, soft brushstrokes, artistic, hand-painted aesthetic, organic textures',
-  custom: ''
+  photography:
+    'Professional editorial photography, ultra-realistic, natural lighting, shallow depth of field, cinematic composition, vibrant true-to-life colors, 8k quality',
+  notebook_sketch:
+    'Hand-drawn illustration on a lined spiral notebook page, top-down flat lay view, colored pencil and marker style, playful cartoon characters and objects (houses, money bags, coins, arrows, stairs, buildings, people), bold hand-lettered title at the top in dark blue and red marker with yellow highlighter underline, curved colored arrows (green, yellow, red) connecting elements, small doodled icons, soft pastel paper texture with subtle blue grid lines, red margin line on the left, yellow sticky note with red pushpin in the top-left corner, two pencils with erasers at the bottom-right corner, warm and educational infographic feel, vibrant but soft colors, casual didactic style',
+  custom: '',
+};
+
+// Style-specific constraints (in English)
+const styleConstraints: Record<ImageStyle, string> = {
+  photography:
+    'Strictly no text overlays, no typography, no logos, no watermarks.',
+  notebook_sketch:
+    'Short hand-lettered labels in Portuguese are allowed and encouraged (max 2-4 words per label, written in marker style). Title at the top must reflect the slide topic in Portuguese. Leave the bottom-right corner clean (no signature, watermark or username).',
+  custom: '',
 };
 
 /**
@@ -127,90 +135,57 @@ export const generateContextualImagePrompt = (
   options: ContextualImageOptions
 ): string => {
   const analysis = analyzeSlideContent(text);
-  const { slideIndex, totalSlides, slidePosition, imageStyle, customPrompt } = options;
+  const { slideIndex, totalSlides, slidePosition, imageStyle, customPrompt, gptImagePrompt } = options;
   
   console.log('🎨 Content analysis for slide', slideIndex + 1, ':', analysis);
   
-  // Get base style from user selection or default
-  let baseStyle = stylePrompts[imageStyle || 'photography'];
-  
-  // If custom style or user has additional instructions, incorporate them
-  if (customPrompt && customPrompt.trim()) {
-    baseStyle = baseStyle 
-      ? `${baseStyle}. ${customPrompt.trim()}` 
-      : customPrompt.trim();
+  const style = imageStyle || 'photography';
+  const baseStyle = stylePrompts[style];
+  const constraints = styleConstraints[style];
+
+  // Custom style (or extra instructions): user prompt is the driver
+  if (style === 'custom') {
+    const subject = gptImagePrompt?.trim() || text.slice(0, 200);
+    const userInstr = customPrompt?.trim() || 'High quality, visually engaging composition';
+    const finalPrompt = `${userInstr}. Subject: ${subject}. Instagram carousel slide, 1080x1350 vertical aspect ratio.`;
+    console.log('✨ Custom prompt for slide', slideIndex + 1, ':', finalPrompt.substring(0, 200));
+    return finalPrompt;
   }
-  
-  // Fallback if no style defined
-  if (!baseStyle) {
-    baseStyle = "Ultra high resolution, professional digital illustration, clean modern design, vibrant colors, high contrast, detailed";
+
+  // Subject: prefer the GPT-generated imagePrompt (already targeted to the slide).
+  // Fallback to extracted keywords + slide text.
+  let subject = gptImagePrompt?.trim() || '';
+  if (!subject) {
+    const keyWords = extractKeyVisualizableWords(text);
+    const kw = keyWords.length > 0 ? `${keyWords.slice(0, 3).join(', ')}. ` : '';
+    subject = `${kw}Scene relevant to: ${text.slice(0, 180)}`;
   }
-  
-  // Position-specific elements
-  let positionElements = "";
+
+  // Position hint (kept light, no style override)
+  let positionHint = '';
   if (slidePosition === 'intro' && slideIndex === 0) {
-    positionElements = "eye-catching hero style, bold typography elements, engaging opening visual";
+    positionHint = 'Strong opening visual that hooks the viewer.';
   } else if (slidePosition === 'conclusion' && slideIndex === totalSlides - 1) {
-    positionElements = "conclusive design, call-to-action elements, summary visualization";
+    positionHint = 'Conclusive, summarizing visual.';
   } else {
-    positionElements = "content-focused design, informational layout, supporting visual elements";
+    positionHint = 'Supporting visual that reinforces the message.';
   }
-  
-  // Theme-specific visual elements
-  let themePrompt = "";
-  
-  if (analysis.themes.includes('business')) {
-    themePrompt = "Modern business infographic style, corporate colors (blues, grays, whites), growth arrows, success symbols, professional charts and graphs, business icons";
-  } else if (analysis.themes.includes('education')) {
-    themePrompt = "Educational infographic design, learning icons, book symbols, lightbulb ideas, knowledge representation, academic color scheme (blues, greens, oranges)";
-  } else if (analysis.themes.includes('technology')) {
-    themePrompt = "Tech-focused design, digital interface elements, circuit patterns, futuristic colors (blues, purples, cyans), technology icons, data visualization";
-  } else if (analysis.themes.includes('wellness')) {
-    themePrompt = "Health and wellness design, natural colors (greens, blues, earth tones), wellness icons, balance symbols, organic shapes";
-  } else if (analysis.themes.includes('creative')) {
-    themePrompt = "Creative and artistic design, vibrant color palette, artistic elements, inspiration symbols, creative tools icons, innovative layouts";
-  } else if (analysis.themes.includes('social')) {
-    themePrompt = "Social media style design, people icons, communication symbols, network graphics, community elements, social colors";
-  } else {
-    themePrompt = "Clean minimalist design, geometric shapes, balanced composition, modern color palette, abstract visual elements";
-  }
-  
-  // Sentiment-based color adjustments
-  let sentimentColors = "";
-  if (analysis.sentiment === 'positive') {
-    sentimentColors = "bright optimistic colors, energetic tones, uplifting color palette";
-  } else if (analysis.sentiment === 'negative') {
-    sentimentColors = "problem-solving colors, solution-focused palette, constructive tones";
-  } else {
-    sentimentColors = "balanced neutral colors, professional color scheme";
-  }
-  
-  // Content-specific elements
-  let contentElements = "";
-  
-  // Extract key concepts from the text for visual representation
-  const keyWords = extractKeyVisualizableWords(text);
-  if (keyWords.length > 0) {
-    contentElements = `Visual representation of: ${keyWords.slice(0, 3).join(', ')}, `;
-  }
-  
-  // Tone-specific styling
-  let toneStyle = "";
-  if (analysis.tone === 'professional') {
-    toneStyle = "corporate professional style, business presentation layout";
-  } else if (analysis.tone === 'formal') {
-    toneStyle = "formal document style, academic presentation layout";
-  } else if (analysis.tone === 'creative') {
-    toneStyle = "creative artistic style, innovative design layout";
-  } else {
-    toneStyle = "approachable casual style, friendly design layout";
-  }
-  
-  // Combine all elements into final prompt
-  const finalPrompt = `${baseStyle}. ${themePrompt}. ${contentElements}${toneStyle}. ${positionElements}. ${sentimentColors}. Instagram carousel slide format, 1080x1350 aspect ratio. No text overlays, focus on visual impact and relevance to content themes. Modern, engaging, professional quality.`;
-  
-  console.log('✨ Generated contextual prompt for slide', slideIndex + 1, ':', finalPrompt.substring(0, 150) + '...');
-  
+
+  // Mood from sentiment (color guidance only, doesn't override style)
+  const mood =
+    analysis.sentiment === 'positive'
+      ? 'optimistic, uplifting mood'
+      : analysis.sentiment === 'negative'
+      ? 'thoughtful, problem-solving mood'
+      : 'balanced, confident mood';
+
+  // Optional user extra instructions
+  const userExtra = customPrompt?.trim() ? ` Additional direction: ${customPrompt.trim()}.` : '';
+
+  const finalPrompt = `${baseStyle}. Subject: ${subject}. ${mood}. ${positionHint} ${constraints}${userExtra} Instagram carousel slide, 1080x1350 vertical aspect ratio.`;
+
+  console.log('✨ Generated prompt for slide', slideIndex + 1, `(${style}):`, finalPrompt.substring(0, 200) + '...');
+
   return finalPrompt;
 };
 
@@ -264,7 +239,8 @@ export const generateContextualImage = async (
   totalSlides: number,
   username: string,
   imageStyle?: ImageStyle,
-  customPrompt?: string
+  customPrompt?: string,
+  gptImagePrompt?: string
 ): Promise<string> => {
   const slidePosition = getSlidePosition(slideIndex, totalSlides);
   
@@ -274,7 +250,8 @@ export const generateContextualImage = async (
     username,
     slidePosition,
     imageStyle,
-    customPrompt
+    customPrompt,
+    gptImagePrompt,
   };
   
   const prompt = generateContextualImagePrompt(text, options);
