@@ -17,7 +17,12 @@ export const Step2Content = ({ data, onNext, onBack }: StepProps) => {
   const [callToAction, setCallToAction] = useState<CallToAction>(data.callToAction || 'follow');
   const [customCTA, setCustomCTA] = useState(data.customCTA || '');
   const [copywritingFramework, setCopywritingFramework] = useState<CopywritingFramework>(data.copywritingFramework || 'aida');
-  const [imageStyle, setImageStyle] = useState<ImageStyle>(data.imageStyle || 'photography');
+  // Migrate legacy values (illustration / minimalist / infographic / abstract_3d / watercolor) to photography
+  const validInitialStyle: ImageStyle =
+    data.imageStyle === 'photography' || data.imageStyle === 'notebook_sketch' || data.imageStyle === 'custom'
+      ? data.imageStyle
+      : 'photography';
+  const [imageStyle, setImageStyle] = useState<ImageStyle>(validInitialStyle);
   const [customImagePrompt, setCustomImagePrompt] = useState(data.customImagePrompt || '');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -118,11 +123,7 @@ export const Step2Content = ({ data, onNext, onBack }: StepProps) => {
 
   const imageStyleOptions = [
     { value: 'photography', label: 'Fotografia Profissional', icon: '📷', description: 'Imagens realistas e de alta qualidade' },
-    { value: 'illustration', label: 'Ilustração Digital', icon: '🎨', description: 'Desenhos digitais modernos e vibrantes' },
-    { value: 'minimalist', label: 'Minimalista', icon: '◻️', description: 'Design limpo e simples' },
-    { value: 'infographic', label: 'Infográfico', icon: '📊', description: 'Ícones e visualização de dados' },
-    { value: 'abstract_3d', label: 'Arte 3D Abstrata', icon: '🔮', description: 'Formas geométricas e gradientes' },
-    { value: 'watercolor', label: 'Aquarela', icon: '🎭', description: 'Estilo artístico pintado' },
+    { value: 'notebook_sketch', label: 'Caderno Ilustrado', icon: '📓', description: 'Desenho à mão em folha de caderno, com setas e ícones (estilo infográfico manuscrito)' },
     { value: 'custom', label: 'Totalmente Personalizado', icon: '✏️', description: 'Use suas próprias instruções' }
   ];
 
