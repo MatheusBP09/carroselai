@@ -178,113 +178,118 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
         }
       }
 
-      // Passo 3: Gerar imagens com sistema inteligente
+      // Passo 3: Gerar imagens APENAS para slides com needsImage === true (regra do backend)
       setCurrentStep('Preparando geração inteligente de imagens...');
       const totalSlides = result.slides.length;
-      setImageStats({ generated: 0, fallbacks: 0, total: totalSlides });
-      
-      // Prepare batch requests for enhanced image service using contextual analysis
-      const imageRequests = await Promise.all(result.slides.map(async (slide, i) => {
-        console.log(`🎨 Generating contextual prompt for slide ${i + 1}/${totalSlides}`);
-        
-        // Use contextual image service for intelligent, content-aware prompts
-        // Pass user-selected image style and custom prompt
-        const contextualPrompt = await generateContextualImage(
-          slide.text, 
-          i, 
-          totalSlides, 
-          data.username,
-          data.imageStyle,
-          data.customImagePrompt
-        );
-        
-        return {
-          params: {
-            text: contextualPrompt,
-            style: 'modern' as const,
-            contentFormat: data.contentFormat,
-            contentType: data.contentType
-          },
-          slideIndex: i,
-          username: data.username
-        };
-      }));
+
+      // Identificar quais slides precisam de imagem segundo a regra do backend
+      const slidesNeedingImage = result.slides
+        .map((slide, i) => ({ slide, i }))
+        .filter(({ slide }) => slide.needsImage === true);
+      const totalImagesToGenerate = slidesNeedingImage.length;
+
+      console.log(`📊 Backend rules: ${totalImagesToGenerate} de ${totalSlides} slides precisam de imagem`);
+      setImageStats({ generated: 0, fallbacks: 0, total: totalImagesToGenerate });
+
+      // Construir requests apenas para os slides que precisam de imagem
+      const imageRequests = await Promise.all(
+        slidesNeedingImage.map(async ({ slide, i }) => {
+          console.log(`🎨 Generating contextual prompt for slide ${i + 1} (needsImage)`);
+          const contextualPrompt = await generateContextualImage(
+            slide.text,
+            i,
+            totalSlides,
+            data.username,
+            data.imageStyle,
+            data.customImagePrompt
+          );
+          return {
+            params: {
+              text: contextualPrompt,
+              style: 'modern' as const,
+              contentFormat: data.contentFormat,
+              contentType: data.contentType
+            },
+            slideIndex: i,
+            username: data.username
+          };
+        })
+      );
 
       setCurrentStep('Gerando imagens com sistema adaptativo...');
-      
-      // Fix Variable Scope Error: Track progress without accessing imageResults before initialization
-      let currentImageResults: any[] = [];
-      
-      // Use enhanced batch generation with smart rate limiting
-      const imageResults = await enhancedImageService.generateBatch(
-        imageRequests,
-        totalSlides,
-        (progressPercent, currentIndex) => {
-          setProgress(30 + (progressPercent / 100) * 60);
-          setCurrentStep(`Processando imagem ${currentIndex} de ${totalSlides} (Sistema Inteligente)`);
-          
-          // Update stats safely using currentImageResults or estimated counts
-          const processedCount = Math.floor((currentIndex / totalSlides) * totalSlides);
-          const estimatedGenerated = Math.floor(processedCount * 0.7); // Estimate 70% success rate
-          const estimatedFallbacks = processedCount - estimatedGenerated;
-          
-          setImageStats({ 
-            generated: estimatedGenerated, 
-            fallbacks: estimatedFallbacks, 
-            total: totalSlides 
-          });
-        }
-      );
-      
-      // Update current results for future reference
-      currentImageResults = imageResults;
 
-      // Process results and create slides with images
-      setCurrentStep('Pré-processando imagens para download...');
-      
-      const slidesWithImages = await Promise.all(result.slides.map(async (slide, i) => {
-        const imageResult = imageResults[i];
-        let contentDataUrls: string[] = [];
-        let profileDataUrl: string | undefined;
-        
-        // Keep original DALL-E URLs - let html-to-image handle them directly
-        console.log(`💡 Mantendo URLs originais do slide ${i + 1} para renderização direta`);
-        
-        // Pre-process profile image if needed
-        if (profileImageUrl && i === 0) { // Only process once
-          try {
-            const { convertDalleUrlToDataUrl, isDalleUrl } = await import('../services/dalleUrlService');
-            if (isDalleUrl(profileImageUrl)) {
-              console.log('🔄 Pré-processando imagem de perfil...');
-              const result = await convertDalleUrlToDataUrl(profileImageUrl);
-              if (result.success) {
-                profileDataUrl = result.url;
-                console.log('✅ Imagem de perfil pré-processada com sucesso');
-              }
+      // Batch só com slides que precisam — pode ficar vazio
+      const batchResults = totalImagesToGenerate > 0
+        ? await enhancedImageService.generateBatch(
+            imageRequests,
+            totalImagesToGenerate,
+            (progressPercent, currentIndex) => {
+              setProgress(30 + (progressPercent / 100) * 60);
+              setCurrentStep(`Processando imagem ${currentIndex} de ${totalImagesToGenerate}`);
+              const processedCount = Math.min(currentIndex, totalImagesToGenerate);
+              const estimatedGenerated = Math.floor(processedCount * 0.7);
+              const estimatedFallbacks = processedCount - estimatedGenerated;
+              setImageStats({
+                generated: estimatedGenerated,
+                fallbacks: estimatedFallbacks,
+                total: totalImagesToGenerate
+              });
             }
-          } catch (error) {
-            console.warn('⚠️ Falha no pré-processamento da imagem de perfil:', error);
-          }
+          )
+        : [];
+
+      // Mapear resultados de volta para o índice original do slide
+      const resultsBySlideIndex = new Map<number, any>();
+      slidesNeedingImage.forEach(({ i }, batchIdx) => {
+        if (batchResults[batchIdx]) {
+          resultsBySlideIndex.set(i, batchResults[batchIdx]);
         }
-        
+      });
+
+      // Pré-processar profile image (uma vez)
+      setCurrentStep('Pré-processando imagens para download...');
+      let profileDataUrl: string | undefined;
+      if (profileImageUrl) {
+        try {
+          const { convertDalleUrlToDataUrl, isDalleUrl } = await import('../services/dalleUrlService');
+          if (isDalleUrl(profileImageUrl)) {
+            console.log('🔄 Pré-processando imagem de perfil...');
+            const profileResult = await convertDalleUrlToDataUrl(profileImageUrl);
+            if (profileResult.success) {
+              profileDataUrl = profileResult.url;
+              console.log('✅ Imagem de perfil pré-processada com sucesso');
+            }
+          }
+        } catch (error) {
+          console.warn('⚠️ Falha no pré-processamento da imagem de perfil:', error);
+        }
+      }
+
+      // Montar slidesWithImages respeitando needsImage do backend
+      const slidesWithImages = result.slides.map((slide, i) => {
+        const imageResult = resultsBySlideIndex.get(i);
+        const slideHasImage = slide.needsImage === true && !!imageResult;
+        const promptForSlide = imageRequests.find(r => r.slideIndex === i)?.params.text || '';
+
         return {
           ...slide,
-          needsImage: true,
-          imagePrompt: imageRequests[i].params.text,
-          contentImageUrls: imageResult ? [imageResult.imageUrl] : [],
-          contentImageDataUrls: contentDataUrls,
+          needsImage: slide.needsImage === true, // preserva regra do backend
+          hasImage: slideHasImage,               // controla visualização inicial no Step5
+          imagePrompt: slideHasImage ? promptForSlide : '',
+          contentImageUrls: slideHasImage ? [imageResult.imageUrl] : [],
+          contentImageDataUrls: [] as string[],
           profileImageUrl,
           profileImageDataUrl: i === 0 ? profileDataUrl : undefined,
-          imageGenerated: imageResult?.generated || false,
-          fallbackUsed: imageResult?.fallbackUsed || false,
-          customImageUrl: imageResult?.imageUrl // Add this for consistent access
+          imageGenerated: slideHasImage ? !!imageResult?.generated : false,
+          fallbackUsed: slideHasImage ? !!imageResult?.fallbackUsed : false,
+          customImageUrl: slideHasImage ? imageResult.imageUrl : undefined
         };
-      }));
+      });
 
-      // Final stats
-      const finalGenerated = imageResults.filter(r => r.generated).length;
-      const finalFallbacks = imageResults.filter(r => r.fallbackUsed).length;
-      setImageStats({ generated: finalGenerated, fallbacks: finalFallbacks, total: totalSlides });
+      // Final stats — baseado apenas nos slides que precisavam de imagem
+      const finalGenerated = batchResults.filter(r => r?.generated).length;
+      const finalFallbacks = batchResults.filter(r => r?.fallbackUsed).length;
+      setImageStats({ generated: finalGenerated, fallbacks: finalFallbacks, total: totalImagesToGenerate });
       
       console.log(`📊 Estatísticas finais: ${finalGenerated} geradas, ${finalFallbacks} fallbacks de ${totalSlides} total`);
 
