@@ -29,10 +29,13 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
   const getTextFontSize = (): string => {
     if (hasImage) return '36px';
     const len = text.length;
-    if (len <= 100) return '64px';
-    if (len <= 200) return '56px';
-    if (len <= 350) return '48px';
-    return '40px';
+    if (len <= 60)  return '96px';
+    if (len <= 100) return '84px';
+    if (len <= 150) return '72px';
+    if (len <= 220) return '60px';
+    if (len <= 320) return '52px';
+    if (len <= 450) return '44px';
+    return '38px';
   };
 
   return (
@@ -165,7 +168,7 @@ export const TwitterPost: React.FC<TwitterPostProps> = ({
         style={{
           color: '#000000',
           fontSize: getTextFontSize(),
-          lineHeight: '1.3',
+          lineHeight: hasImage ? '1.3' : '1.2',
           fontWeight: '400',
           flex: hasImage ? 'none' : '1',
           display: 'block',
