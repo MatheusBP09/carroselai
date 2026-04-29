@@ -174,7 +174,7 @@ serve(async (req) => {
     // Chain: Gemini via Gateway → DALL-E 3 via OpenAI
     if (LOVABLE_API_KEY) {
       try {
-        result = await generateWithGateway(prompt, LOVABLE_API_KEY, 'google/gemini-2.5-flash-image');
+        result = await generateWithGateway(prompt, LOVABLE_API_KEY, 'google/gemini-3.1-flash-image-preview');
       } catch (error: any) {
         console.warn('⚠️ Gemini Flash Image falhou:', error.message);
         fallbackUsed = true;
