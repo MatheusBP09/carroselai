@@ -6,98 +6,62 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
-const GATEWAY_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
-
-async function generateWithGateway(
+// Google AI Studio (Generative Language API) — direct billing on user's GCP project
+async function generateWithGoogleDirect(
   prompt: string,
   apiKey: string,
   model: string
 ): Promise<{ imageUrl: string; provider: string }> {
-  console.log(`🎨 [Gateway] Gerando imagem com modelo: ${model}...`);
+  console.log(`🎨 [Google Direct] Gerando imagem com modelo: ${model}...`);
 
-  const response = await fetch(GATEWAY_URL, {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+  const response = await fetch(url, {
     method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
-      model,
-      messages: [{ role: "user", content: prompt }],
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: {
+        responseModalities: ["IMAGE"],
+      },
     }),
   });
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error(`❌ [Gateway] Erro ${response.status} com ${model}:`, errorText);
+    console.error(`❌ [Google Direct] Erro ${response.status} com ${model}:`, errorText);
+
+    if (response.status === 400 && errorText.includes("API_KEY_INVALID")) {
+      throw new Error("API key Google inválida. Gere uma nova em aistudio.google.com/apikey");
+    }
+    if (response.status === 403) {
+      throw new Error("Acesso negado. Verifique se o projeto GCP tem billing habilitado e a API Generative Language ativada.");
+    }
     if (response.status === 429) {
-      throw new Error(`Rate limit excedido (429). Tente novamente em instantes.`);
+      throw new Error("Quota excedida na Google AI. Verifique limites no console GCP.");
     }
-    if (response.status === 402) {
-      throw new Error(`Créditos insuficientes (402). Adicione fundos no workspace Lovable.`);
-    }
-    throw new Error(`Gateway error ${response.status}: ${errorText}`);
+    throw new Error(`Google API error ${response.status}: ${errorText}`);
   }
 
   const data = await response.json();
 
-  // Extract image from response - Gateway returns base64 inline in content parts
-  const content = data.choices?.[0]?.message?.content;
-
-  // Content can be a string or an array of parts
-  if (Array.isArray(content)) {
-    const imagePart = content.find(
-      (part: any) => part.type === "image_url" || part.inline_data || part.type === "image"
-    );
-    if (imagePart?.image_url?.url) {
-      console.log(`✅ [Gateway] Imagem gerada com ${model} (image_url)`);
-      return { imageUrl: imagePart.image_url.url, provider: model };
-    }
-    if (imagePart?.inline_data) {
-      const { data: b64, mime_type } = imagePart.inline_data;
-      console.log(`✅ [Gateway] Imagem gerada com ${model} (inline_data)`);
-      return { imageUrl: `data:${mime_type || "image/png"};base64,${b64}`, provider: model };
-    }
-  }
-
-  // Try parsing as a single base64 string or data URL
-  if (typeof content === "string") {
-    if (content.startsWith("data:image")) {
-      console.log(`✅ [Gateway] Imagem gerada com ${model} (data URL string)`);
-      return { imageUrl: content, provider: model };
-    }
-    // Check if it's raw base64
-    if (content.length > 1000 && !content.includes(" ")) {
-      console.log(`✅ [Gateway] Imagem gerada com ${model} (raw base64)`);
-      return { imageUrl: `data:image/png;base64,${content}`, provider: model };
-    }
-  }
-
-  // Check message.images array (Gemini via Gateway returns images here)
-  const images = data.choices?.[0]?.message?.images;
-  if (Array.isArray(images)) {
-    const imgEntry = images.find((img: any) => img.image_url?.url || img.url);
-    const imgUrl = imgEntry?.image_url?.url || imgEntry?.url;
-    if (imgUrl) {
-      console.log(`✅ [Gateway] Imagem gerada com ${model} (message.images)`);
-      return { imageUrl: imgUrl, provider: model };
-    }
-  }
-
-  // Check raw response structure for inline images
-  const parts = data.choices?.[0]?.message?.parts;
+  // Parse Google's native response format: candidates[0].content.parts[].inlineData
+  const parts = data?.candidates?.[0]?.content?.parts;
   if (Array.isArray(parts)) {
     const imgPart = parts.find((p: any) => p.inlineData || p.inline_data);
     if (imgPart) {
       const inlineData = imgPart.inlineData || imgPart.inline_data;
       const b64 = inlineData.data;
       const mime = inlineData.mimeType || inlineData.mime_type || "image/png";
-      console.log(`✅ [Gateway] Imagem gerada com ${model} (parts inline)`);
-      return { imageUrl: `data:${mime};base64,${b64}`, provider: model };
+      console.log(`✅ [Google Direct] Imagem gerada com ${model}`);
+      return {
+        imageUrl: `data:${mime};base64,${b64}`,
+        provider: `google-direct-${model}`,
+      };
     }
   }
 
-  console.error(`❌ [Gateway] Resposta sem imagem de ${model}:`, JSON.stringify(data).substring(0, 500));
+  console.error(`❌ [Google Direct] Resposta sem imagem de ${model}:`, JSON.stringify(data).substring(0, 500));
   throw new Error(`Modelo ${model} não retornou imagem`);
 }
 
@@ -146,10 +110,10 @@ serve(async (req) => {
   }
 
   try {
-    const LOVABLE_API_KEY = Deno.env.get('LOVABLE_API_KEY');
+    const GOOGLE_AI_API_KEY = Deno.env.get('GOOGLE_AI_API_KEY');
     const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 
-    if (!LOVABLE_API_KEY && !OPENAI_API_KEY) {
+    if (!GOOGLE_AI_API_KEY && !OPENAI_API_KEY) {
       console.error('Nenhuma API key configurada');
       return new Response(JSON.stringify({ error: 'Nenhuma API de imagem configurada' }), {
         status: 500,
@@ -171,19 +135,23 @@ serve(async (req) => {
     let result: { imageUrl: string; provider: string };
     let fallbackUsed = false;
 
-    // Chain: Gemini via Gateway → DALL-E 3 via OpenAI
-    if (LOVABLE_API_KEY) {
+    // Chain: Gemini direct (Google AI Studio, billing on user's GCP) → DALL-E 3 (OpenAI)
+    if (GOOGLE_AI_API_KEY) {
       try {
-        result = await generateWithGateway(prompt, LOVABLE_API_KEY, 'google/gemini-3.1-flash-image-preview');
+        result = await generateWithGoogleDirect(
+          prompt,
+          GOOGLE_AI_API_KEY,
+          'gemini-3.1-flash-image-preview'
+        );
       } catch (error: any) {
-        console.warn('⚠️ Gemini Flash Image falhou:', error.message);
+        console.warn('⚠️ Gemini direct falhou:', error.message);
         fallbackUsed = true;
 
         if (OPENAI_API_KEY) {
           try {
             result = await generateWithOpenAI(prompt, OPENAI_API_KEY);
           } catch (openaiError: any) {
-            throw new Error(`Todos os provedores falharam. Gemini: ${error.message} | OpenAI: ${openaiError.message}`);
+            throw new Error(`Todos os provedores falharam. Google: ${error.message} | OpenAI: ${openaiError.message}`);
           }
         } else {
           throw error;
