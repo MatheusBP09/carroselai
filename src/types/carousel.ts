@@ -2,7 +2,7 @@ export type ContentType = 'educational' | 'motivational' | 'tutorial' | 'storyte
 export type ContentFormat = 'feed' | 'stories' | 'reels';
 export type CallToAction = 'follow' | 'link_bio' | 'comment' | 'share' | 'save' | 'dm' | 'tag_friends' | 'custom';
 export type CopywritingFramework = 'aida' | 'pas' | 'before_after_bridge' | 'problem_solution' | 'storytelling' | 'listicle';
-export type ImageStyle = 'photography' | 'illustration' | 'minimalist' | 'infographic' | 'abstract_3d' | 'watercolor' | 'custom';
+export type ImageStyle = 'photography' | 'notebook_sketch' | 'custom';
 
 export interface CarouselData {
   title?: string;
