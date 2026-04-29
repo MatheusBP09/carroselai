@@ -201,7 +201,8 @@ const Step4Processing = ({ data, onNext, onBack }: StepProps) => {
             totalSlides,
             data.username,
             data.imageStyle,
-            data.customImagePrompt
+            data.customImagePrompt,
+            slide.imagePrompt // GPT-generated, English subject description
           );
           return {
             params: {

@@ -111,14 +111,13 @@ REGRAS:
 - Texto INTELIGENTE: 180 chars se COM imagem, 400-500 chars se SEM imagem
 - Texto EDUCATIVO específico do tema
 - ALGUMAS slides: needsImage: true, OUTRAS: needsImage: false (variar para melhor experiência)
-- ImagePrompts: FOTOS REAIS relacionadas ao texto
-- NO design/gráfico, SIM fotos de pessoas/objetos/cenários
+- imagePrompt: SEMPRE em INGLÊS. Descreva APENAS o subject/cena/objetos (NÃO o estilo visual). Curto (1-2 frases). Exemplo: "a young Brazilian entrepreneur smiling at a laptop with growth charts on screen, modern home office, soft daylight". O estilo visual é aplicado depois pelo sistema.
 - Linguagem brasileira natural
 - Para slides sem imagem: texto mais longo e detalhado (400-500 chars)
 - Para slides com imagem: texto conciso (máximo 180 chars)
 
 JSON:
-{"slides":[{"id":1,"text":"[180 chars se needsImage:true, 400-500 chars se needsImage:false]","isEdited":false,"originalText":"[mesmo]","needsImage":true|false,"imagePrompt":"Foto realista de [pessoa/objeto/cenário] especificamente relacionado ao tema"}],"caption":"[legenda]","hashtags":["#tag1","#tag2"]}`;
+{"slides":[{"id":1,"text":"[180 chars se needsImage:true, 400-500 chars se needsImage:false]","isEdited":false,"originalText":"[mesmo]","needsImage":true|false,"imagePrompt":"[ENGLISH subject description: people, objects, setting]"}],"caption":"[legenda]","hashtags":["#tag1","#tag2"]}`;
 
     // Try each model with timeout
     for (const config of modelConfigs) {
@@ -181,7 +180,7 @@ JSON:
             // First slide
             slides[0].needsImage = true;
             if (!slides[0].imagePrompt) {
-              slides[0].imagePrompt = `Foto realista relacionada ao tema: ${slides[0].text?.substring(0, 100) || ''}`;
+              slides[0].imagePrompt = `Scene related to the topic: ${slides[0].text?.substring(0, 100) || ''}`;
             }
           }
 
@@ -203,7 +202,7 @@ JSON:
               if (i === chosen) {
                 slides[i].needsImage = true;
                 if (!slides[i].imagePrompt) {
-                  slides[i].imagePrompt = `Foto realista relacionada ao tema: ${slides[i].text?.substring(0, 100) || ''}`;
+                  slides[i].imagePrompt = `Scene related to the topic: ${slides[i].text?.substring(0, 100) || ''}`;
                 }
               } else {
                 slides[i].needsImage = false;
